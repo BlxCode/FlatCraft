@@ -1,0 +1,20 @@
+body {
+  margin: 0;
+}
+
+#ui {
+    
+    z-index:2;
+  width: 100vw;
+  height: 100vh;   /* IMPORTANT */
+  display: flex;
+  position:fixed;
+  justify-content: center;
+  align-items: center;
+}
+
+#inventory {
+  width: 200px;
+  height: 200px;
+  background: gray; /* so you can SEE it */
+}

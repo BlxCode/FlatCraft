@@ -34,11 +34,44 @@ function createTree (type,x,y,length) {
       ctx.drawImage(textures.mapleLog, getCanvasX(x), getCanvasY(y-2), 75, 75);
       ctx.drawImage(textures.mapleLog, getCanvasX(x), getCanvasY(y-3), 75, 75);
       ctx.drawImage(textures.mapleLog, getCanvasX(x), getCanvasY(y-4), 75, 75);
+      ctx.drawImage(textures.mapleLeaf, getCanvasX(x-1), getCanvasY(y-4), 75, 75);
+      ctx.drawImage(textures.mapleLeaf, getCanvasX(x), getCanvasY(y-4), 75, 75);
+      ctx.drawImage(textures.mapleLeaf, getCanvasX(x+1), getCanvasY(y-4), 75, 75);
+      ctx.drawImage(textures.mapleLeaf, getCanvasX(x-1), getCanvasY(y-5), 75, 75);
+      ctx.drawImage(textures.mapleLeaf, getCanvasX(x), getCanvasY(y-5), 75, 75);
+      ctx.drawImage(textures.mapleLeaf, getCanvasX(x+1), getCanvasY(y-5), 75, 75);
+   
+      ctx.drawImage(textures.mapleLeaf, getCanvasX(x-1), getCanvasY(y-3), 75, 75);
+      ctx.drawImage(textures.mapleLeaf, getCanvasX(x+1), getCanvasY(y-3), 75, 75);
+     
+        ctx.drawImage(textures.mapleLeaf, getCanvasX(x-2), getCanvasY(y-4), 75, 75);
+    
+      ctx.drawImage(textures.mapleLeaf, getCanvasX(x+2), getCanvasY(y-4), 75, 75);
+      
+    
+      ctx.drawImage(textures.mapleLeaf, getCanvasX(x-2), getCanvasY(y-3), 75, 75);
+     
+     
+     
   }else if (type === "maple" && length == "Short") {
       ctx.drawImage(textures.mapleLog, getCanvasX(x), getCanvasY(y), 75, 75);
       ctx.drawImage(textures.mapleLog, getCanvasX(x), getCanvasY(y-1), 75, 75);
       ctx.drawImage(textures.mapleLog, getCanvasX(x), getCanvasY(y-2), 75, 75);
-  }
+      
+      
+      ctx.drawImage(textures.mapleLeaf, getCanvasX(x-1), getCanvasY(y-2), 75, 75);
+      ctx.drawImage(textures.mapleLeaf, getCanvasX(x), getCanvasY(y-3), 75, 75);
+       ctx.drawImage(textures.mapleLeaf, getCanvasX(x), getCanvasY(y-4), 75, 75);
+        ctx.drawImage(textures.mapleLeaf, getCanvasX(x+1), getCanvasY(y-4), 75, 75);
+         ctx.drawImage(textures.mapleLeaf, getCanvasX(x-1), getCanvasY(y-4), 75, 75);
+       ctx.drawImage(textures.mapleLeaf, getCanvasX(x+1), getCanvasY(y-3), 75, 75);
+        ctx.drawImage(textures.mapleLeaf, getCanvasX(x+2), getCanvasY(y-3), 75, 75);
+        ctx.drawImage(textures.mapleLeaf, getCanvasX(x-1), getCanvasY(y-3), 75, 75);
+         ctx.drawImage(textures.mapleLeaf, getCanvasX(x-2), getCanvasY(y-3), 75, 75);
+      ctx.drawImage(textures.mapleLeaf, getCanvasX(x+1), getCanvasY(y-2), 75, 75);
+        ctx.drawImage(textures.mapleLeaf, getCanvasX(x+2), getCanvasY(y-2), 75, 75);
+       
+  } 
 }
 async function init() {
   ctx.imageSmoothingEnabled = false;
@@ -57,7 +90,7 @@ async function init() {
     ctx.drawImage(textures.dirt, getCanvasX(4), getCanvasY(10), 75, 75);
     ctx.drawImage(textures.stone, getCanvasX(4), getCanvasY(11), 75, 75);
     createTree("maple", 5, 8,"Long");
-    createTree("maple", 8, 7,"Short");
+    createTree("maple", 11, 7,"Short");
 }
 
 init();

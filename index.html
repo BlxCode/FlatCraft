@@ -27,12 +27,33 @@
           <div class="slot" id="slot9"></div>
 
       </div>
+      <span style="position:fixed; top:10px; left:10px; font-size:30px; background-color:black; color:white;" id="fpsCounter"></span>
     </div>
    <canvas width="1920" height="1080" id = "gameCanvas" style="z-index:1;border-width:0px;  display:block; margin:0 auto;  position:fixed; top:0; left:0;">
      <h1><span style="color:red">Error:</span> Your browser can't display the game. Please use a modern browser like Chrome, Firefox, or Edge that supports HTML5 canvas. Thank you for your understanding.
 </h1>
    </canvas>
+   
    <script src="./script.js"></script>
+   <script>
+    let lastTime = performance.now();
+let frameCount = 0;
+let fps = 0;
+function fpsLoop() {
+ const now = performance.now();
+ frameCount++;
+ // Update FPS every second
+ if (now - lastTime >= 1000) {
+   fps = frameCount;
+   frameCount = 0;
+   lastTime = now;
+   document.getElementById('fpsCounter').textContent = `FPS: ${fps}`;
+ }
+ requestAnimationFrame(fpsLoop);
+}
+'<div id="fpsCounter" style="position:fixed;top:10px;left:10px;color:white;background:black;padding:4px;font-family:monospace;"></div>';
+fpsLoop();
+   </script>
        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
   </body>
 </html>

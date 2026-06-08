@@ -2,9 +2,9 @@
   --primary-bg-color: #1e1e1e;
   --primary-color: ##f0f0f0;
   --border: #444444;
-  --slot: #3d4249;
-  --slot-border: #242323bc;
-  --hover: #4a4a4a;
+  --slot: #cfd6e0;
+  --slot-border: #7e7a7abc;
+  --slot-hover: #131313;
 }
 .clickable{
   cursor: pointer;
@@ -14,8 +14,12 @@
 .clickable:hover{
   transform: scale(1.1);
 }
+.clickable:active{
+  transform: scale(0.9);
+}
 body {
   margin: 0;
+  font-family: 'Pixelify Sans', sans-serif !important;
 }
 
 #ui {
@@ -49,4 +53,6 @@ body {
   background: var(--slot);
   border: .4vh solid var(--slot-border);
   box-sizing: border-box;
+  border-radius:2px;
 }
+

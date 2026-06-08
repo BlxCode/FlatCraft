@@ -29,6 +29,7 @@ function loadTexture(name) {
 }
 
 async function init() {
+  ctx.imageSmoothingEnabled = false;
   textures.grass = await loadTexture("grass");
   textures.dirt = await loadTexture("dirt");
   textures.stone = await loadTexture("stone");

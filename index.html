@@ -1,21 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="./styles.css">
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FlatCraft</title>
+    <script src="https://kit.fontawesome.com/d2a23fcf0d.js" crossorigin="anonymous"></script>
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
   </head>
   <body>
     <div id="ui">
+      <i style="color:beige; cursor:pointer; -webkit-text-stroke: 2px; -webkit-text-stroke-color: black; font-size:50px; " class="fa-solid fa-gear clickable"></i>
       <div id="inventory">
-        balls
-        <div id="slot1">e</div>
-         <div id="slot2">f</div>
+    
+        <div class="slot" id="slot1"></div>
+         <div class="slot" id="slot2"></div>
+          <div class="slot" id="slot3"></div>
+         <div class="slot" id="slot4"></div>
+          <div class="slot" id="slot5"></div>
+          <div class="slot" id="slot6"></div>
+          <div class="slot" id="slot7"></div>
+          <div class="slot" id="slot8"></div>
+          <div class="slot" id="slot9"></div>
+
       </div>
     </div>
-   <canvas id = "gameCanvas" style="z-index:-1;width:100%; height:100vh; display:block; margin:0 auto;  position:fixed; top:0; left:0;">
+   <canvas width="1920" height="1080" id = "gameCanvas" style="z-index:1;border-width:0px;  display:block; margin:0 auto;  position:fixed; top:0; left:0;">
      Your browser can't display the game. Please use a modern browser like Chrome, Firefox, or Edge that supports HTML5 canvas.
 
    </canvas>
+   <script src="./script.js"></script>
+       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
   </body>
 </html>

@@ -147,7 +147,6 @@ init().then(() => {
 
 
 
-
 document.addEventListener("keydown", (event) => {
   console.log(keysPressed);
   console.log(typeof keysPressed[event.key]);

@@ -8,11 +8,14 @@
     <title>FlatCraft</title>
     <script src="https://kit.fontawesome.com/d2a23fcf0d.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/gifler@0.1.0/gifler.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.5/seedrandom.min.js">
+</script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
   </head>
   <body>
     
     <div id="ui">
+      <div id = "backdrop" hidden></div>
       <i id="settingButton" style="position:fixed;top:10px;right:10px;color:rgb(238, 238, 232); cursor:pointer; -webkit-text-stroke: 2px; -webkit-text-stroke-color: black; font-size:50px; " class="fa-solid fa-gear clickable"></i>
       <div id="inventory">
     
@@ -26,6 +29,10 @@
           <div class="slot" id="slot8"></div>
           <div class="slot" id="slot9"></div>
 
+      </div>
+      <div id = "popup" hidden>
+        <h2 id = "popupTitle">Warning:</h2>
+        <p id = "popupContent">This is a warning blah blah message.</p>
       </div>
       <span style="position:fixed; top:10px; left:10px; font-size:30px; background-color:black; color:white;" id="fpsCounter"></span>
     </div>

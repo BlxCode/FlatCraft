@@ -6,20 +6,19 @@
   --slot-border: #7e7a7abc;
   --slot-hover: #131313;
 }
-.clickable{
+.clickable {
   cursor: pointer;
-  transition: transform .1s ease-in-out;
-
+  transition: transform 0.1s ease-in-out;
 }
-.clickable:hover{
+.clickable:hover {
   transform: scale(1.1);
 }
-.clickable:active{
+.clickable:active {
   transform: scale(0.9);
 }
 body {
   margin: 0;
-  font-family: 'Pixelify Sans', sans-serif !important;
+  font-family: "Pixelify Sans", sans-serif !important;
 }
 
 #ui {
@@ -35,24 +34,61 @@ body {
 
 #inventory {
   position: fixed;
-  display:flex;
+  display: flex;
   justify-content: space-evenly;
   bottom: 5px;
   width: fit-content;
-  height: 6dvh;
- 
+  margin-bottom: 1dvh;
+  height: 7vh;
 }
 .slot {
   aspect-ratio: 1/1;
-  width: 5dvh;
-  margin:.1vh;
-  height:5dvh;
-  color:white;
-  text-align:center;
+  width: 7dvh;
+  margin: 0.1vh;
+  height: 7dvh;
+
+  color: white;
+  text-align: center;
   vertical-align: middle;
   background: var(--slot);
-  border: .4vh solid var(--slot-border);
+  border: 0.4vh solid var(--slot-border);
   box-sizing: border-box;
-  border-radius:2px;
+  border-radius: 2px;
 }
 
+#popup {
+  
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(234, 93, 93, 0.8);
+  width: 30%;
+  height: 25%;
+  text-align: center;
+ 
+  border-radius: 10px;
+ color:white;
+ padding:10px;
+  
+}
+#popupTitle {
+   -webkit-text-stroke: 1.5px black;
+  font-weight:bold;
+  margin-top: 1px;
+  font-size: 44px;
+}
+#popupContent {
+   -webkit-text-stroke: 0.95px black;
+  margin-top: 1px;
+  font-weight:bold;
+  font-size: 25px;
+}
+#backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}

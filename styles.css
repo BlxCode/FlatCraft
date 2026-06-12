@@ -73,7 +73,7 @@ cursor:url("./assets/items/cursorUp.png") 16 16 , pointer !important;
   background-color:rgb(171, 171, 255);
 }
 #credits{
-  
+  position:absolute;
 }
 .mainMenuButton{
   margin:5px 0.7dvh 5px 0.7dvh !important;

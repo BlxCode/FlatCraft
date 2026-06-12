@@ -15,11 +15,22 @@
   <body>
     
     <div id="ui">
+      <div id="credits">
+        
+      </div>
+      <div id="mainMenu">
+        <div id="mainMenuWrapper">
+<h1 style="margin:10px; font-size:8.5dvw;">FlatCraft</h1>
+<button class="btn btn-dark mainMenuButton" id="mainMenuButtonPlay">Settings</button>
+<button class="btn btn-dark mainMenuButton" id="mainMenuButtonPlay">Play</button>
+<button class="btn btn-dark mainMenuButton" id="mainMenuButtonPlay">Credits</button>
+</div>
+      </div>
       <div id = "backdrop" hidden></div>
       <i id="settingButton" style="position:fixed;top:10px;right:10px;color:rgb(238, 238, 232); cursor:pointer; -webkit-text-stroke: 2px; -webkit-text-stroke-color: black; font-size:50px; " class="fa-solid fa-gear clickable"></i>
       <div id="inventory">
     
-        <div class="slot" id="slot1"></div>
+        <div class="slot slotHover" id="slot1"></div>
          <div class="slot" id="slot2"></div>
           <div class="slot" id="slot3"></div>
          <div class="slot" id="slot4"></div>
@@ -31,6 +42,7 @@
 
       </div>
       <div id = "popup" hidden>
+        <button id="popupClose" class="btn btn-danger ">x</button>
         <h2 id = "popupTitle">Warning:</h2>
         <p id = "popupContent">This is a warning blah blah message.</p>
       </div>

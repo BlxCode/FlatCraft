@@ -1,3 +1,35 @@
+// MAIN MENU
+
+const buttonOpenCredits = document.getElementById('mainMenuButtonCredits')
+
+buttonOpenCredits.addEventListener("click",()=>{
+  document.getElementById("credits").className ="popAnim";
+})
+
+const buttonCloseCredits = document.getElementById("buttonCloseCredits");
+buttonCloseCredits.addEventListener("click",()=>{
+  
+  document.getElementById("credits").className = "popCloseHide"
+
+
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Resize the game canvas to match the browser window size.
 function resize() {
   let canvas = document.getElementById("gameCanvas");
@@ -21,14 +53,21 @@ function displayError(msg) {
   errorDiv.hidden = false;
 
   document.getElementById("popupContent").innerText = msg;
-  console.log(document.getElementById("popupContent").innerText.length * 0.07 * 1000);
-  setTimeout(() => {
-    errorDiv.hidden = true;
-    backdropUI.hidden = true;
-  }, document.getElementById("popupContent").innerText.length * 0.07 * 1000);
+  console.log(
+    document.getElementById("popupContent").innerText.length * 0.07 * 1000,
+  );
+  setTimeout(
+    () => {
+      errorDiv.hidden = true;
+      backdropUI.hidden = true;
+    },
+    document.getElementById("popupContent").innerText.length * 0.07 * 1000,
+  );
 }
 
-displayError("This is a test error message. This is only for testing purposes and will be removed in the future.");
+displayError(
+  "This is a test error message. This is only for testing purposes and will be removed in the future.",
+);
 
 // Camera position in world coordinates.
 let cameraX = 0;
@@ -85,12 +124,11 @@ var biomeMetaData = {
 
 // Basic chunk storage for generated terrain with biome assignment.
 var chunks = {
-  "0": {
+  0: {
     biome: "plains",
     chunkEdited: false,
   },
 };
-
 
 var blockMetaData = {
   grass: {
@@ -251,12 +289,12 @@ init().then(() => {
   setInterval(draw, 1000 / 60);
 });
 
-function switchSlots(slot){
-  let slotElement = document.getElementById("slot"+slot);
-  for (let i = 1; i < 9; i ++){
-    document.getElementById("slot"+i).className= "slot"
+function switchSlots(slot) {
+  let slotElement = document.getElementById("slot" + slot);
+  for (let i = 1; i < 9; i++) {
+    document.getElementById("slot" + i).className = "slot";
   }
-  slotElement.className+="slotHover"
+  slotElement.className += "slotHover";
 }
 
 document.addEventListener("keydown", (event) => {
@@ -281,10 +319,6 @@ document.addEventListener("keyup", (event) => {
   if (keysPressed["d"]) {
     cameraX += 0.1;
   }
-  if (event.key == '1'){
-
+  if (event.key == "1") {
   }
 });
-
-
-

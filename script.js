@@ -1,3 +1,4 @@
+await window.CrazyGames.SDK.init();
 // MAIN MENU
 
 const buttonOpenCredits = document.getElementById('mainMenuButtonCredits')
@@ -13,6 +14,7 @@ buttonCloseCredits.addEventListener("click",()=>{
 
 
 })
+let paused = true;
 
 
 
@@ -226,10 +228,11 @@ function createTree(type, x, y, length) {
 }
 function draw() {
   // Update camera position from WASD input.
-  if (keysPressed["w"]) cameraY -= 0.05;
-  if (keysPressed["a"]) cameraX -= 0.05;
-  if (keysPressed["s"]) cameraY += 0.05;
-  if (keysPressed["d"]) cameraX += 0.05;
+
+  if (keysPressed["w"] && !paused) cameraY -= 0.05;
+  if (keysPressed["a"]&& !paused) cameraX -= 0.05;
+  if (keysPressed["s"]&& !paused) cameraY += 0.05;
+  if (keysPressed["d"]&& !paused) cameraX += 0.05;
 
   ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -306,19 +309,7 @@ document.addEventListener("keyup", (event) => {
   // Remove the key press state when released.
   delete keysPressed[event.key];
 
-  // Apply a small additional camera shift on key release.
-  if (keysPressed["w"]) {
-    cameraY -= 0.1;
-  }
-  if (keysPressed["a"]) {
-    cameraX -= 0.1;
-  }
-  if (keysPressed["s"]) {
-    cameraY += 0.1;
-  }
-  if (keysPressed["d"]) {
-    cameraX += 0.1;
-  }
+ 
   if (event.key == "1") {
   }
 });

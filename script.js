@@ -1,20 +1,46 @@
 await window.CrazyGames.SDK.init();
 // MAIN MENU
-
+let paused = true;
+const backdropUI = document.getElementById("backdrop");
 const buttonOpenCredits = document.getElementById('mainMenuButtonCredits')
 
 buttonOpenCredits.addEventListener("click",()=>{
   document.getElementById("credits").className ="popAnim";
+  paused = true
+  backdropUI.hidden = false
 })
 
 const buttonCloseCredits = document.getElementById("buttonCloseCredits");
 buttonCloseCredits.addEventListener("click",()=>{
   
   document.getElementById("credits").className = "popCloseHide"
-
+  paused = false
+ backdropUI.hidden = true
 
 })
-let paused = true;
+
+
+const buttonOpenSettings = document.getElementById("mainMenuButtonSettings");
+buttonOpenSettings.addEventListener("click",()=>{
+  document.getElementById("settings").className ="popAnim";
+  paused = true
+   backdropUI.hidden = false
+});
+
+const buttonCloseSettings  = document.getElementById("buttonCloseSettings");
+buttonCloseSettings.addEventListener("click",()=>{
+  
+  document.getElementById("settings").className = "popCloseHide"
+
+paused = false
+ backdropUI.hidden = true
+})
+
+const buttonPlayGame = document.getElementById("mainMenuButtonPlay");
+buttonPlayGame.addEventListener("click",()=>{
+  document.getElementById("mainMenu").className = "visually-hidden"
+  paused= false
+})
 
 
 
@@ -40,19 +66,19 @@ function resize() {
 }
 
 // Popup UI elements for showing temporary error/messages.
-const backdropUI = document.getElementById("backdrop");
+
 const errorDiv = document.getElementById("popup");
 
 // Close button hides the popup and its backdrop.
 document.getElementById("popupClose").addEventListener("click", () => {
-  errorDiv.hidden = true;
+  errorDiv.className = "popCloseHide";
   backdropUI.hidden = true;
 });
 
 // Display an on-screen error message for a duration based on its length.
 function displayError(msg) {
   backdropUI.hidden = false;
-  errorDiv.hidden = false;
+  
 
   document.getElementById("popupContent").innerText = msg;
   console.log(
@@ -65,6 +91,7 @@ function displayError(msg) {
     },
     document.getElementById("popupContent").innerText.length * 0.07 * 1000,
   );
+  errorDiv.className = "popAnim";
 }
 
 displayError(

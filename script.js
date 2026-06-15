@@ -105,14 +105,12 @@ let cameraY = 0;
 // Tracks the current pressed keys for camera movement and controls.
 var keysPressed = {};
 
-// Convert world X coordinate into canvas pixel X coordinate.
 function getCanvasX(x) {
-  return (x - cameraX) * 75;
+  return x * 75 - Math.floor(cameraX * 75);
 }
 
-// Convert world Y coordinate into canvas pixel Y coordinate.
 function getCanvasY(y) {
-  return (y - cameraY) * 75;
+  return y * 75 - Math.floor(cameraY * 75);
 }
 resize();
 window.addEventListener("resize", resize);
@@ -256,10 +254,10 @@ function createTree(type, x, y, length) {
 function draw() {
   // Update camera position from WASD input.
 
-  if (keysPressed["w"] && !paused) cameraY -= 0.05;
-  if (keysPressed["a"]&& !paused) cameraX -= 0.05;
-  if (keysPressed["s"]&& !paused) cameraY += 0.05;
-  if (keysPressed["d"]&& !paused) cameraX += 0.05;
+  if (keysPressed["w"] && !paused) cameraY -= 0.1;
+  if (keysPressed["a"]&& !paused) cameraX -= 0.1;
+  if (keysPressed["s"]&& !paused) cameraY += 0.1;
+  if (keysPressed["d"]&& !paused) cameraX += 0.1;
 
   ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);

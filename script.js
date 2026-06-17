@@ -1,4 +1,5 @@
 await window.CrazyGames.SDK.init();
+ import { createNoise2D } from 'simplex-noise';
 // MAIN MENU
 let paused = true;
 const backdropUI = document.getElementById("backdrop");
@@ -92,9 +93,7 @@ function displayError(msg) {
   errorDiv.className = "popAnim";
 }
 
-displayError(
-  "This is a test error message. This is only for testing purposes and will be removed in the future.",
-);
+
 
 // Camera position in world coordinates.
 let cameraX = 0;
@@ -282,20 +281,17 @@ function procedrallyGenerateWorld(seed) {
   const worldWidth = 2000;
   const chunkSize = 16;
   const seaLevel = 0;
-  const maxHeight = 55;
+  const maxHeight = 90;
   const minHeight = -50;
 
   // Validate the seed and fall back to a random one if needed.
-  if (seed === undefined ) {
+  if (seed === undefined ) {  
     seed = Math.random() * 10000;
   }
 
   // Create chunks and populate the world here in the future.
-  const rng = new Math.seedrandom(seed);
-  const terreinRNG = Math.abs(rng.int32());
-
-  
-
+  const rng = new alea(seed);
+ 
 
 
 }

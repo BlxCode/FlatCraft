@@ -51,14 +51,6 @@ buttonPlayGame.addEventListener("click",()=>{
 
 
 
-
-
-
-
-
-
-
-
 // Resize the game canvas to match the browser window size.
 function resize() {
   let canvas = document.getElementById("gameCanvas");

@@ -1,5 +1,5 @@
 await window.CrazyGames.SDK.init();
- import { createNoise2D } from 'simplex-noise';
+ import { createNoise2D } from "https://cdn.jsdelivr.net/npm/simplex-noise/+esm";
 // MAIN MENU
 let paused = true;
 const backdropUI = document.getElementById("backdrop");

@@ -1,6 +1,6 @@
 const loadingScreen = document.getElementById("loadingScreen");
 const loadingTitle = document.getElementById("loadingTitle")
-
+const loadingProgressBar = document.getElementById("loadingProgress");
 var dotsInLoadingTitle = 3;
 var dotsDirectionMore = true
 setInterval(()=>{
@@ -48,10 +48,28 @@ dotsDirectionMore = false
 
 },407);
 
+var progressBar = setInterval(() => {
+  let progress = Number(loadingProgressBar.ariaValueNow);
 
+  if (progress > 75) {
+    progress = 90;
+  } else {
+    progress += Math.floor(Math.random() * 17)+13;
+    progress = Math.min(progress, 99); // don't reach 100 yet
+  }
+
+  loadingProgressBar.ariaValueNow = progress;
+  loadingProgressBar.style.width = progress + "%";
+}, 1000);
 
 await window.CrazyGames.SDK.init();
+clearInterval(progressBar);
  import { createNoise2D } from "https://cdn.jsdelivr.net/npm/simplex-noise/+esm";
+  loadingProgressBar.ariaValueNow = 100;
+  loadingProgressBar.style.width = 100 + "%";
+  setTimeout(()=>{
+loadingScreen.className+="popCloseHide";
+  },1200)
 // MAIN MENU
 let paused = true;
 const backdropUI = document.getElementById("backdrop");
@@ -91,7 +109,7 @@ paused = false
 
 const buttonPlayGame = document.getElementById("mainMenuButtonPlay");
 buttonPlayGame.addEventListener("click",()=>{
-  document.getElementById("mainMenu").className = "visually-hidden"
+  document.getElementById("mainMenu").className = "popCloseHide"
   paused= false
 })
 

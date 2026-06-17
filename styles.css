@@ -73,7 +73,11 @@ ul {
   list-style-position: outside;
 }
 #mainMenu {
-  position: fixed;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+ 
   text-align: center;
   width: 100%;
   height: 100%;
@@ -215,10 +219,14 @@ ul {
   
 }
 #loadingScreen{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width:100%;
   height:100dvh;
   z-index:999;
-  background-color:#1f222a;
+  background-color:#2b2f3b;
   color:whitesmoke;
   text-align:center;
   vertical-align:middle;
@@ -229,16 +237,21 @@ ul {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  
+  width:45%;
 
 }
 
 #loadingTitle{
   font-size:8dvh;
 }
-
+#loadingProgressWrapper{
+  border-radius:0px !important;
+  border-width:0px !important;
+}
 #loadingProgress{
   border-radius:0px;
-  background-color:var(--slot) !important;
-  border-color:var(--slot-border);
+  background-color:rgb(145, 144, 255) !important;
+   border-width:0px !important;
+  
 }
+

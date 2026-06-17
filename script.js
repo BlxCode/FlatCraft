@@ -81,9 +81,7 @@ function displayError(msg) {
   
 
   document.getElementById("popupContent").innerText = msg;
-  console.log(
-    document.getElementById("popupContent").innerText.length * 0.07 * 1000,
-  );
+
   setTimeout(
     () => {
       errorDiv.hidden = true;
@@ -288,15 +286,18 @@ function procedrallyGenerateWorld(seed) {
   const minHeight = -50;
 
   // Validate the seed and fall back to a random one if needed.
-  if (seed === undefined || typeof seed !== "number") {
-    seed = Math.random() * 10000;
-  } else if (seed > 10000 || seed < 0) {
+  if (seed === undefined ) {
     seed = Math.random() * 10000;
   }
 
   // Create chunks and populate the world here in the future.
-  const randomNumber = new Math.seedrandom(seed);
-  console.log(randomNumber());
+  const rng = new Math.seedrandom(seed);
+  const terreinRNG = Math.abs(rng.int32());
+
+  
+
+
+
 }
 
 // Initialize textures and start the draw loop.
@@ -309,7 +310,7 @@ async function init() {
   textures.sugiliteBlock = await loadTexture("sugiliteBlock");
 
   draw();
-  procedrallyGenerateWorld(676767);
+  procedrallyGenerateWorld('uh98909ij');
 }
 
 init().then(() => {

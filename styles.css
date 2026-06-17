@@ -9,8 +9,6 @@
 .clickable {
   cursor: pointer;
   transition: transform 0.1s ease-in-out;
-  
- 
 }
 
 .clickable:hover {
@@ -34,18 +32,15 @@ body {
   justify-content: center;
   align-items: center;
 }
-.btn{
-  border-radius:0px !important;
+.btn {
+  border-radius: 0px !important;
   transition: transform 0.25s ease-in-out;
- 
 }
-.btn:hover{
-transform:scale(1.1);
-
+.btn:hover {
+  transform: scale(1.1);
 }
-.btn:active{
-  transform:scale(0.9);
-  
+.btn:active {
+  transform: scale(0.9);
 }
 #inventory {
   position: fixed;
@@ -56,95 +51,100 @@ transform:scale(1.1);
   margin-bottom: 1dvh;
   height: 7vh;
 }
-#mainMenuWrapper{
+#mainMenuWrapper {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
 }
-h2{
-  font-size:4dvh !important;
+h2 {
+  font-size: 4dvh !important;
 }
-li{
-  font-size:3.1dvh !important;
+li {
+  font-size: 3.1dvh !important;
 }
 ul {
-  width:fit-content;
-  position:absolute;
+  width: fit-content;
+  position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-   text-align: left;
-   list-style-position:outside;
+  text-align: left;
+  list-style-position: outside;
 }
-#mainMenu{
-  position:fixed;
-  text-align:center;
-  width:100%;
-  height:100%;
-  z-index:90;
-  background-color:rgb(171, 171, 255);
+#mainMenu {
+  position: fixed;
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  z-index: 90;
+  background-color: rgb(171, 171, 255);
 }
-#credits{
-  text-align:center;
+#credits {
+  text-align: center;
 
-  position:absolute;
-   top: 50%;
-   color:var(--primary-color);
+  position: absolute;
+  top: 50%;
+  color: var(--primary-color);
   left: 50%;
   transform: translate(-50%, -50%);
   transform-origin: center center;
   background-color: var(--primary-bg-color);
-  z-index:92;
-width:75%;
-height:75%;
-
-
+  z-index: 92;
+  width: 75%;
+  height: 75%;
 }
 
-#settings{
-  text-align:center;
+#settings {
+  text-align: center;
 
-  position:absolute;
-   top: 50%;
-   color:var(--primary-color);
+  position: absolute;
+  top: 50%;
+  color: var(--primary-color);
   left: 50%;
   transform: translate(-50%, -50%);
   transform-origin: center center;
   background-color: var(--primary-bg-color);
-  z-index:92;
-width:75%;
-height:75%;
-
-
+  z-index: 92;
+  width: 75%;
+  height: 75%;
 }
 
-@keyframes popOpen{
-  0% {transform: translate(-50%, -50%) scale(0);}
-  70% {transform: translate(-50%, -50%) scale(1.1);}
-  100% {transform: translate(-50%, -50%) scale(1);}
+@keyframes popOpen {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+  }
+  70% {
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
 }
-@keyframes popCloseHide{
-   0% {transform: translate(-50%, -50%) scale(1);}
+@keyframes popCloseHide {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+  }
 
-  100% {transform: translate(-50%, -50%) scale(0);}
+  100% {
+    transform: translate(-50%, -50%) scale(0);
+  }
 }
-.popAnim{
+.popAnim {
   animation-name: popOpen;
   animation-duration: 0.25s;
   animation-fill-mode: both;
 }
-.popCloseHide{
-animation-name: popCloseHide;
+.popCloseHide {
+  animation-name: popCloseHide;
   animation-duration: 0.2s;
   animation-fill-mode: both;
 }
-.mainMenuButton{
-  margin:5px 0.7dvh 5px 0.7dvh !important;
-  font-size:5dvh !important;
-  border-radius:1px !important;
-  padding:0.95dvh 1.95dvh 0.95dvh 1.95dvh !important;
-  
+.mainMenuButton {
+  margin: 5px 0.7dvh 5px 0.7dvh !important;
+  font-size: 4dvh !important;
+  border-radius: 1px !important;
+  padding: 0.95dvh 1.95dvh 0.95dvh 1.95dvh !important;
 }
 .slotHover {
   border-color: var(--slot-hover) !important;
@@ -161,7 +161,6 @@ animation-name: popCloseHide;
   background: var(--slot);
   border: 0.5vh solid var(--slot-border);
   box-sizing: border-box;
-
 }
 
 #popup {
@@ -174,20 +173,19 @@ animation-name: popCloseHide;
   height: fit-content;
   text-align: center;
 
- 
   color: white;
   padding: 10px;
-  z-index:203;
+  z-index: 203;
 }
 #popupTitle {
   font-weight: bold;
   margin-top: 1px;
-  font-size: 44px;
+  font-size: 5dvh;
 }
 #popupContent {
   margin-top: 1px;
   font-weight: 500;
-  font-size: 25px;
+  font-size: 3dvh;
 }
 #backdrop {
   position: absolute;
@@ -196,13 +194,24 @@ animation-name: popCloseHide;
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index:91;
+  z-index: 91;
 }
 
-#popupClose{
+#popupClose {
   aspect-ratio: 1;
-  position:fixed;
-  top:10px;
-  right:10px;
-  border-radius:0px !important;
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  border-radius: 0px !important;
 }
+
+.closeButton {
+  
+  position: fixed;
+  top: 10px;
+  right: 10px;
+ 
+  aspect-ratio: 1/1 !important;
+  
+}
+

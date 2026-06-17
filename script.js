@@ -1,3 +1,55 @@
+const loadingScreen = document.getElementById("loadingScreen");
+const loadingTitle = document.getElementById("loadingTitle")
+
+var dotsInLoadingTitle = 3;
+var dotsDirectionMore = true
+setInterval(()=>{
+if (dotsInLoadingTitle== 3&& !dotsDirectionMore){
+loadingTitle.innerText = "Loading.."
+dotsInLoadingTitle = 2
+dotsDirectionMore = false
+}else if (dotsInLoadingTitle == 2 && !dotsDirectionMore){
+loadingTitle.innerText = "Loading."
+dotsInLoadingTitle = 1
+dotsDirectionMore = false
+
+
+}else if (dotsInLoadingTitle == 1 && !dotsDirectionMore){
+loadingTitle.innerText = "Loading"
+dotsInLoadingTitle = 0
+dotsDirectionMore = true
+
+
+}else if (dotsInLoadingTitle == 0 && dotsDirectionMore){
+loadingTitle.innerText = "Loading."
+dotsInLoadingTitle = 1
+dotsDirectionMore = true
+
+
+}else if (dotsInLoadingTitle == 1 && dotsDirectionMore){
+loadingTitle.innerText = "Loading.."
+dotsInLoadingTitle = 2
+dotsDirectionMore = true
+
+
+}else if (dotsInLoadingTitle == 2 && dotsDirectionMore){
+loadingTitle.innerText = "Loading..."
+dotsInLoadingTitle = 3
+dotsDirectionMore = true
+
+}else if (dotsInLoadingTitle == 3 && dotsDirectionMore){
+loadingTitle.innerText = "Loading..."
+dotsInLoadingTitle = 3
+dotsDirectionMore = false
+
+
+}
+
+
+},407);
+
+
+
 await window.CrazyGames.SDK.init();
  import { createNoise2D } from "https://cdn.jsdelivr.net/npm/simplex-noise/+esm";
 // MAIN MENU

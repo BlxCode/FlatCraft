@@ -1,6 +1,10 @@
 const loadingScreen = document.getElementById("loadingScreen");
 const loadingTitle = document.getElementById("loadingTitle")
 const loadingProgressBar = document.getElementById("loadingProgress");
+const mainMenuAudio = new Audio("./assets/music/menu.wav");
+let paused = true;
+mainMenuAudio.loop = true
+
 var dotsInLoadingTitle = 3;
 var dotsDirectionMore = true
 setInterval(()=>{
@@ -62,7 +66,9 @@ var progressBar = setInterval(() => {
   loadingProgressBar.style.width = progress + "%";
 }, 1000);
 
+//initialized game
 await window.CrazyGames.SDK.init();
+
 
 clearInterval(progressBar);
  import { createNoise2D } from "https://cdn.jsdelivr.net/npm/simplex-noise/+esm";
@@ -72,7 +78,8 @@ clearInterval(progressBar);
 loadingScreen.className+="popCloseHide";
   },1200)
 // MAIN MENU
-let paused = true;
+mainMenuAudio.play()
+
 const backdropUI = document.getElementById("backdrop");
 const buttonOpenCredits = document.getElementById('mainMenuButtonCredits')
 

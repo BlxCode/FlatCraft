@@ -58,10 +58,10 @@ body {
   transform: translate(-50%, -50%);
 }
 h2 {
-  font-size: 4dvh !important;
+  font-size: 3dvh !important;
 }
 li {
-  font-size: 3.1dvh !important;
+  font-size: 2.1dvh !important;
 }
 ul {
   width: fit-content;

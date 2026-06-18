@@ -55,7 +55,7 @@ var progressBar = setInterval(() => {
     progress = 90;
   } else {
     progress += Math.floor(Math.random() * 17)+13;
-    progress = Math.min(progress, 99); // don't reach 100 yet
+    progress = Math.min(progress, 90);
   }
 
   loadingProgressBar.ariaValueNow = progress;
@@ -63,6 +63,7 @@ var progressBar = setInterval(() => {
 }, 1000);
 
 await window.CrazyGames.SDK.init();
+
 clearInterval(progressBar);
  import { createNoise2D } from "https://cdn.jsdelivr.net/npm/simplex-noise/+esm";
   loadingProgressBar.ariaValueNow = 100;

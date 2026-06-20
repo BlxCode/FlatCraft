@@ -2,6 +2,7 @@ const loadingScreen = document.getElementById("loadingScreen");
 const loadingTitle = document.getElementById("loadingTitle")
 const loadingProgressBar = document.getElementById("loadingProgress");
 const mainMenuAudio = new Audio("./assets/music/menu.wav");
+const enterGameButtonLoadingScreenWrapper = document.getElementById("enterGameButtonLoadingScreenWrapper");
 let paused = true;
 mainMenuAudio.loop = true
 
@@ -52,6 +53,7 @@ dotsDirectionMore = false
 
 },407);
 
+
 var progressBar = setInterval(() => {
   let progress = Number(loadingProgressBar.ariaValueNow);
 
@@ -74,11 +76,18 @@ clearInterval(progressBar);
  import { createNoise2D } from "https://cdn.jsdelivr.net/npm/simplex-noise/+esm";
   loadingProgressBar.ariaValueNow = 100;
   loadingProgressBar.style.width = 100 + "%";
+
   setTimeout(()=>{
-loadingScreen.className+="popCloseHide";
+document.getElementById('loadingScreenWrapper').className = "popCloseHide"
+enterGameButtonLoadingScreenWrapper.className = "popAnim"
+loadingScreen.className = "loadingScreenChangeColor"
   },1200)
 // MAIN MENU
+enterGameButtonLoadingScreenWrapper.addEventListener("click",()=>{
 mainMenuAudio.play()
+loadingScreen.className="popCloseHide"
+})
+
 
 const backdropUI = document.getElementById("backdrop");
 const buttonOpenCredits = document.getElementById('mainMenuButtonCredits')
@@ -119,6 +128,7 @@ const buttonPlayGame = document.getElementById("mainMenuButtonPlay");
 buttonPlayGame.addEventListener("click",()=>{
   document.getElementById("mainMenu").className = "popCloseHide"
   paused= false
+  mainMenuAudio.pause()
 })
 
 

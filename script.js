@@ -3,6 +3,7 @@ const loadingTitle = document.getElementById("loadingTitle")
 const loadingProgressBar = document.getElementById("loadingProgress");
 const mainMenuAudio = new Audio("./assets/music/menu.wav");
 const enterGameButtonLoadingScreenWrapper = document.getElementById("enterGameButtonLoadingScreenWrapper");
+const worldMenu = document.getElementById("worldSelect");
 let paused = true;
 mainMenuAudio.loop = true
 
@@ -126,13 +127,16 @@ paused = false
 
 const buttonPlayGame = document.getElementById("mainMenuButtonPlay");
 buttonPlayGame.addEventListener("click",()=>{
-  document.getElementById("mainMenu").className = "popCloseHide"
-  paused= false
-  mainMenuAudio.pause()
+ worldMenu.className="popAnim"
+ 
 })
 
+const buttonCloseWorlds = document.getElementById("buttonCloseWorlds");
+buttonCloseWorlds.addEventListener("click",()=>{
+  worldMenu.className = "popCloseHide"
+})
 
-
+const buttonsOpenWorldAndPlay = document.getElementsByClassName("")
 
 
 

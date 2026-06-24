@@ -28,14 +28,14 @@
   <body>
     <div id="ui">
       <div id="loadingScreen">
-           <div class="visually-hidden" id="enterGameButtonLoadingScreenWrapper">
-            <button
-              id="enterGameButtonLoadingScreen"
-              class="btn btn-dark mainMenuButton"
-            >
-              Enter
-            </button>
-          </div>
+        <div class="visually-hidden" id="enterGameButtonLoadingScreenWrapper">
+          <button
+            id="enterGameButtonLoadingScreen"
+            class="btn btn-dark mainMenuButton"
+          >
+            Enter
+          </button>
+        </div>
         <div id="loadingScreenWrapper">
           <h1 id="loadingTitle">Loading...</h1>
           <div class="progress" id="loadingProgressWrapper">
@@ -50,14 +50,13 @@
             ></div>
           </div>
           <p id="stupidLoadingText">Welcome to FlatCraft</p>
-       
         </div>
       </div>
       <div id="credits" class="visually-hidden">
         <h1
           style="
             margin: 0.1dvh;
-            margin-bottom: 0px;
+            margin-bottom: 1dvh;
             font-size: 7dvh;
             background-color: rgb(44, 43, 43);
           "
@@ -71,7 +70,7 @@
           x
         </button>
 
-        <ul style="margin-top: 25px">
+        <ul style="position: relative; margin-bottom: 0.5dvh">
           <h2 style="margin: 0px">Owner</h2>
           <li>Blxm</li>
 
@@ -85,21 +84,27 @@
               >https://opengameart.org/content/menu-loop</a
             >
           </li>
-           <li>
-            <a href="https://opengameart.org/content/caketown-cuteplayful" target="_blank"
+          <li>
+            <a
+              href="https://opengameart.org/content/caketown-cuteplayful"
+              target="_blank"
               >https://opengameart.org/content/caketown-cuteplayful</a
-            > By Matthew Pablo
+            >
+            By Matthew Pablo
           </li>
-           <li>
-            <a href="https://opengameart.org/content/snowland-town" target="_blank"
+          <li>
+            <a
+              href="https://opengameart.org/content/snowland-town"
+              target="_blank"
               >https://opengameart.org/content/snowland-town</a
-            > By Matthew Pablo
+            >
+            By Matthew Pablo
           </li>
 
           <h2 style="margin: 0px">Programmers</h2>
           <li>BlxCode</li>
 
-          <h2 style="margin: 0px">Libaries Used</h2>
+          <h2 style="margin: 0px">Libraries Used</h2>
           <li>Bootstrap</li>
           <li>Font Awesome</li>
           <li>seedrandom</li>
@@ -107,8 +112,13 @@
           <h2 style="margin: 0px">Apps Used</h2>
           <li>VSCode</li>
           <li>piskelapp</li>
+
+          <br />
+          <br />
+          <br />
         </ul>
       </div>
+
       <div id="settings" class="visually-hidden">
         <h1
           style="
@@ -131,7 +141,7 @@
         <h1
           style="
             margin: 0.1dvh;
-            margin-bottom: 10px;
+            margin-bottom: 1dvh;
             font-size: 7dvh;
             background-color: rgb(44, 43, 43);
           "
@@ -140,59 +150,56 @@
         </h1>
 
         <div class="container">
-  <div class="row worldSelectRow text-center">
-    <h2 class="worldTitle">My World</h2>
-    <p class="worldDesc">Lorem ipsum ipsum lorem lol lorem ipsum </p>
-   
-    <button style="text-align:center !important; margin-left:auto;  font-size:1.5dvh; margin-right:auto; padding-left:.3dvh !important; padding-right:.3dvh !important;"  class="woldSelectButton btn btn-light w-25 align-middle">Play</button>
+          <button class="btn btn-primary worldCreateButton w-50 align-middle">
+            Create new world
+          </button>
 
-  </div>
-   <div class="row worldSelectRow text-center">
-    <h2 class="worldTitle">My World</h2>
-    <p class="worldDesc">Lorem ipsum ipsum lorem lol lorem ipsum </p>
-   
-    <button style="text-align:center !important; margin-left:auto;  font-size:1.5dvh; margin-right:auto; padding-left:.3dvh !important; padding-right:.3dvh !important;"  class="woldSelectButton btn btn-light w-25 align-middle">Play</button>
+          <span id="worldSelectWrapper">
+            <div class="row worldSelectRow text-center">
+              <h2 class="worldTitle">My World</h2>
+              <p class="worldDesc">Lorem ipsum ipsum lorem lol lorem ipsum</p>
+              <button
+                style="
+                  text-align: center !important;
+                  margin-left: auto;
+                  font-size: 1.5dvh;
+                  margin-right: auto;
+                  padding-left: 0.3dvh !important;
+                  padding-right: 0.3dvh !important;
+                "
+                class="woldSelectButton worldEditButton btn btn-secondary w-25 align-middle"
+              >
+                Edit
+              </button>
+              <button
+                style="
+                  text-align: center !important;
+                  margin-left: auto;
+                  font-size: 1.5dvh;
+                  margin-right: auto;
+                  padding-left: 0.3dvh !important;
+                  padding-right: 0.3dvh !important;
+                "
+                class="woldSelectButton worldPlayButton btn btn-success w-25 align-middle"
+              >
+                Play
+              </button>
 
-  </div>
-   <div class="row worldSelectRow text-center">
-    <h2 class="worldTitle">My World</h2>
-    <p class="worldDesc">Lorem ipsum ipsum lorem lol lorem ipsum </p>
-   
-    <button style="text-align:center !important; margin-left:auto;  font-size:1.5dvh; margin-right:auto; padding-left:.3dvh !important; padding-right:.3dvh !important;"  class="woldSelectButton btn btn-light w-25 align-middle">Play</button>
-
-  </div>
-   <div class="row worldSelectRow text-center">
-    <h2 class="worldTitle">My World</h2>
-    <p class="worldDesc">Lorem ipsum ipsum lorem lol lorem ipsum </p>
-   
-    <button style="text-align:center !important; margin-left:auto;  font-size:1.5dvh; margin-right:auto; padding-left:.3dvh !important; padding-right:.3dvh !important;"  class="woldSelectButton btn btn-light w-25 align-middle">Play</button>
-
-  </div>
-   <div class="row worldSelectRow text-center">
-    <h2 class="worldTitle">My World</h2>
-    <p class="worldDesc">Lorem ipsum ipsum lorem lol lorem ipsum </p>
-   
-    <button style="text-align:center !important; margin-left:auto;  font-size:1.5dvh; margin-right:auto; padding-left:.3dvh !important; padding-right:.3dvh !important;"  class="woldSelectButton btn btn-light w-25 align-middle">Play</button>
-
-  </div>
-   <div class="row worldSelectRow text-center">
-    <h2 class="worldTitle">My World</h2>
-    <p class="worldDesc">Lorem ipsum ipsum lorem lol lorem ipsum </p>
-   
-    <button style="text-align:center !important; margin-left:auto;  font-size:1.5dvh; margin-right:auto; padding-left:.3dvh !important; padding-right:.3dvh !important;"  class="woldSelectButton btn btn-light w-25 align-middle">Play</button>
-
-  </div>
-   <div class="row worldSelectRow text-center">
-    <h2 class="worldTitle">My World</h2>
-    <p class="worldDesc">Lorem ipsum ipsum lorem lol lorem ipsum </p>
-   
-    <button style="text-align:center !important; margin-left:auto;  font-size:1.5dvh; margin-right:auto; padding-left:.3dvh !important; padding-right:.3dvh !important;"  class="woldSelectButton btn btn-light w-25 align-middle">Play</button>
-
-  </div>
-
-
-
-
+              <button
+                style="
+                  text-align: center !important;
+                  margin-left: auto;
+                  font-size: 1.5dvh;
+                  margin-right: auto;
+                  padding-left: 0.3dvh !important;
+                  padding-right: 0.3dvh !important;
+                "
+                class="woldSelectButton worldDelButton btn btn-danger w-25 align-middle"
+              >
+                Delete
+              </button>
+            </div>
+          </span>
         </div>
 
         <button
@@ -202,6 +209,102 @@
           x
         </button>
       </div>
+
+      <div id="worldCreate" class="visually-hidden">
+        <h1
+          style="
+            margin: 0.1dvh;
+            margin-bottom: 0px;
+            font-size: 6dvh;
+            background-color: rgb(44, 43, 43);
+          "
+        >
+          Create World
+        </h1>
+        <button
+          class="btn btn-danger rounded-0 closeButton"
+          id="buttonCloseCreateWorldMenu"
+        >
+          x
+        </button>
+        <br /><br />
+        <div class="container text-center">
+          <!-- World Name and Desc -->
+           <h6 class="bg-danger">INFO: EVERYTHING NEEDS TO BE FILLED</h6>
+           <h2>World Info</h2>
+          <div class="row">
+            <div class="form-floating w-25 m-auto p-1">
+              <input
+                type="text"
+                class="form-control rounded-0 bg-dark-subtle text-black"
+                id="createWorld-WorldName"
+                placeholder="My World"
+              />
+              <label class="text-black" for="createWorld-WorldName"
+                >World Name</label
+              >
+            </div>
+            <div class="form-floating w-75 m-auto p-1">
+              <input
+                type="text"
+                class="form-control rounded-0 bg-dark-subtle text-black"
+                id="createWorld-WorldDesc"
+                placeholder="Lorem Ipsum"
+              />
+              <label class="text-black" for="createWorld-WorldName"
+                >World Description</label
+              >
+            </div>
+          </div>
+<hr>
+<h2>World Generation</h2>
+          <!-- World Generation  -->
+          <div class="row align-items-center">
+            <div style="text-align:left;" class="w-25">
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="radioWorldType"
+                  id="worldSelect-WorldSandbox"
+                  checked
+                />
+                <label class="form-check-label" for="worldSelect-WorldSandbox">
+                  Sandbox
+                </label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="radioWorldType"
+                  id="worldSelect-WorldFlat"
+                  
+                />
+                <label class="form-check-label" for="worldSelect-WorldFlat">
+                  Flat
+                </label>
+              </div>
+            </div>
+            <div class="form-floating w-75 m-auto p-1">
+              <input
+                type="text"
+                class="form-control rounded-0 bg-dark-subtle text-black"
+                id="createWorld-WorldSeed"
+                placeholder="49683203"
+              />
+              <label class="text-black" for="createWorld-WorldName"
+                >World Seed</label
+              >
+            </div>
+          </div>
+
+
+              <button class="btn btn-primary w-75">Create</button>
+          </div>
+        </div>
+     
+
       <div id="mainMenu">
         <div id="mainMenuWrapper" class="popAnim">
           <h1 style="margin: 10px; font-size: 8.5dvh">FlatCraft</h1>
@@ -265,6 +368,7 @@
         id="fpsCounter"
       ></span>
     </div>
+  </div>
     <canvas
       width="1920"
       height="1080"

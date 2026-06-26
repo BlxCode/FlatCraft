@@ -238,7 +238,7 @@
             <div class="form-floating w-25 m-auto p-1">
               <input
                 type="text"
-                class="form-control rounded-0 bg-dark-subtle text-black"
+                class="form-control rounded-0 bg-dark-subtle text-black worldCreateForm"
                 id="createWorld-WorldName"
                 placeholder="My World"
               />
@@ -249,7 +249,7 @@
             <div class="form-floating w-75 m-auto p-1">
               <input
                 type="text"
-                class="form-control rounded-0 bg-dark-subtle text-black"
+                class="form-control rounded-0 bg-dark-subtle text-black worldCreateForm"
                 id="createWorld-WorldDesc"
                 placeholder="Lorem Ipsum"
               />
@@ -291,7 +291,7 @@
             <div class="form-floating w-75 m-auto p-1">
               <input
                 type="text"
-                class="form-control rounded-0 bg-dark-subtle text-black"
+                class="form-control rounded-0 bg-dark-subtle text-black worldCreateForm"
                 id="createWorld-WorldSeed"
                 placeholder="49683203"
               />
@@ -302,7 +302,7 @@
           </div>
 
 
-              <button class="btn btn-primary w-75">Create</button>
+              <button id="submitCreateWorldForm" class="btn btn-primary w-75">Create</button>
           </div>
         </div>
      
@@ -328,6 +328,7 @@
         </div>
       </div>
       <div id="backdrop" hidden></div>
+      <div id="errorBackdrop"hidden></div>
       <i
         id="settingButton"
         style="

@@ -244,22 +244,26 @@ label{
   transform: translate(-50%, -50%);
   background-color: var(--primary-bg-color);
   width: fit-content;
+  min-width:50%;
+  min-height:30dvh;
   height: fit-content;
   text-align: center;
 
   color: white;
-  padding: 10px;
+  
   z-index: 203;
 }
 #popupTitle {
   font-weight: bold;
   margin-top: 1px;
-  font-size: 5dvh;
+  font-size: 6dvh !important;
+  
+  background-color: #2F2F2F;
 }
 #popupContent {
   margin-top: 1px;
   font-weight: 500;
-  font-size: 3dvh;
+  font-size: 2.5dvh;
 }
 #backdrop {
   position: absolute;
@@ -269,6 +273,15 @@ label{
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 91;
+}
+#errorBackdrop{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 202;
 }
 
 #popupClose {

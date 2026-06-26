@@ -3,10 +3,13 @@ const loadingScreen = document.getElementById("loadingScreen");
 const loadingTitle = document.getElementById("loadingTitle");
 const loadingProgressBar = document.getElementById("loadingProgress");
 const mainMenuAudio = new Audio("./assets/music/menu.wav");
+const errorDiv = document.getElementById("popup");
+
 const enterGameButtonLoadingScreenWrapper = document.getElementById(
   "enterGameButtonLoadingScreenWrapper",
 );
-let currentPopup = null;
+var currentPopup = null;
+const errorBackdrop = document.getElementById("errorBackdrop")
 const worldMenu = document.getElementById("worldSelect");
 const worldCreateMenu = document.getElementById("worldCreate");
 let paused = true;
@@ -14,6 +17,21 @@ mainMenuAudio.loop = true;
 
 var dotsInLoadingTitle = 3;
 var dotsDirectionMore = true;
+// Display an on-screen error message for a duration based on its length.
+function displayError(msg) {
+  errorBackdrop.hidden = false;
+ currentPopup = errorDiv
+  document.getElementById("popupContent").innerText = msg;
+
+  setTimeout(
+    () => {
+     errorDiv.className = "popCloseHide"
+      errorBackdrop.hidden = true;
+    },
+    document.getElementById("popupContent").innerText.length * 0.07 * 1000,
+  );
+  errorDiv.className = "popAnim";
+}
 setInterval(() => {
   if (dotsInLoadingTitle == 3 && !dotsDirectionMore) {
     loadingTitle.innerText = "Loading..";
@@ -140,7 +158,7 @@ const buttonsEditWorld = document.getElementsByClassName("worldEditButton");
 const buttonsDeleteWorld = document.getElementsByClassName("worldDelButton");
 const createNewWorld = document.getElementsByClassName("worldCreateButton")[0];
 const buttonCloseCreateWorldMenu = document.getElementById("buttonCloseCreateWorldMenu");
-
+const submitNewWorldForm = document.getElementById("submitCreateWorldForm");
 buttonCloseCreateWorldMenu.addEventListener("click", () => {
   worldCreateMenu.className = "popCloseHide";
   worldMenu.className = "popAnim text-center";
@@ -151,6 +169,36 @@ createNewWorld.addEventListener("click", () => {
   worldMenu.className = "popCloseHide text-center";
   worldCreateMenu.className = "popAnim";
   currentPopup = worldCreateMenu;
+});
+
+submitNewWorldForm.addEventListener("click", () => {
+
+
+  const allInputs = document.getElementsByClassName("worldCreateForm");
+  const worldNameInput = document.getElementById("createWorld-WorldName");
+  const worldDescInput = document.getElementById("createWorld-WorldDesc");
+  const worldSeedInput = document.getElementById("createWorld-WorldSeed");
+  const worldTypeInput = document.getElementsByName("radioWorldType")
+  const worldCreateSubmitButton = document.getElementById("submitCreateWorldForm");
+let isFilled = {
+  worldNameInput: worldNameInput.value.trim() !== "",
+  worldDescInput: worldDescInput.value.trim() !== "",
+  worldSeedInput: worldSeedInput.value.trim() !== ""
+};
+const allFilled =
+  worldNameInput.value &&
+  worldDescInput.value &&
+  worldSeedInput.value;
+
+  if (!allFilled) {
+displayError("Fill Everything!")
+  }else if (allFilled){
+
+
+
+  }
+
+
 });
 
 backdropUI.addEventListener("click",()=>{
@@ -169,29 +217,14 @@ function resize() {
 
 // Popup UI elements for showing temporary error/messages.
 
-const errorDiv = document.getElementById("popup");
 
 // Close button hides the popup and its backdrop.
 document.getElementById("popupClose").addEventListener("click", () => {
   errorDiv.className = "popCloseHide";
-  backdropUI.hidden = true;
+  errorBackdrop.hidden = true;
 });
 
-// Display an on-screen error message for a duration based on its length.
-function displayError(msg) {
-  backdropUI.hidden = false;
 
-  document.getElementById("popupContent").innerText = msg;
-
-  setTimeout(
-    () => {
-      errorDiv.hidden = true;
-      backdropUI.hidden = true;
-    },
-    document.getElementById("popupContent").innerText.length * 0.07 * 1000,
-  );
-  errorDiv.className = "popAnim";
-}
 
 // Camera position in world coordinates.
 let cameraX = 0;

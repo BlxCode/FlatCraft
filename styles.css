@@ -280,12 +280,13 @@ label{
 }
 
 .closeButton {
-  
+    aspect-ratio: 1/1 !important;
   position: fixed;
   top: 10px;
   right: 10px;
+  
  
-  aspect-ratio: 1/1 !important;
+
   
 }
 @keyframes loadingScreenChangeColor {

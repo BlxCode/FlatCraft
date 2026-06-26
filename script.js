@@ -6,6 +6,7 @@ const mainMenuAudio = new Audio("./assets/music/menu.wav");
 const enterGameButtonLoadingScreenWrapper = document.getElementById(
   "enterGameButtonLoadingScreenWrapper",
 );
+let currentPopup = null;
 const worldMenu = document.getElementById("worldSelect");
 const worldCreateMenu = document.getElementById("worldCreate");
 let paused = true;
@@ -82,6 +83,7 @@ startGame();
 enterGameButtonLoadingScreenWrapper.addEventListener("click", () => {
   mainMenuAudio.play();
   loadingScreen.className = "popCloseHide";
+  
 });
 
 const backdropUI = document.getElementById("backdrop");
@@ -91,6 +93,7 @@ buttonOpenCredits.addEventListener("click", () => {
   document.getElementById("credits").className = "popAnim";
   paused = true;
   backdropUI.hidden = false;
+  currentPopup = document.getElementById("credits");
 });
 
 const buttonCloseCredits = document.getElementById("buttonCloseCredits");
@@ -98,6 +101,7 @@ buttonCloseCredits.addEventListener("click", () => {
   document.getElementById("credits").className = "popCloseHide";
   paused = false;
   backdropUI.hidden = true;
+  currentPopup = null;
 });
 
 const buttonOpenSettings = document.getElementById("mainMenuButtonSettings");
@@ -105,6 +109,7 @@ buttonOpenSettings.addEventListener("click", () => {
   document.getElementById("settings").className = "popAnim";
   paused = true;
   backdropUI.hidden = false;
+  currentPopup = document.getElementById("settings");
 });
 
 const buttonCloseSettings = document.getElementById("buttonCloseSettings");
@@ -113,18 +118,21 @@ buttonCloseSettings.addEventListener("click", () => {
 
   paused = false;
   backdropUI.hidden = true;
+  currentPopup = null;
 });
 
 const buttonPlayGame = document.getElementById("mainMenuButtonPlay");
 buttonPlayGame.addEventListener("click", () => {
   worldMenu.className = "popAnim";
   backdropUI.hidden = false;
+  currentPopup = worldMenu;
 });
 
 const buttonCloseWorlds = document.getElementById("buttonCloseWorlds");
 buttonCloseWorlds.addEventListener("click", () => {
   worldMenu.className = "popCloseHide";
   backdropUI.hidden = true;
+  currentPopup = null;
 });
 
 const buttonsOpenWorldAndPlay = document.getElementsByClassName("worldPlayButton");
@@ -136,12 +144,21 @@ const buttonCloseCreateWorldMenu = document.getElementById("buttonCloseCreateWor
 buttonCloseCreateWorldMenu.addEventListener("click", () => {
   worldCreateMenu.className = "popCloseHide";
   worldMenu.className = "popAnim text-center";
+  currentPopup = worldMenu;
 });
 
 createNewWorld.addEventListener("click", () => {
   worldMenu.className = "popCloseHide text-center";
   worldCreateMenu.className = "popAnim";
+  currentPopup = worldCreateMenu;
 });
+
+backdropUI.addEventListener("click",()=>{
+  currentPopup.className = "popCloseHide";
+  currentPopup = null
+  backdropUI.hidden = true;
+})
+
 
 // Resize the game canvas to match the browser window size.
 function resize() {

@@ -241,6 +241,7 @@
                 class="form-control rounded-0 bg-dark-subtle text-black worldCreateForm"
                 id="createWorld-WorldName"
                 placeholder="My World"
+                value="My World"
               />
               <label class="text-black" for="createWorld-WorldName"
                 >World Name</label
@@ -252,6 +253,7 @@
                 class="form-control rounded-0 bg-dark-subtle text-black worldCreateForm"
                 id="createWorld-WorldDesc"
                 placeholder="Lorem Ipsum"
+                value="A new world!"
               />
               <label class="text-black" for="createWorld-WorldName"
                 >World Description</label
@@ -288,6 +290,7 @@
                 </label>
               </div>
             </div>
+            
             <div class="form-floating w-75 m-auto p-1">
               <input
                 type="text"
@@ -295,10 +298,14 @@
                 id="createWorld-WorldSeed"
                 placeholder="49683203"
               />
+              <script>
+                document.getElementById("createWorld-WorldSeed").value = Math.round(Math.random()*1000000)+100000
+              </script>
               <label class="text-black" for="createWorld-WorldName"
                 >World Seed</label
               >
             </div>
+         
           </div>
 
 

@@ -9,7 +9,7 @@ const enterGameButtonLoadingScreenWrapper = document.getElementById(
   "enterGameButtonLoadingScreenWrapper",
 );
 var currentPopup = null;
-const errorBackdrop = document.getElementById("errorBackdrop")
+const errorBackdrop = document.getElementById("errorBackdrop");
 const worldMenu = document.getElementById("worldSelect");
 const worldCreateMenu = document.getElementById("worldCreate");
 let paused = true;
@@ -20,12 +20,12 @@ var dotsDirectionMore = true;
 // Display an on-screen error message for a duration based on its length.
 function displayError(msg) {
   errorBackdrop.hidden = false;
- currentPopup = errorDiv
+  currentPopup = errorDiv;
   document.getElementById("popupContent").innerText = msg;
 
   setTimeout(
     () => {
-     errorDiv.className = "popCloseHide"
+      errorDiv.className = "popCloseHide";
       errorBackdrop.hidden = true;
     },
     document.getElementById("popupContent").innerText.length * 0.07 * 1000,
@@ -87,7 +87,7 @@ async function startGame() {
   loadingProgressBar.ariaValueNow = 100;
   loadingProgressBar.style.width = "100%";
 
-  await new Promise(r => setTimeout(r, 3400));
+  await new Promise((r) => setTimeout(r, 3400));
 
   document.getElementById("loadingScreenWrapper").className = "popCloseHide";
   enterGameButtonLoadingScreenWrapper.className = "popAnim";
@@ -96,12 +96,10 @@ async function startGame() {
 
 startGame();
 
-
 // MAIN MENU
 enterGameButtonLoadingScreenWrapper.addEventListener("click", () => {
   mainMenuAudio.play();
   loadingScreen.className = "popCloseHide";
-  
 });
 
 const backdropUI = document.getElementById("backdrop");
@@ -153,11 +151,14 @@ buttonCloseWorlds.addEventListener("click", () => {
   currentPopup = null;
 });
 
-const buttonsOpenWorldAndPlay = document.getElementsByClassName("worldPlayButton");
+const buttonsOpenWorldAndPlay =
+  document.getElementsByClassName("worldPlayButton");
 const buttonsEditWorld = document.getElementsByClassName("worldEditButton");
 const buttonsDeleteWorld = document.getElementsByClassName("worldDelButton");
 const createNewWorld = document.getElementsByClassName("worldCreateButton")[0];
-const buttonCloseCreateWorldMenu = document.getElementById("buttonCloseCreateWorldMenu");
+const buttonCloseCreateWorldMenu = document.getElementById(
+  "buttonCloseCreateWorldMenu",
+);
 const submitNewWorldForm = document.getElementById("submitCreateWorldForm");
 buttonCloseCreateWorldMenu.addEventListener("click", () => {
   worldCreateMenu.className = "popCloseHide";
@@ -170,43 +171,41 @@ createNewWorld.addEventListener("click", () => {
   worldCreateMenu.className = "popAnim";
   currentPopup = worldCreateMenu;
 });
-
+var createWorldInfo = {};
 submitNewWorldForm.addEventListener("click", () => {
-
-
   const allInputs = document.getElementsByClassName("worldCreateForm");
   const worldNameInput = document.getElementById("createWorld-WorldName");
   const worldDescInput = document.getElementById("createWorld-WorldDesc");
   const worldSeedInput = document.getElementById("createWorld-WorldSeed");
-  const worldTypeInput = document.getElementsByName("radioWorldType")
-  const worldCreateSubmitButton = document.getElementById("submitCreateWorldForm");
-let isFilled = {
-  worldNameInput: worldNameInput.value.trim() !== "",
-  worldDescInput: worldDescInput.value.trim() !== "",
-  worldSeedInput: worldSeedInput.value.trim() !== ""
-};
-const allFilled =
-  worldNameInput.value &&
-  worldDescInput.value &&
-  worldSeedInput.value;
+  const worldTypeInput = document.getElementsByName("radioWorldType");
+  const worldCreateSubmitButton = document.getElementById(
+    "submitCreateWorldForm",
+  );
+  let isFilled = {
+    worldNameInput: worldNameInput.value.trim() !== "",
+    worldDescInput: worldDescInput.value.trim() !== "",
+    worldSeedInput: worldSeedInput.value.trim() !== "",
+  };
+  const allFilled =
+    worldNameInput.value && worldDescInput.value && worldSeedInput.value;
 
   if (!allFilled) {
-displayError("Fill Everything!")
-  }else if (allFilled){
-
-
-
+    displayError("Fill Everything!");
+  } else if (allFilled) {
+    createWorldInfo = {
+      worldName: worldNameInput.value,
+      worldDesc: worldDescInput.value,
+      worldSeed: worldSeedInput.value,
+      worldType: worldTypeInput.value,
+    };
   }
-
-
 });
 
-backdropUI.addEventListener("click",()=>{
+backdropUI.addEventListener("click", () => {
   currentPopup.className = "popCloseHide";
-  currentPopup = null
+  currentPopup = null;
   backdropUI.hidden = true;
-})
-
+});
 
 // Resize the game canvas to match the browser window size.
 function resize() {
@@ -217,14 +216,11 @@ function resize() {
 
 // Popup UI elements for showing temporary error/messages.
 
-
 // Close button hides the popup and its backdrop.
 document.getElementById("popupClose").addEventListener("click", () => {
   errorDiv.className = "popCloseHide";
   errorBackdrop.hidden = true;
 });
-
-
 
 // Camera position in world coordinates.
 let cameraX = 0;
@@ -322,7 +318,7 @@ var blockMetaData = {
     liquid: false,
   },
 };
-
+const biomes = ["plains", "mapleForest", "desert"];
 // Draw a block sprite at the given world grid position.
 function drawBlock(type, x, y) {
   if (type === "grass") {
@@ -404,6 +400,7 @@ function draw() {
   drawBlock("stone", 4, 11);
   createTree("maple", 5, 8, "Long");
   createTree("maple", 11, 7, "Short");
+  procedurallyGenerateWorld("uh98909ij");
 }
 
 // Generate the world using a seeded random generator.
@@ -422,8 +419,9 @@ function procedurallyGenerateWorld(seed) {
 
   // Create chunks and populate the world here in the future.
   const rng = new alea(seed);
+  const noise2D = createNoise2D(rng);
 }
-
+paused = false;
 // Initialize textures and start the draw loop.
 async function init() {
   textures.grass = await loadTexture("grass");
@@ -434,7 +432,6 @@ async function init() {
   textures.sugiliteBlock = await loadTexture("sugiliteBlock");
 
   draw();
-  procedurallyGenerateWorld("uh98909ij");
 }
 
 init().then(() => {

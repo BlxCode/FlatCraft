@@ -96,6 +96,14 @@ async function startGame() {
 
 startGame();
 
+function gameInit() {
+const texture = new TextureInfo(new Image(), vec2(16));
+texture.image.src = "./assets/textures/1_TextureSheet.png";
+}
+function gameUpdate() {}
+function gameUpdatePost() {}
+function gameRender() {}
+
 // MAIN MENU
 enterGameButtonLoadingScreenWrapper.addEventListener("click", () => {
   mainMenuAudio.play();
@@ -222,37 +230,47 @@ document.getElementById("popupClose").addEventListener("click", () => {
   errorBackdrop.hidden = true;
 });
 
-// Camera position in world coordinates.
-let cameraX = 0;
-let cameraY = 0;
 
-// Tracks the current pressed keys for camera movement and controls.
-var keysPressed = {};
 
-function getCanvasX(x) {
-  return x * 75 - Math.floor(cameraX * 75);
+function switchSlots(slot) {
+  let slotElement = document.getElementById("slot" + slot);
+  for (let i = 1; i < 9; i++) {
+    document.getElementById("slot" + i).className = "slot";
+  }
+  slotElement.className += "slotHover";
 }
 
-function getCanvasY(y) {
-  return y * 75 - Math.floor(cameraY * 75);
-}
-resize();
-window.addEventListener("resize", resize);
+document.addEventListener("keydown", (event) => {
+  // Mark key as pressed for continuous movement.
+  keysPressed[event.key] = true;
+});
 
-let ctx = document.getElementById("gameCanvas").getContext("2d");
-ctx.imageSmoothingEnabled = false;
+document.addEventListener("keyup", (event) => {
+  // Remove the key press state when released.
+  delete keysPressed[event.key];
 
-// Loaded texture images indexed by block name.
-const textures = {};
+  if (event.key == "1") {
+  }
+});
 
-// Load a texture image from the assets folder.
-function loadTexture(name) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.src = `./assets/textures/${name}.png`;
-  });
-}
+
+
+
+/*
+   ___                  ___             _         _           
+  / __|__ _ _ __  ___  | _ \___ _ _  __| |___ _ _(_)_ _  __ _ 
+ | (_ / _` | '  \/ -_) |   / -_) ' \/ _` / -_) '_| | ' \/ _` |
+  \___\__,_|_|_|_\___| |_|_\___|_||_\__,_\___|_| |_|_||_\__, |
+                                                        |___/ 
+
+*/
+
+
+
+
+
+
+
 
 // Store current world block placement by grid coordinate string.
 var blocks = {};
@@ -319,89 +337,7 @@ var blockMetaData = {
   },
 };
 const biomes = ["plains", "mapleForest", "desert"];
-// Draw a block sprite at the given world grid position.
-function drawBlock(type, x, y) {
-  if (type === "grass") {
-    ctx.drawImage(textures.grass, getCanvasX(x), getCanvasY(y), 75, 75);
-  } else if (type === "dirt") {
-    ctx.drawImage(textures.dirt, getCanvasX(x), getCanvasY(y), 75, 75);
-  } else if (type === "stone") {
-    ctx.drawImage(textures.stone, getCanvasX(x), getCanvasY(y), 75, 75);
-  } else if (type === "mapleLog") {
-    ctx.drawImage(textures.mapleLog, getCanvasX(x), getCanvasY(y), 75, 75);
-  } else if (type === "mapleLeaf") {
-    ctx.drawImage(textures.mapleLeaf, getCanvasX(x), getCanvasY(y), 75, 75);
-  } else if (type === "sugiliteBlock") {
-    ctx.drawImage(textures.sugiliteBlock, getCanvasX(x), getCanvasY(y), 75, 75);
-  }
 
-  // Record the block in the world data using a coordinate key.
-  blocks[`${x},${y}`] = type;
-}
-
-// Create a simple maple tree from log and leaf blocks.
-function createTree(type, x, y, length) {
-  if (type === "maple" && length == "Long") {
-    drawBlock("mapleLog", x, y);
-    drawBlock("mapleLog", x, y - 1);
-    drawBlock("mapleLog", x, y - 2);
-    drawBlock("mapleLog", x, y - 3);
-    drawBlock("mapleLog", x, y - 4);
-    drawBlock("mapleLeaf", x - 1, y - 4);
-    drawBlock("mapleLeaf", x, y - 4);
-    drawBlock("mapleLeaf", x + 1, y - 4);
-    drawBlock("mapleLeaf", x - 1, y - 5);
-    drawBlock("mapleLeaf", x, y - 5);
-    drawBlock("mapleLeaf", x + 1, y - 5);
-    drawBlock("mapleLeaf", x - 1, y - 3);
-    drawBlock("mapleLeaf", x + 1, y - 3);
-    drawBlock("mapleLeaf", x - 2, y - 4);
-    drawBlock("mapleLeaf", x + 2, y - 4);
-    drawBlock("mapleLeaf", x - 2, y - 3);
-  } else if (type === "maple" && length == "Short") {
-    drawBlock("mapleLog", x, y);
-    drawBlock("mapleLog", x, y - 1);
-    drawBlock("mapleLog", x, y - 2);
-    drawBlock("mapleLeaf", x - 1, y - 2);
-    drawBlock("mapleLeaf", x, y - 3);
-    drawBlock("mapleLeaf", x, y - 4);
-    drawBlock("mapleLeaf", x + 1, y - 4);
-    drawBlock("mapleLeaf", x - 1, y - 4);
-    drawBlock("mapleLeaf", x + 1, y - 3);
-    drawBlock("mapleLeaf", x + 2, y - 3);
-    drawBlock("mapleLeaf", x - 1, y - 3);
-    drawBlock("mapleLeaf", x - 2, y - 3);
-    drawBlock("mapleLeaf", x + 1, y - 2);
-    drawBlock("mapleLeaf", x + 2, y - 2);
-  }
-}
-function draw() {
-  // Update camera position from WASD input.
-
-  if (keysPressed["w"] && !paused) cameraY -= 0.1;
-  if (keysPressed["a"] && !paused) cameraX -= 0.1;
-  if (keysPressed["s"] && !paused) cameraY += 0.1;
-  if (keysPressed["d"] && !paused) cameraX += 0.1;
-
-  ctx.imageSmoothingEnabled = false;
-  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
-  // Draw the current world blocks and objects.
-  drawBlock("grass", 5, 9);
-  drawBlock("grass", 8, 8);
-  drawBlock("grass", 6, 9);
-  drawBlock("grass", 7, 8);
-  drawBlock("dirt", 7, 9);
-  drawBlock("dirt", 6, 10);
-  drawBlock("dirt", 5, 10);
-  drawBlock("dirt", -2, 10);
-  drawBlock("dirt", 4, 10);
-  drawBlock("sugiliteBlock", 3, 10);
-  drawBlock("stone", 4, 11);
-  createTree("maple", 5, 8, "Long");
-  createTree("maple", 11, 7, "Short");
-  procedurallyGenerateWorld("uh98909ij");
-}
 
 // Generate the world using a seeded random generator.
 function procedurallyGenerateWorld(seed) {
@@ -423,39 +359,4 @@ function procedurallyGenerateWorld(seed) {
 }
 paused = false;
 // Initialize textures and start the draw loop.
-async function init() {
-  textures.grass = await loadTexture("grass");
-  textures.dirt = await loadTexture("dirt");
-  textures.stone = await loadTexture("stone");
-  textures.mapleLog = await loadTexture("mapleLog");
-  textures.mapleLeaf = await loadTexture("mapleLeaf");
-  textures.sugiliteBlock = await loadTexture("sugiliteBlock");
 
-  draw();
-}
-
-init().then(() => {
-  // Run the draw function at 60 frames per second.
-  setInterval(draw, 1000 / 60);
-});
-
-function switchSlots(slot) {
-  let slotElement = document.getElementById("slot" + slot);
-  for (let i = 1; i < 9; i++) {
-    document.getElementById("slot" + i).className = "slot";
-  }
-  slotElement.className += "slotHover";
-}
-
-document.addEventListener("keydown", (event) => {
-  // Mark key as pressed for continuous movement.
-  keysPressed[event.key] = true;
-});
-
-document.addEventListener("keyup", (event) => {
-  // Remove the key press state when released.
-  delete keysPressed[event.key];
-
-  if (event.key == "1") {
-  }
-});

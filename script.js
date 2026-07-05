@@ -337,7 +337,7 @@ console.log(texture["grass"]);
   console.log("Game engine initialized.");
 }
 
-function gameUpdate() {}
+function gameUpdate() {} 
 function gameUpdatePost() {}
 function gameRender() {
    drawBlock(5, 6, "dirt");

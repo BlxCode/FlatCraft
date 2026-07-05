@@ -1,5 +1,4 @@
-'use strict';
-
+"use strict";
 import { createNoise2D } from "https://cdn.jsdelivr.net/npm/simplex-noise/+esm";
 const loadingScreen = document.getElementById("loadingScreen");
 const loadingTitle = document.getElementById("loadingTitle");
@@ -89,8 +88,6 @@ var progressBar = setInterval(() => {
 
 //initialized game
 async function startInit() {
- 
-
   clearInterval(progressBar);
 
   loadingProgressBar.ariaValueNow = 100;
@@ -104,7 +101,6 @@ async function startInit() {
 }
 
 startInit();
-
 
 // MAIN MENU
 enterGameButtonLoadingScreenWrapper.addEventListener("click", () => {
@@ -214,8 +210,8 @@ submitNewWorldForm.addEventListener("click", () => {
       detail: createWorldInfo,
     });
 
-   window.dispatchEvent(eventCreateWorld);
-   console.log("Dispatched createWorld event with data:", createWorldInfo); 
+    window.dispatchEvent(eventCreateWorld);
+    console.log("Dispatched createWorld event with data:", createWorldInfo);
   }
 });
 
@@ -224,14 +220,9 @@ backdropUI.addEventListener("click", () => {
   currentPopup = null;
   backdropUI.hidden = true;
 });
-mainCanvas = document.getElementById("gameCanvas");
+
 // Resize the game canvas to match the browser window size.
-function resize() {
-  let canvas = document.getElementById("gameCanvas");
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  mainCanvasSize = vec2(canvas.width, canvas.height);
-}
+
 
 // Popup UI elements for showing temporary error/messages.
 
@@ -240,7 +231,6 @@ document.getElementById("popupClose").addEventListener("click", () => {
   errorDiv.className = "popCloseHide";
   errorBackdrop.hidden = true;
 });
-
 
 var keysPressed = {};
 function switchSlots(slot) {
@@ -264,9 +254,6 @@ document.addEventListener("keyup", (event) => {
   }
 });
 
-
-
-
 /*
    ___                  ___             _         _           
   / __|__ _ _ __  ___  | _ \___ _ _  __| |___ _ _(_)_ _  __ _ 
@@ -275,47 +262,103 @@ document.addEventListener("keyup", (event) => {
                                                         |___/ 
 
 */
-let texture;
-function gameInit() {
-  console.log("Game engine initializing...");
+let texture = {};
+function loadImage(name) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
 
+    img.onload = () => {
+      texture[name] = img;
+      resolve(img);
+    };
+
+    img.onerror = reject;
+
+    img.src = "./assets/textures/" + name + ".png";
+  });
+}
+async function loadAllImages() {
+  const textureNames = [
+    "acaciaLog",
+    "cedarLog",
+    "coalBlock",
+    "coalOre",
+    "copperBlock",
+    "copperOre",
+    "diamondBlock",
+    "diamondOre",
+    "dirt",
+    "emeraldBlock",
+    "emeraldOre",
+    "goldBlock",
+    "goldOre",
+    "grass",
+    "ironBlock",
+    "ironOre",
+    "jungleLog",
+    "mapleLeaf",
+    "mapleLog",
+    "poplarLog",
+    "stone",
+    "sugiliteBlock",
+    "sugiliteOre",
+  ];
+
+  for (const name of textureNames) {
+    await loadImage(name);
+  }
+  console.log(
+    "Loaded all textures! Proof: " +
+      texture["grass"] +
+      "(it should return objectObject or something like that)",
+  );
+}
+
+async function gameInit() {
    
- const image = new Image();
-  image.src = "assets/textures/1_TextureSheet.png";
-  texture = new TextureInfo(image);
-
+  console.log("Game engine initializing...");
+  
+    console.log(mainCanvas);
+ await loadAllImages();
+console.log(texture["grass"]);
   window.addEventListener("createWorld", (event) => {
     console.log("Event received:", event.detail);
     const data = event.detail;
- 
-  backdropUI.click();
-  mainMenuAudio.pause();
-  document.getElementById("mainMenu").className = "popCloseHide";
-console.log(drawBlock(0, 0, "grass"));
-console.log(blocks)
-paused = false;
+
+    backdropUI.click();
+    mainMenuAudio.pause();
+    document.getElementById("mainMenu").className = "popCloseHide";
+   
+   
+    console.log(blocks);
+    paused = false;
   });
 
   console.log("Game engine initialized.");
 }
 
-function drawBlock(x, y, blockType) {
-  console.log(tileIndex(blockType));
-  blocks[`${x},${y}`] = blockType;
-  return drawTile(vec2(x, y),vec2(1), tileIndex(blockType));
-}
-
-
-function gameUpdate() {
-
-}
+function gameUpdate() {}
 function gameUpdatePost() {}
 function gameRender() {
- 
-} 
+   drawBlock(5, 6, "dirt");
+}
 
-
-
+function drawBlock(x, y, blockType) {
+  blocks[`${x},${y}`] = blockType;
+  return drawImageColor(
+    mainCanvas.getContext("2d"),
+    texture[blockType],
+    0,
+    0,
+    8,
+    8,
+    x,
+    y,
+    50,
+    50,
+    new Color(1, 1, 1, 1),
+  );
+}
 
 // Store current world block placement by grid coordinate string.
 var blocks = {};
@@ -404,4 +447,10 @@ function procedurallyGenerateWorld(seed) {
 
 // Initialize textures and start the draw loop.
 
-engineInit(gameInit, gameUpdate, gameUpdatePost, gameRender);
+engineInit(
+  gameInit,
+  gameUpdate,
+  gameUpdatePost,
+  gameRender,
+ 
+);

@@ -1,3 +1,5 @@
+'use strict';
+
 import { createNoise2D } from "https://cdn.jsdelivr.net/npm/simplex-noise/+esm";
 const loadingScreen = document.getElementById("loadingScreen");
 const loadingTitle = document.getElementById("loadingTitle");
@@ -14,9 +16,16 @@ const worldMenu = document.getElementById("worldSelect");
 const worldCreateMenu = document.getElementById("worldCreate");
 let paused = true;
 mainMenuAudio.loop = true;
-
+const events = {};
 var dotsInLoadingTitle = 3;
 var dotsDirectionMore = true;
+
+/*
+  _   _               ___     _            __             
+ | | | |___ ___ _ _  |_ _|_ _| |_ ___ _ _ / _|__ _ __ ___ 
+ | |_| (_-</ -_) '_|  | || ' \  _/ -_) '_|  _/ _` / _/ -_)
+  \___//__/\___|_|   |___|_||_\__\___|_| |_| \__,_\__\___|
+                                                           */
 // Display an on-screen error message for a duration based on its length.
 function displayError(msg) {
   errorBackdrop.hidden = false;
@@ -79,8 +88,8 @@ var progressBar = setInterval(() => {
 }, 1000);
 
 //initialized game
-async function startGame() {
-  await window.CrazyGames.SDK.init();
+async function startInit() {
+ 
 
   clearInterval(progressBar);
 
@@ -94,15 +103,8 @@ async function startGame() {
   loadingScreen.className = "loadingScreenChangeColor";
 }
 
-startGame();
+startInit();
 
-function gameInit() {
-const texture = new TextureInfo(new Image(), vec2(16));
-texture.image.src = "./assets/textures/1_TextureSheet.png";
-}
-function gameUpdate() {}
-function gameUpdatePost() {}
-function gameRender() {}
 
 // MAIN MENU
 enterGameButtonLoadingScreenWrapper.addEventListener("click", () => {
@@ -185,7 +187,9 @@ submitNewWorldForm.addEventListener("click", () => {
   const worldNameInput = document.getElementById("createWorld-WorldName");
   const worldDescInput = document.getElementById("createWorld-WorldDesc");
   const worldSeedInput = document.getElementById("createWorld-WorldSeed");
-  const worldTypeInput = document.getElementsByName("radioWorldType");
+  const worldTypeInput = document.querySelector(
+    'input[name="radioWorldType"]:checked',
+  );
   const worldCreateSubmitButton = document.getElementById(
     "submitCreateWorldForm",
   );
@@ -206,6 +210,12 @@ submitNewWorldForm.addEventListener("click", () => {
       worldSeed: worldSeedInput.value,
       worldType: worldTypeInput.value,
     };
+    const eventCreateWorld = new CustomEvent("createWorld", {
+      detail: createWorldInfo,
+    });
+
+   window.dispatchEvent(eventCreateWorld);
+   console.log("Dispatched createWorld event with data:", createWorldInfo); 
   }
 });
 
@@ -214,12 +224,13 @@ backdropUI.addEventListener("click", () => {
   currentPopup = null;
   backdropUI.hidden = true;
 });
-
+mainCanvas = document.getElementById("gameCanvas");
 // Resize the game canvas to match the browser window size.
 function resize() {
   let canvas = document.getElementById("gameCanvas");
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
+  mainCanvasSize = vec2(canvas.width, canvas.height);
 }
 
 // Popup UI elements for showing temporary error/messages.
@@ -231,7 +242,7 @@ document.getElementById("popupClose").addEventListener("click", () => {
 });
 
 
-
+var keysPressed = {};
 function switchSlots(slot) {
   let slotElement = document.getElementById("slot" + slot);
   for (let i = 1; i < 9; i++) {
@@ -264,10 +275,44 @@ document.addEventListener("keyup", (event) => {
                                                         |___/ 
 
 */
+let texture;
+function gameInit() {
+  console.log("Game engine initializing...");
+
+   
+ const image = new Image();
+  image.src = "assets/textures/1_TextureSheet.png";
+  texture = new TextureInfo(image);
+
+  window.addEventListener("createWorld", (event) => {
+    console.log("Event received:", event.detail);
+    const data = event.detail;
+ 
+  backdropUI.click();
+  mainMenuAudio.pause();
+  document.getElementById("mainMenu").className = "popCloseHide";
+console.log(drawBlock(0, 0, "grass"));
+console.log(blocks)
+paused = false;
+  });
+
+  console.log("Game engine initialized.");
+}
+
+function drawBlock(x, y, blockType) {
+  console.log(tileIndex(blockType));
+  blocks[`${x},${y}`] = blockType;
+  return drawTile(vec2(x, y),vec2(1), tileIndex(blockType));
+}
 
 
+function gameUpdate() {
 
-
+}
+function gameUpdatePost() {}
+function gameRender() {
+ 
+} 
 
 
 
@@ -338,7 +383,6 @@ var blockMetaData = {
 };
 const biomes = ["plains", "mapleForest", "desert"];
 
-
 // Generate the world using a seeded random generator.
 function procedurallyGenerateWorld(seed) {
   // Config values for world generation.
@@ -357,6 +401,7 @@ function procedurallyGenerateWorld(seed) {
   const rng = new alea(seed);
   const noise2D = createNoise2D(rng);
 }
-paused = false;
+
 // Initialize textures and start the draw loop.
 
+engineInit(gameInit, gameUpdate, gameUpdatePost, gameRender);

@@ -315,7 +315,7 @@ async function loadAllImages() {
 }
 
 async function gameInit() {
-   
+   canvasPixelated = true;
   console.log("Game engine initializing...");
   
     console.log(mainCanvas);

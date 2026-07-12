@@ -354,8 +354,8 @@ function drawBlock(x, y, blockType) {
     8,
     x,
     y,
-    50,
-    50,
+    85,
+    85,
     new Color(1, 1, 1, 1),
   );
 }

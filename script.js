@@ -26,20 +26,29 @@ var dotsDirectionMore = true;
   \___//__/\___|_|   |___|_||_\__\___|_| |_| \__,_\__\___|
                                                            */
 // Display an on-screen error message for a duration based on its length.
+let errorTimeout = true;
 function displayError(msg) {
+  if (errorTimeout) {
   errorBackdrop.hidden = false;
+ errorBackdrop.className = "";
+ errorTimeout = false;
   currentPopup = errorDiv;
   document.getElementById("popupContent").innerText = msg;
-
+   
   setTimeout(
     () => {
+    errorTimeout = true;
+    errorBackdrop.className = "visually-hidden";
       errorDiv.className = "popCloseHide";
       errorBackdrop.hidden = true;
+   
     },
     document.getElementById("popupContent").innerText.length * 0.07 * 1000,
   );
   errorDiv.className = "popAnim";
 }
+}
+
 setInterval(() => {
   if (dotsInLoadingTitle == 3 && !dotsDirectionMore) {
     loadingTitle.innerText = "Loading..";
@@ -223,7 +232,6 @@ backdropUI.addEventListener("click", () => {
 
 // Resize the game canvas to match the browser window size.
 
-
 // Popup UI elements for showing temporary error/messages.
 
 // Close button hides the popup and its backdrop.
@@ -244,6 +252,7 @@ function switchSlots(slot) {
 document.addEventListener("keydown", (event) => {
   // Mark key as pressed for continuous movement.
   keysPressed[event.key] = true;
+  displayError("Key pressed: " + event.key);
 });
 
 document.addEventListener("keyup", (event) => {
@@ -262,6 +271,8 @@ document.addEventListener("keyup", (event) => {
                                                         |___/ 
 
 */
+// Remember that ALL vec2 coords should have BOTH parameters multiplied by 85
+
 let texture = {};
 function loadImage(name) {
   return new Promise((resolve, reject) => {
@@ -315,12 +326,12 @@ async function loadAllImages() {
 }
 
 async function gameInit() {
-   canvasPixelated = true;
+  canvasPixelated = true;
   console.log("Game engine initializing...");
-  
-    console.log(mainCanvas);
- await loadAllImages();
-console.log(texture["grass"]);
+
+  console.log(mainCanvas);
+  await loadAllImages();
+  console.log(texture["grass"]);
   window.addEventListener("createWorld", (event) => {
     console.log("Event received:", event.detail);
     const data = event.detail;
@@ -328,8 +339,7 @@ console.log(texture["grass"]);
     backdropUI.click();
     mainMenuAudio.pause();
     document.getElementById("mainMenu").className = "popCloseHide";
-   
-   
+
     console.log(blocks);
     paused = false;
   });
@@ -337,27 +347,36 @@ console.log(texture["grass"]);
   console.log("Game engine initialized.");
 }
 
-function gameUpdate() {} 
+function gameUpdate() {}
 function gameUpdatePost() {}
 function gameRender() {
-   drawBlock(5, 6, "dirt");
+  const blocksAroundCameraRangeBottomLeft = cameraPos.subtract(
+    vec2(0, 12 * 85),
+  );
+  const blocksAroundCameraRangeTopRight = cameraPos.add(vec2(22 * 85, 0 * 85));
+  
 }
 
-function drawBlock(x, y, blockType) {
-  blocks[`${x},${y}`] = blockType;
-  return drawImageColor(
-    mainCanvas.getContext("2d"),
-    texture[blockType],
-    0,
-    0,
-    8,
-    8,
-    x,
-    y,
-    85,
-    85,
-    new Color(1, 1, 1, 1),
-  );
+function createBlock(x, y, blockType) {
+  // check if block already exist
+  if (blocks[`${x},${y}`]) {
+    return;
+  } else {
+    blocks[`${x},${y}`] = blockType;
+    return drawImageColor(
+      mainCanvas.getContext("2d"),
+      texture[blockType],
+      0,
+      0,
+      8,
+      8,
+      x * 85,
+      y * 85,
+      85,
+      85,
+      new Color(1, 1, 1, 1),
+    );
+  }
 }
 
 // Store current world block placement by grid coordinate string.
@@ -443,14 +462,9 @@ function procedurallyGenerateWorld(seed) {
   // Create chunks and populate the world here in the future.
   const rng = new alea(seed);
   const noise2D = createNoise2D(rng);
+  
 }
 
 // Initialize textures and start the draw loop.
 
-engineInit(
-  gameInit,
-  gameUpdate,
-  gameUpdatePost,
-  gameRender,
- 
-);
+engineInit(gameInit, gameUpdate, gameUpdatePost, gameRender);

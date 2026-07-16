@@ -255,7 +255,7 @@
                 placeholder="Lorem Ipsum"
                 value="A new world!"
               />
-              <label class="text-black" for="createWorld-WorldName"
+              <label class="text-black" for="createWorld-WorldDesc"
                 >World Description</label
               >
             </div>
@@ -302,7 +302,7 @@
               <script>
                 document.getElementById("createWorld-WorldSeed").value = Math.round(Math.random()*1000000)+100000
               </script>
-              <label class="text-black" for="createWorld-WorldName"
+              <label class="text-black" for="createWorld-WorldSeed"
                 >World Seed</label
               >
             </div>
@@ -336,7 +336,7 @@
         </div>
       </div>
       <div id="backdrop" hidden></div>
-      <div id="errorBackdrop"hidden></div>
+      <div id="errorBackdrop" class="visually-hidden" hidden></div>
       <i
         id="settingButton"
         style="

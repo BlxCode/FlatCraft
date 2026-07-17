@@ -9,6 +9,7 @@ const errorDiv = document.getElementById("popup");
 const enterGameButtonLoadingScreenWrapper = document.getElementById(
   "enterGameButtonLoadingScreenWrapper",
 );
+
 var currentPopup = null;
 const errorBackdrop = document.getElementById("errorBackdrop");
 const worldMenu = document.getElementById("worldSelect");
@@ -29,24 +30,23 @@ var dotsDirectionMore = true;
 let errorTimeout = true;
 function displayError(msg) {
   if (errorTimeout) {
-  errorBackdrop.hidden = false;
- errorBackdrop.className = "";
- errorTimeout = false;
-  currentPopup = errorDiv;
-  document.getElementById("popupContent").innerText = msg;
-   
-  setTimeout(
-    () => {
-    errorTimeout = true;
-    errorBackdrop.className = "visually-hidden";
-      errorDiv.className = "popCloseHide";
-      errorBackdrop.hidden = true;
-   
-    },
-    document.getElementById("popupContent").innerText.length * 0.07 * 1000,
-  );
-  errorDiv.className = "popAnim";
-}
+    errorBackdrop.hidden = false;
+    errorBackdrop.className = "";
+    errorTimeout = false;
+    currentPopup = errorDiv;
+    document.getElementById("popupContent").innerText = msg;
+
+    setTimeout(
+      () => {
+        errorTimeout = true;
+        errorBackdrop.className = "hidden";
+        errorDiv.className = "popCloseHide";
+        errorBackdrop.hidden = true;
+      },
+      document.getElementById("popupContent").innerText.length * 0.07 * 1000,
+    );
+    errorDiv.className = "popAnim";
+  }
 }
 
 setInterval(() => {
@@ -116,10 +116,10 @@ enterGameButtonLoadingScreenWrapper.addEventListener("click", () => {
   mainMenuAudio.play();
   loadingScreen.className = "popCloseHide";
 });
-
+// TODO: Fix scrolling
 const backdropUI = document.getElementById("backdrop");
 const buttonOpenCredits = document.getElementById("mainMenuButtonCredits");
-
+document.getElementById("credits").getBoundingClientRect();
 buttonOpenCredits.addEventListener("click", () => {
   document.getElementById("credits").className = "popAnim";
   paused = true;
@@ -330,6 +330,7 @@ async function gameInit() {
   console.log("Game engine initializing...");
 
   console.log(mainCanvas);
+  mainCanvas.style.zIndex = 0;
   await loadAllImages();
   console.log(texture["grass"]);
   window.addEventListener("createWorld", (event) => {
@@ -342,6 +343,7 @@ async function gameInit() {
 
     console.log(blocks);
     paused = false;
+   
   });
 
   console.log("Game engine initialized.");
@@ -349,33 +351,66 @@ async function gameInit() {
 
 function gameUpdate() {}
 function gameUpdatePost() {}
+let bruh = true;
 function gameRender() {
+if (bruh) {
+   createBlock(0, 0, "grass");
+   bruh = false;
+}else{
+destroyBlock(0, 0);
+bruh = true;
+}
   const blocksAroundCameraRangeBottomLeft = cameraPos.subtract(
     vec2(0, 12 * 85),
   );
   const blocksAroundCameraRangeTopRight = cameraPos.add(vec2(22 * 85, 0 * 85));
-  
-}
+  const blocksOnXLine = Math.floor(
+    (blocksAroundCameraRangeTopRight.x - blocksAroundCameraRangeBottomLeft.x) /
+      85,
+  );
+  const blocksOnYLine = Math.floor(
+    (blocksAroundCameraRangeTopRight.y - blocksAroundCameraRangeBottomLeft.y) /
+      85,
+  );
 
+  for (let x = 0; x <= blocksOnXLine; x++) {
+    for (let y = 0; y <= blocksOnYLine; y++) {
+      const blockX = Math.floor(
+        (blocksAroundCameraRangeBottomLeft.x + x * 85) / 85,
+      );
+      const blockY = Math.floor(
+        (blocksAroundCameraRangeBottomLeft.y + y * 85) / 85,
+      );
+
+      if (blocks[`${blockX},${blockY}`]) {
+        drawImageColor(
+          mainCanvas.getContext("2d"),
+          texture[blocks[`${blockX},${blockY}`]],
+          0,
+          0,
+          8,
+          8,
+          blockX * 85,
+          blockY * 85,
+          85,
+          85,
+          new Color(1, 1, 1, 1),
+        );
+      }
+    }
+  }
+}
+function destroyBlock(x, y) {
+  if (blocks[`${x},${y}`]) {
+    delete blocks[`${x},${y}`];
+  }
+}
 function createBlock(x, y, blockType) {
   // check if block already exist
   if (blocks[`${x},${y}`]) {
     return;
   } else {
-    blocks[`${x},${y}`] = blockType;
-    return drawImageColor(
-      mainCanvas.getContext("2d"),
-      texture[blockType],
-      0,
-      0,
-      8,
-      8,
-      x * 85,
-      y * 85,
-      85,
-      85,
-      new Color(1, 1, 1, 1),
-    );
+    return (blocks[`${x},${y}`] = blockType);
   }
 }
 
@@ -462,7 +497,6 @@ function procedurallyGenerateWorld(seed) {
   // Create chunks and populate the world here in the future.
   const rng = new alea(seed);
   const noise2D = createNoise2D(rng);
-  
 }
 
 // Initialize textures and start the draw loop.

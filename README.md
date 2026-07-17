@@ -2,11 +2,15 @@
 
 
 # FlatCraft
-FlatCraft is a 2d Minecraft game.
-
+## Basic Info
+FlatCraft is an open source, MIT licensed 2d Minecraft inspired game. It uses LittleJS for the rendering, and vanilla HTML/CSS/JavaScript for the UI.
 # Credits
+## Art:
+Me, My little brother
+## Programming:
+Me
+## Libraries used:
+* LittleJS
+* seedrandom
+* simplex-noise
 
-### <a href="https://github.com/fjfjf-code">fjfjf-code</a>: Textures
-### <a href="https://www.npmjs.com/package/seedrandom">seedrandom</a>: Random number based on seed
-
-you know what... just read package.json

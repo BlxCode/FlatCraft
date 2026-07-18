@@ -1,7 +1,7 @@
 :root {
   --primary-bg-color: #1e1e1ef7;
   --primary-color: #f0f0f0;
-  --secondary-bg-color:#212332;
+  --secondary-bg-color: #212332;
   --border: #444444;
   --slot: #5a6060;
   --slot-border: #111111bc;
@@ -11,13 +11,13 @@
   width: 7px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #4c4c4c; 
+  background: #4c4c4c;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #555; 
+  background: #555;
 }
 ::-webkit-scrollbar-track {
-  background: #00000055; 
+  background: #00000055;
 }
 .clickable {
   cursor: pointer;
@@ -33,26 +33,23 @@
 body {
   margin: 0;
   font-family: "Pixelify Sans", sans-serif !important;
-  scrollbar-width:2px !important;
-
-
+  scrollbar-width: 2px !important;
 }
-#enterGameButtonLoadingScreenWrapper{
-  z-index:1000;
-  position:absolute; 
-  top: 50%; 
+#enterGameButtonLoadingScreenWrapper {
+  z-index: 1000;
+  position: absolute;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
 }
 #ui {
   user-select: none;
-  position:fixed;
-  z-index:1;
-  top:0%;
-  left:0%;
-  width:100%;
-  height:100%;
- 
+  position: fixed;
+  z-index: 1;
+  top: 0%;
+  left: 0%;
+  width: 100%;
+  height: 100%;
 }
 .btn {
   border-radius: 0px !important;
@@ -72,7 +69,7 @@ body {
   width: fit-content;
   margin-bottom: 1dvh;
   height: 7vh;
-  left:50%;
+  left: 50%;
   transform: translateX(-50%);
 }
 #mainMenuWrapper {
@@ -101,17 +98,21 @@ ul {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
- 
+
   text-align: center;
   width: 100%;
   height: 100%;
   z-index: 90;
- background:  RGB(171, 171, 255);
-background: radial-gradient(circle,rgba(171, 171, 255, 1) 0%, rgba(103, 103, 145, 1) 100%);
+  background: RGB(171, 171, 255);
+  background: radial-gradient(
+    circle,
+    rgba(171, 171, 255, 1) 0%,
+    rgba(103, 103, 145, 1) 100%
+  );
 }
 #credits {
   text-align: center;
-overflow:auto !important;
+  overflow: auto !important;
   position: absolute;
   top: 50%;
   color: var(--primary-color);
@@ -122,9 +123,9 @@ overflow:auto !important;
   z-index: 92;
   width: 75%;
   height: 75%;
-   box-sizing: border-box;
- 
-  overflow-y: auto !important; 
+  box-sizing: border-box;
+
+  overflow-y: auto !important;
 }
 
 #settings {
@@ -141,8 +142,8 @@ overflow:auto !important;
   width: 75%;
   height: 75%;
 }
-#woldSelectButton{
-  width:fit-content !important;
+#woldSelectButton {
+  width: fit-content !important;
 }
 #worldSelect {
   text-align: center;
@@ -158,16 +159,16 @@ overflow:auto !important;
   width: 75%;
   height: 75%;
   box-sizing: border-box;
- 
-  overflow-y: auto; 
+
+  overflow-y: auto;
   max-height: 90vh;
 }
-input{
-  font-size:1.8dvh;
+input {
+  font-size: 1.8dvh;
   user-select: text;
 }
-label{
-  font-size:1.8dvh;
+label {
+  font-size: 1.8dvh;
 }
 #worldCreate {
   text-align: center;
@@ -183,13 +184,13 @@ label{
   width: 75%;
   height: 75%;
   box-sizing: border-box;
- 
-  overflow-y: auto; 
+
+  overflow-y: auto;
   max-height: 90vh;
 }
 @keyframes popOpen {
   0% {
-    opacity:1;
+    opacity: 1;
     pointer-events: auto;
     transform: translate(-50%, -50%) scale(0);
   }
@@ -208,11 +209,10 @@ label{
   99% {
     transform: translate(-50%, -50%) scale(0);
   }
-  100%{
+  100% {
     transform: translate(-50%, -50%) scale(0);
     opacity: 0;
     pointer-events: none;
-    
   }
 }
 .popAnim {
@@ -257,21 +257,21 @@ label{
   transform: translate(-50%, -50%);
   background-color: var(--primary-bg-color);
   width: fit-content;
-  min-width:50%;
-  min-height:30dvh;
+  min-width: 50%;
+  min-height: 30dvh;
   height: fit-content;
   text-align: center;
 
   color: white;
-  
+
   z-index: 203;
 }
 #popupTitle {
   font-weight: bold;
   margin-top: 1px;
   font-size: 6dvh !important;
-  
-  background-color: #2F2F2F;
+
+  background-color: #2f2f2f;
 }
 #popupContent {
   margin-top: 1px;
@@ -286,29 +286,26 @@ label{
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 91;
-  
 }
 #errorBackdrop {
-    position: fixed;
-    pointer-events: auto;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100dvh;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 202;
-   
+  position: fixed;
+  pointer-events: auto;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100dvh;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 202;
 }
 
 #errorBackdrop.hidden {
-  top:-499%;
-  left:-167%;
-  z-index:-1;
-  width:0%;
-  height:0dvh;
-    opacity: 0;
-    pointer-events: none;
-    
+  top: -499%;
+  left: -167%;
+  z-index: -1;
+  width: 0%;
+  height: 0dvh;
+  opacity: 0;
+  pointer-events: none;
 }
 
 #popupClose {
@@ -320,87 +317,91 @@ label{
 }
 
 .closeButton {
-    aspect-ratio: 1/1 !important;
+  aspect-ratio: 1/1 !important;
   position: fixed;
   top: 10px;
   right: 10px;
-  
- 
-
-  
 }
 @keyframes loadingScreenChangeColor {
   0% {
- background: #3c4154;
-background: radial-gradient(circle,rgba(60, 65, 84, 1) 0%, rgba(46, 46, 54, 1) 100%);
+    background: #3c4154;
+    background: radial-gradient(
+      circle,
+      rgba(60, 65, 84, 1) 0%,
+      rgba(46, 46, 54, 1) 100%
+    );
   }
   100% {
- background: #8891a8;
-background: radial-gradient(circle,rgba(136, 145, 168, 1) 0%, rgba(68, 71, 87, 1) 100%);
+    background: #8891a8;
+    background: radial-gradient(
+      circle,
+      rgba(136, 145, 168, 1) 0%,
+      rgba(68, 71, 87, 1) 100%
+    );
   }
 }
-.loadingScreenChangeColor{
+.loadingScreenChangeColor {
   animation-name: loadingScreenChangeColor;
   animation-duration: 0.5s;
   animation-fill-mode: both;
 }
-#loadingScreen{
+#loadingScreen {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width:100%;
-  height:100dvh;
-  z-index:999;
- background: #3c4154;
-background: radial-gradient(circle,rgba(60, 65, 84, 1) 0%, rgba(46, 46, 54, 1) 100%);
-  color:whitesmoke;
-  text-align:center;
-  vertical-align:middle;
+  width: 100%;
+  height: 100dvh;
+  z-index: 999;
+  background: #3c4154;
+  background: radial-gradient(
+    circle,
+    rgba(60, 65, 84, 1) 0%,
+    rgba(46, 46, 54, 1) 100%
+  );
+  color: whitesmoke;
+  text-align: center;
+  vertical-align: middle;
 }
 
-#loadingScreenWrapper{
- position: absolute;
+#loadingScreenWrapper {
+  position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width:45%;
-
+  width: 45%;
 }
-.worldSelectRow{
+.worldSelectRow {
   background-color: #252833;
-  padding:1dvh;
- margin:0.5dvh;
-overflow: visible !important;
-
-  
+  padding: 1dvh;
+  margin: 0.5dvh;
+  overflow: visible !important;
 }
-#loadingTitle{
-  font-size:8dvh;
+#loadingTitle {
+  font-size: 8dvh;
 }
-#loadingProgressWrapper{
-  border-radius:0px !important;
-  border-width:0px !important;
- 
+#loadingProgressWrapper {
+  border-radius: 0px !important;
+  border-width: 0px !important;
 }
-#loadingProgress{
-  border-radius:0px;
-  background-color:rgb(145, 144, 255) !important;
-   border-width:0px !important;
-  
+#loadingProgress {
+  border-radius: 0px;
+  background-color: rgb(145, 144, 255) !important;
+  border-width: 0px !important;
 }
-.worldDesc{
- font-size:2.1dvh;
+.worldDesc {
+  font-size: 2.1dvh;
 }
-.worldTitle{
-font-size:3.25dvh;
+.worldTitle {
+  font-size: 3.25dvh;
 }
-.worldCreateButton{
-  margin-top:.5dvh;
-  margin-bottom:1.5dvh;
-  font-size:2dvh !important;
+.worldCreateButton {
+  margin-top: 0.5dvh;
+  margin-bottom: 1.5dvh;
+  font-size: 2dvh !important;
 }
-canvas{
-  z-index:0!important;
-  position:fixed !important;
+canvas {
+  z-index: 0 !important;
+  position: fixed !important;
+  pointer-events: none;
 }

@@ -240,7 +240,6 @@ document.getElementById("popupClose").addEventListener("click", () => {
   errorBackdrop.hidden = true;
 });
 
-var keysPressed = {};
 function switchSlots(slot) {
   let slotElement = document.getElementById("slot" + slot);
   for (let i = 1; i < 9; i++) {
@@ -248,20 +247,6 @@ function switchSlots(slot) {
   }
   slotElement.className += "slotHover";
 }
-
-document.addEventListener("keydown", (event) => {
-  // Mark key as pressed for continuous movement.
-  keysPressed[event.key] = true;
-  displayError("Key pressed: " + event.key);
-});
-
-document.addEventListener("keyup", (event) => {
-  // Remove the key press state when released.
-  delete keysPressed[event.key];
-
-  if (event.key == "1") {
-  }
-});
 
 /*
    ___                  ___             _         _           
@@ -343,7 +328,11 @@ async function gameInit() {
 
     console.log(blocks);
     paused = false;
-   
+    if (event.detail.worldType == "sandbox") {
+      procedurallyGenerateWorld(Number(event.detail.worldSeed));
+    } else if (event.detail.worldType == "flat") {
+      createFlatWorld(Number(event.detail.worldSeed));
+    }
   });
 
   console.log("Game engine initialized.");
@@ -353,52 +342,54 @@ function gameUpdate() {}
 function gameUpdatePost() {}
 let bruh = true;
 function gameRender() {
-if (bruh) {
-   createBlock(0, 0, "grass");
-   bruh = false;
-}else{
-destroyBlock(0, 0);
-bruh = true;
-}
-  const blocksAroundCameraRangeBottomLeft = cameraPos.subtract(
-    vec2(0, 12 * 85),
-  );
-  const blocksAroundCameraRangeTopRight = cameraPos.add(vec2(22 * 85, 0 * 85));
-  const blocksOnXLine = Math.floor(
-    (blocksAroundCameraRangeTopRight.x - blocksAroundCameraRangeBottomLeft.x) /
-      85,
-  );
-  const blocksOnYLine = Math.floor(
-    (blocksAroundCameraRangeTopRight.y - blocksAroundCameraRangeBottomLeft.y) /
-      85,
-  );
+  //Render blocks
+  const renderBlocks = () => {
+    const blocksAroundCameraRangeBottomLeft = cameraPos.subtract(
+      vec2(0, 12 * 85),
+    );
+    const blocksAroundCameraRangeTopRight = cameraPos.add(
+      vec2(22 * 85, 0 * 85),
+    );
+    const blocksOnXLine = Math.floor(
+      (blocksAroundCameraRangeTopRight.x -
+        blocksAroundCameraRangeBottomLeft.x) /
+        85,
+    );
+    const blocksOnYLine = Math.floor(
+      (blocksAroundCameraRangeTopRight.y -
+        blocksAroundCameraRangeBottomLeft.y) /
+        85,
+    );
 
-  for (let x = 0; x <= blocksOnXLine; x++) {
-    for (let y = 0; y <= blocksOnYLine; y++) {
-      const blockX = Math.floor(
-        (blocksAroundCameraRangeBottomLeft.x + x * 85) / 85,
-      );
-      const blockY = Math.floor(
-        (blocksAroundCameraRangeBottomLeft.y + y * 85) / 85,
-      );
-
-      if (blocks[`${blockX},${blockY}`]) {
-        drawImageColor(
-          mainCanvas.getContext("2d"),
-          texture[blocks[`${blockX},${blockY}`]],
-          0,
-          0,
-          8,
-          8,
-          blockX * 85,
-          blockY * 85,
-          85,
-          85,
-          new Color(1, 1, 1, 1),
+    for (let x = 0; x <= blocksOnXLine; x++) {
+      for (let y = 0; y <= blocksOnYLine; y++) {
+        const blockX = Math.floor(
+          (blocksAroundCameraRangeBottomLeft.x + x * 85) / 85,
         );
+        const blockY = Math.floor(
+          (blocksAroundCameraRangeBottomLeft.y + y * 85) / 85,
+        );
+
+        if (blocks[`${blockX},${blockY}`]) {
+          drawImageColor(
+            mainCanvas.getContext("2d"),
+            texture[blocks[`${blockX},${blockY}`]],
+            0,
+            0,
+            8,
+            8,
+            blockX * 85,
+            blockY * 85,
+            85,
+            85,
+            new Color(1, 1, 1, 1),
+          );
+        }
       }
     }
-  }
+  };
+  renderBlocks;
+
 }
 function destroyBlock(x, y) {
   if (blocks[`${x},${y}`]) {
@@ -418,20 +409,6 @@ function createBlock(x, y, blockType) {
 var blocks = {};
 
 // Biome metadata used for world generation and environment rules.
-var biomeMetaData = {
-  plains: {
-    humidity: 0.5,
-    temperature: 0.5,
-  },
-  mapleForest: {
-    humidity: 0.7,
-    temperature: 0.5,
-  },
-  desert: {
-    humidity: 0.2,
-    temperature: 0.8,
-  },
-};
 
 // Basic chunk storage for generated terrain with biome assignment.
 var chunks = {
@@ -480,14 +457,26 @@ var blockMetaData = {
 };
 const biomes = ["plains", "mapleForest", "desert"];
 
+function getBiome(number) {
+  // Simplex noise returns values in [-1, 1]. Convert that to a humidity range [0, 1].
+  const humidity = (number + 1) / 2;
+
+  if (humidity >= 0.6) {
+    return "mapleForest";
+  }
+  if (humidity >= 0.25) {
+    return "plains";
+  }
+  return "desert";
+}
+const worldWidth = 2000;
+const chunkSize = 16;
+const seaLevel = 0;
+const maxHeight = 90;
+const minHeight = -50;
 // Generate the world using a seeded random generator.
 function procedurallyGenerateWorld(seed) {
   // Config values for world generation.
-  const worldWidth = 2000;
-  const chunkSize = 16;
-  const seaLevel = 0;
-  const maxHeight = 90;
-  const minHeight = -50;
 
   // Validate the seed and fall back to a random one if needed.
   if (seed === undefined) {
@@ -497,8 +486,24 @@ function procedurallyGenerateWorld(seed) {
   // Create chunks and populate the world here in the future.
   const rng = new alea(seed);
   const noise2D = createNoise2D(rng);
+
+  // Set 5 biomes
+
+  const biome1 = getBiome(noise2D(0, 0));
+  console.log(biome1);
+}
+
+function createFlatWorld(seed) {
+  for (let i = -2000; i < worldWidth; i++) {
+    createBlock(i, 0, "grass");
+    createBlock(i, -1, "dirt");
+    createBlock(i, -2, "dirt");
+    createBlock(i, -3, "dirt");
+    createBlock(i, -4, "stone");
+  }
 }
 
 // Initialize textures and start the draw loop.
 
 engineInit(gameInit, gameUpdate, gameUpdatePost, gameRender);
+setInputPreventDefault(false);

@@ -309,8 +309,10 @@ async function loadAllImages() {
       "(it should return objectObject or something like that)",
   );
 }
+let ctx;
 
 async function gameInit() {
+  ctx = mainCanvas.getContext("2d");
   canvasPixelated = true;
   console.log("Game engine initializing...");
 
@@ -326,6 +328,7 @@ async function gameInit() {
     mainMenuAudio.pause();
     document.getElementById("mainMenu").className = "popCloseHide";
 
+    cameraPos = vec2(0, 0);
     console.log(blocks);
     paused = false;
     if (event.detail.worldType == "sandbox") {
@@ -340,46 +343,42 @@ async function gameInit() {
 
 function gameUpdate() {}
 function gameUpdatePost() {}
-let bruh = true;
+
 function gameRender() {
   //Render blocks
   const renderBlocks = () => {
-    const blocksAroundCameraRangeBottomLeft = cameraPos.subtract(
-      vec2(0, 12 * 85),
+    const blocksAroundCameraRangeTopLeft = cameraPos;
+    const blocksAroundCameraRangeBottomRight = cameraPos.add(
+      vec2((window.innerWidth/90) * 85, (window.innerHeight / 90) * 85),
     );
-    const blocksAroundCameraRangeTopRight = cameraPos.add(
-      vec2(22 * 85, 0 * 85),
-    );
-    const blocksOnXLine = Math.floor(
-      (blocksAroundCameraRangeTopRight.x -
-        blocksAroundCameraRangeBottomLeft.x) /
+    const blocksOnXLine = Math.abs(Math.floor(
+      (blocksAroundCameraRangeTopLeft.x -
+        blocksAroundCameraRangeBottomRight.x) /
         85,
-    );
-    const blocksOnYLine = Math.floor(
-      (blocksAroundCameraRangeTopRight.y -
-        blocksAroundCameraRangeBottomLeft.y) /
+    ));
+    const blocksOnYLine = Math.abs(Math.floor(
+      (blocksAroundCameraRangeTopLeft.y -
+        blocksAroundCameraRangeBottomRight.y) /
         85,
-    );
+    ));
+   /* console.log(blocksOnXLine)
+    console.log(blocksOnYLine)
+    console.log(blocksAroundCameraRangeTopLeft)
+    console.log(blocksAroundCameraRangeBottomRight) */
+    for (let x = blocksAroundCameraRangeTopLeft.x; x <= blocksAroundCameraRangeBottomRight.x; (x+1) * 85) {
+      for (let y = blocksAroundCameraRangeTopLeft.y; y <= blocksAroundCameraRangeBottomRight.y; (y+1)* 85){
+      
 
-    for (let x = 0; x <= blocksOnXLine; x++) {
-      for (let y = 0; y <= blocksOnYLine; y++) {
-        const blockX = Math.floor(
-          (blocksAroundCameraRangeBottomLeft.x + x * 85) / 85,
-        );
-        const blockY = Math.floor(
-          (blocksAroundCameraRangeBottomLeft.y + y * 85) / 85,
-        );
-
-        if (blocks[`${blockX},${blockY}`]) {
+        if (blocks[`${x},${y}`]) {
           drawImageColor(
-            mainCanvas.getContext("2d"),
-            texture[blocks[`${blockX},${blockY}`]],
+            ctx,
+            texture[blocks[`${x},${y}`]],
             0,
             0,
             8,
             8,
-            blockX * 85,
-            blockY * 85,
+            x,
+            y,
             85,
             85,
             new Color(1, 1, 1, 1),
@@ -388,8 +387,20 @@ function gameRender() {
       }
     }
   };
-  renderBlocks;
 
+  renderBlocks();
+  if (keyIsDown("w")) {
+    setCameraPos(cameraPos.add(vec2(0, 50)));
+  }
+  if (keyIsDown("s")) {
+    cameraPos = cameraPos.add(vec2(0, -50));
+  }
+  if (keyIsDown("a")) {
+    cameraPos = cameraPos.add(vec2(50, 0));
+  }
+  if (keyIsDown("d")) {
+    cameraPos = cameraPos.add(vec2(-50, 0));
+  }
 }
 function destroyBlock(x, y) {
   if (blocks[`${x},${y}`]) {
@@ -496,11 +507,12 @@ function procedurallyGenerateWorld(seed) {
 function createFlatWorld(seed) {
   for (let i = -2000; i < worldWidth; i++) {
     createBlock(i, 0, "grass");
-    createBlock(i, -1, "dirt");
-    createBlock(i, -2, "dirt");
-    createBlock(i, -3, "dirt");
-    createBlock(i, -4, "stone");
+    createBlock(i, 1, "dirt");
+    createBlock(i, 2, "dirt");
+    createBlock(i, 3, "dirt");
+    createBlock(i, 4, "stone");
   }
+  console.log(blocks);
 }
 
 // Initialize textures and start the draw loop.

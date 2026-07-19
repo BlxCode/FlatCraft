@@ -312,6 +312,8 @@ async function loadAllImages() {
 let ctx;
 
 async function gameInit() {
+  combineCanvases();
+
   ctx = mainCanvas.getContext("2d");
   canvasPixelated = true;
   console.log("Game engine initializing...");
@@ -345,40 +347,41 @@ function gameUpdate() {}
 function gameUpdatePost() {}
 
 function gameRender() {
-  //Render blocks
-  const renderBlocks = () => {
-    const blocksAroundCameraRangeTopLeft = cameraPos;
-    const blocksAroundCameraRangeBottomRight = cameraPos.add(
-      vec2((window.innerWidth/90) * 85, (window.innerHeight / 90) * 85),
-    );
-    const blocksOnXLine = Math.abs(Math.floor(
-      (blocksAroundCameraRangeTopLeft.x -
-        blocksAroundCameraRangeBottomRight.x) /
-        85,
-    ));
-    const blocksOnYLine = Math.abs(Math.floor(
-      (blocksAroundCameraRangeTopLeft.y -
-        blocksAroundCameraRangeBottomRight.y) /
-        85,
-    ));
-   /* console.log(blocksOnXLine)
-    console.log(blocksOnYLine)
-    console.log(blocksAroundCameraRangeTopLeft)
-    console.log(blocksAroundCameraRangeBottomRight) */
-    for (let x = blocksAroundCameraRangeTopLeft.x; x <= blocksAroundCameraRangeBottomRight.x; (x+1) * 85) {
-      for (let y = blocksAroundCameraRangeTopLeft.y; y <= blocksAroundCameraRangeBottomRight.y; (y+1)* 85){
-      
+  if (keyIsDown("KeyW")) {
+    cameraPos = cameraPos.add(vec2(0, -10));
+  }
+  if (keyIsDown("KeyS")) {
+    cameraPos = cameraPos.add(vec2(0, 10));
+  }
+  if (keyIsDown("KeyA")) {
+    cameraPos = cameraPos.add(vec2(-10, 0));
+  }
+  if (keyIsDown("KeyD")) {
+    cameraPos = cameraPos.add(vec2(10, 0));
+  }
 
-        if (blocks[`${x},${y}`]) {
+  const renderBlocks = () => {
+    const viewWidthBlocks = Math.ceil(window.innerWidth / 85);
+    const viewHeightBlocks = Math.ceil(window.innerHeight / 90);
+    const startBlockX = Math.floor(cameraPos.x / 85);
+    const startBlockY = Math.floor(cameraPos.y / 85);
+    const endBlockX = Math.floor((cameraPos.x + viewWidthBlocks * 85) / 85);
+    const endBlockY = Math.floor((cameraPos.y + viewHeightBlocks * 85) / 85);
+
+    for (let blockX = startBlockX; blockX <= endBlockX; blockX++) {
+      for (let blockY = startBlockY; blockY <= endBlockY; blockY++) {
+        const blockKey = `${blockX},${blockY}`;
+
+        if (blocks[blockKey]) {
           drawImageColor(
             ctx,
-            texture[blocks[`${x},${y}`]],
+            texture[blocks[blockKey]],
             0,
             0,
             8,
             8,
-            x,
-            y,
+            blockX * 85 - cameraPos.x,
+            blockY * 85 - cameraPos.y,
             85,
             85,
             new Color(1, 1, 1, 1),
@@ -389,18 +392,6 @@ function gameRender() {
   };
 
   renderBlocks();
-  if (keyIsDown("w")) {
-    setCameraPos(cameraPos.add(vec2(0, 50)));
-  }
-  if (keyIsDown("s")) {
-    cameraPos = cameraPos.add(vec2(0, -50));
-  }
-  if (keyIsDown("a")) {
-    cameraPos = cameraPos.add(vec2(50, 0));
-  }
-  if (keyIsDown("d")) {
-    cameraPos = cameraPos.add(vec2(-50, 0));
-  }
 }
 function destroyBlock(x, y) {
   if (blocks[`${x},${y}`]) {

@@ -538,7 +538,7 @@ function createFlatWorld(seed) {
     createBlock(i, 1, "dirt");
     createBlock(i, 2, "dirt");
     createBlock(i, 3, "dirt");
-    createBlock(i, 4, "stone");
+    createBlock(i, 4, "bedrock");
   }
   console.log(blocks);
 }

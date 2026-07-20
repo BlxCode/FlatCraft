@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Upload A Skin</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    />
+    <!-- Rest of your HTML file -->
+    <link href="../styles.css" rel="stylesheet" />
+    <style>
+      body {
+        font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+        text-align: center;
+        user-select: none;
+      }
+      @media (prefers-color-scheme: dark) {
+        body {
+          background-color: #212332;
+          color: white;
+        }
+      }
+      @media (prefers-color-scheme: light) {
+        body {
+          background-color: #babfe4;
+          color: black;
+        }
+      }
+      h1 {
+        font-weight: 700;
+      }
+      h2 {
+        font-weight: 600;
+      }
+      ol {
+        align-items: left;
+        align-self: left;
+        text-align: left;
+      }
+      backdrop{
+        position:fixed;
+        width:100%;
+        height:100%;
+        top:0;
+        left:0;
+        background-color:rgba(0, 0, 0, 0.492);
+      }
+    </style>
+  </head>
+  <body>
+   
+    <h1>Upload A Skin</h1>
+    <label class="btn btn-secondary" for="skinFile">Upload</label>
+    <input id="skinFile" hidden type="file" />
+<br>
+
+<input id="name" placeholder="Skin Name" type="text" style=" margin-top:15px;margin-left:auto;margin-right:auto" class="form-control w-25 rounded-0">
+<br>
+<button id="submit" class="btn btn-success">Submit</button>
+    <p>
+      Limit: 1 upload a day. <br />Max file size: 2 KB. <br />
+      File Dimensions: 20x286.
+    </p>
+    <h2>How to make a skin?</h2>
+    <ol>
+      <li>
+        Download this template
+        <a
+          href="https://6ubxaasep1m8.shares.zrok.io/files/skins/stev.png"
+          download
+          ><button class="btn btn-secondary">Download</button></a
+        >
+      </li>
+      <li>
+        Open your favorite pixel art editor, and edit the poses. Remember that
+        each pose can be as big as 20x22 pixels. The game adjusts the player's
+        hitbox from the size of your skin
+      </li>
+      <li>
+        Export your skin, and upload it! (You can update a skin if you have the
+        update key)
+      </li>
+    </ol>
+    <h1>Skins</h1>
+    <script>
+console.log("i swear if you call my api, i'll actually be very sad")
+           const ws = new WebSocket("https://6ubxaasep1m8.shares.zrok.io/");
+
+let fileUpload = document.getElementById("skinFile")
+           let submitButton = document.getElementById("submit");
+           submitButton.addEventListener("click",()=>{
+            
+           })
+    </script>
+  </body>
+</html>

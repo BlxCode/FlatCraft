@@ -247,7 +247,33 @@ function switchSlots(slot) {
   }
   slotElement.className += "slotHover";
 }
+/*
+                                                                                     
+▗▄▄▖ ▗▄▖                             ▄▄                                 █            
+▐▛▀▜▖▝▜▌                            █▀▀▌                          ▐▌    ▀            
+▐▌ ▐▌ ▐▌   ▟██▖▝█ █▌ ▟█▙  █▟█▌     ▐▌    ▟█▙ ▐▙██▖ ▟█▙  █▟█▌ ▟██▖▐███  ██   ▟█▙ ▐▙██▖
+▐██▛  ▐▌   ▘▄▟▌ █▖█ ▐▙▄▟▌ █▘       ▐▌▗▄▖▐▙▄▟▌▐▛ ▐▌▐▙▄▟▌ █▘   ▘▄▟▌ ▐▌    █  ▐▛ ▜▌▐▛ ▐▌
+▐▌    ▐▌  ▗█▀▜▌ ▐█▛ ▐▛▀▀▘ █        ▐▌▝▜▌▐▛▀▀▘▐▌ ▐▌▐▛▀▀▘ █   ▗█▀▜▌ ▐▌    █  ▐▌ ▐▌▐▌ ▐▌
+▐▌    ▐▙▄ ▐▙▄█▌  █▌ ▝█▄▄▌ █         █▄▟▌▝█▄▄▌▐▌ ▐▌▝█▄▄▌ █   ▐▙▄█▌ ▐▙▄ ▗▄█▄▖▝█▄█▘▐▌ ▐▌
+▝▘     ▀▀  ▀▀▝▘  █   ▝▀▀  ▀          ▀▀  ▝▀▀ ▝▘ ▝▘ ▝▀▀  ▀    ▀▀▝▘  ▀▀ ▝▀▀▀▘ ▝▀▘ ▝▘ ▝▘
+                █▌                                                                   
+                                                                                     */
+let spriteSheet;
 
+let player = {
+  username: "Guest",
+  coords: vec2(0, 0),
+  skin: "TODO:FIX",
+  set changeUsername(newUsername) {
+    this.username = newUsername;
+  },
+  set animate(animationName){
+    const spriteSheetLocations = {
+      idle : vec2(0,0),
+      walk1:vec2(0,-22)
+    }
+  }
+};
 /*
    ___                  ___             _         _           
   / __|__ _ _ __  ___  | _ \___ _ _  __| |___ _ _(_)_ _  __ _ 
@@ -298,6 +324,7 @@ async function loadAllImages() {
     "stone",
     "sugiliteBlock",
     "sugiliteOre",
+    "bedrock",
   ];
 
   for (const name of textureNames) {
@@ -413,6 +440,16 @@ var blocks = {};
 // Biome metadata used for world generation and environment rules.
 
 // Basic chunk storage for generated terrain with biome assignment.
+/*                                                                                
+▄   ▄          ▗▄▖     ▗▖       ▄▄                                 █            
+█   █          ▝▜▌     ▐▌      █▀▀▌                          ▐▌    ▀            
+▜▖█▗▛ ▟█▙  █▟█▌ ▐▌   ▟█▟▌     ▐▌    ▟█▙ ▐▙██▖ ▟█▙  █▟█▌ ▟██▖▐███  ██   ▟█▙ ▐▙██▖
+▐▌█▐▌▐▛ ▜▌ █▘   ▐▌  ▐▛ ▜▌     ▐▌▗▄▖▐▙▄▟▌▐▛ ▐▌▐▙▄▟▌ █▘   ▘▄▟▌ ▐▌    █  ▐▛ ▜▌▐▛ ▐▌
+▐█▀█▌▐▌ ▐▌ █    ▐▌  ▐▌ ▐▌     ▐▌▝▜▌▐▛▀▀▘▐▌ ▐▌▐▛▀▀▘ █   ▗█▀▜▌ ▐▌    █  ▐▌ ▐▌▐▌ ▐▌
+▐█ █▌▝█▄█▘ █    ▐▙▄ ▝█▄█▌      █▄▟▌▝█▄▄▌▐▌ ▐▌▝█▄▄▌ █   ▐▙▄█▌ ▐▙▄ ▗▄█▄▖▝█▄█▘▐▌ ▐▌
+▝▀ ▀▘ ▝▀▘  ▀     ▀▀  ▝▀▝▘       ▀▀  ▝▀▀ ▝▘ ▝▘ ▝▀▀  ▀    ▀▀▝▘  ▀▀ ▝▀▀▀▘ ▝▀▘ ▝▘ ▝▘
+                                                                                
+                                                                                */
 var chunks = {
   0: {
     biome: "plains",
@@ -510,3 +547,4 @@ function createFlatWorld(seed) {
 
 engineInit(gameInit, gameUpdate, gameUpdatePost, gameRender);
 setInputPreventDefault(false);
+debugKey = "Escape";

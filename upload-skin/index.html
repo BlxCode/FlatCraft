@@ -55,7 +55,11 @@
     <h1>Upload A Skin</h1>
 
     <form>
-      <label class="btn btn-secondary" for="skinFile" name="skinFile"
+      <label
+        class="btn btn-primary"
+        for="skinFile"
+        id="skinFileLabel"
+        name="skinFile"
         >Upload</label
       >
       <input
@@ -66,7 +70,23 @@
         type="file"
       />
       <br />
-      <img id="preview" hidden  src="" style="width: 20px; border-color:transparent !important; user-select:none; border:none !important; border-width:0px !important; aspect-ratio:20/ 286; position:fixed; top:50px; left:30%; image-rendering:pixelated;"></img>
+      <img
+        id="preview"
+        hidden
+        src=""
+        style="
+          width: 20px;
+          border-color: transparent !important;
+          user-select: none;
+          border: none !important;
+          border-width: 0px !important;
+          aspect-ratio: 20/ 286;
+          position: fixed;
+          top: 50px;
+          left: 30%;
+          image-rendering: pixelated;
+        "
+      />
       <input
         name="name"
         id="name"
@@ -80,7 +100,8 @@
     </form>
     <p>
       Limit: 1 upload a day. <br />Max file size: 2 KB. <br />
-      File Dimensions: 20x286.<br />PNG ONLY
+      File Dimensions: 20x286.<br />PNG ONLY <br />
+      You <span style="color: red">can't</span> update any skins!
     </p>
     <h2>How to make a skin?</h2>
     <ol>
@@ -104,50 +125,90 @@
     </ol>
     <h1>Skins</h1>
     <script>
-    (()=>{  console.log("i swear if you call my api, i'll actually be very sad");
-      const ws = new WebSocket("https://latina-minor-any-telecom.trycloudflare.com/");
-      let keycode;
-      ws.onmessage = (info) => {
-        if (info.data.toString().includes("S|p*r#e%c^r/e*a-s~wd")) {
-          keycode = info.data.toString().replace("S|p*r#e%c^r/e*a-s~wd", "");
-        }
-      };
-      let fileUpload = document.getElementById("skinFile");
-      const reader = new FileReader();
-      const preview = document.getElementById("preview");
-      fileUpload.addEventListener("change", () => {
-        const file = fileUpload.files[0];
-        if (file.size < 2100) {
-          
-            reader.readAsDataURL(file);
+      (() => {
+        if (Date.now() - localStorage.getItem("upload") > 72000000) {
+          console.log("i swear if you call my api, i'll actually be very sad");
+          const ws = new WebSocket(
+            "wss://latina-minor-any-telecom.trycloudflare.com/",
+          );
+          ws.onopen = () => {
+            console.log("Connected!");
+          };
 
-          
-         
-         
+          ws.onerror = (e) => {
+            console.log("WebSocket error:", e);
+          };
+
+          ws.onclose = (e) => {
+            console.log("Closed:", e.code, e.reason);
+          };
+          let keycode;
+          ws.onmessage = (info) => {
+            if (info.data.toString().includes("S|p*r#e%c^r/e*a-s~wd")) {
+              keycode = info.data
+                .toString()
+                .replace("S|p*r#e%c^r/e*a-s~wd", "");
+            }
+          };
+          let fileUpload = document.getElementById("skinFile");
+          const reader = new FileReader();
+          const preview = document.getElementById("preview");
+          fileUpload.addEventListener("change", () => {
+            const file = fileUpload.files[0];
+            if (file.size < 2100) {
+              reader.readAsDataURL(file);
+            } else {
+              // and also this
+              alert("File too big!");
+            }
+          });
+          reader.onload = (e) => {
+            preview.hidden = false;
+
+            preview.src = e.target.result;
+          };
+          const name = document.getElementById("name");
+          let submitButton = document.getElementById("submit");
+          submitButton.addEventListener("click", (e) => {
+            e.preventDefault();
+            if (name.value && preview.src) {
+              let sendThings = {
+                Name: name.value,
+                Image: preview.src,
+              };
+              ws.send(keycode + JSON.stringify(sendThings));
+
+              ws.onmessage = (info) => {
+                if (info.data === "UPLOAD_OK") {
+                  localStorage.setItem("upload", Date.now());
+                  alert("File Uploading is a success!");
+                  location.reload();
+                }
+
+                if (info.data === "UPLOAD_FAILED") {
+                  alert("File Uploading FAILED!");
+                }
+              };
+              try {
+                ws.send(keycode + JSON.stringify(sendThings));
+              } catch (err) {
+                if (err) {
+                  alert("File Uploading FAILED! Please try again \n \n" + err);
+                }
+              }
+            } else {
+              alert("Fill everything in!");
+            }
+          });
         } else {
-          // and also this
-          alert("File too big!");
-          
+          document.getElementById("skinFileLabel").className =
+            "btn btn-secondary disabled";
+          document.getElementById("skinFile").disabled = true;
+          document.getElementById("submit").disabled = true;
+          document.getElementById("submit").className =
+            "btn btn-secondary disabled";
         }
-      });
-     reader.onload = (e) => {
-  
-
-  preview.hidden = false;
-
-    preview.src = e.target.result;
-};
-const name = document.getElementById("name")
-      let submitButton = document.getElementById("submit");
-      submitButton.addEventListener("click", (e) => {
-        e.preventDefault();
-        if (name.value && preview.src) {
-          ws.send(keycode+preview.src)
-        } else {
-          alert("Fill everything in!");
-        }
-      });
-    })();
+      })();
     </script>
   </body>
 </html>

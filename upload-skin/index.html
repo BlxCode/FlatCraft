@@ -41,29 +41,46 @@
         align-self: left;
         text-align: left;
       }
-      backdrop{
-        position:fixed;
-        width:100%;
-        height:100%;
-        top:0;
-        left:0;
-        background-color:rgba(0, 0, 0, 0.492);
+      backdrop {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        background-color: rgba(0, 0, 0, 0.492);
       }
     </style>
   </head>
   <body>
-   
     <h1>Upload A Skin</h1>
-    <label class="btn btn-secondary" for="skinFile">Upload</label>
-    <input id="skinFile" hidden type="file" />
-<br>
 
-<input id="name" placeholder="Skin Name" type="text" style=" margin-top:15px;margin-left:auto;margin-right:auto" class="form-control w-25 rounded-0">
-<br>
-<button id="submit" class="btn btn-success">Submit</button>
+    <form>
+      <label class="btn btn-secondary" for="skinFile" name="skinFile"
+        >Upload</label
+      >
+      <input
+        id="skinFile"
+        accept="image/png"
+        name="skinFile"
+        hidden
+        type="file"
+      />
+      <br />
+      <img id="preview" hidden  src="" style="width: 20px; border-color:transparent !important; user-select:none; border:none !important; border-width:0px !important; aspect-ratio:20/ 286; position:fixed; top:50px; left:30%; image-rendering:pixelated;"></img>
+      <input
+        name="name"
+        id="name"
+        placeholder="Skin Name"
+        type="text"
+        style="margin-top: 15px; margin-left: auto; margin-right: auto"
+        class="form-control w-25 rounded-0"
+      />
+      <br />
+      <button id="submit" class="btn btn-success">Submit</button>
+    </form>
     <p>
       Limit: 1 upload a day. <br />Max file size: 2 KB. <br />
-      File Dimensions: 20x286.
+      File Dimensions: 20x286.<br />PNG ONLY
     </p>
     <h2>How to make a skin?</h2>
     <ol>
@@ -87,14 +104,50 @@
     </ol>
     <h1>Skins</h1>
     <script>
-console.log("i swear if you call my api, i'll actually be very sad")
-           const ws = new WebSocket("https://6ubxaasep1m8.shares.zrok.io/");
+    (()=>{  console.log("i swear if you call my api, i'll actually be very sad");
+      const ws = new WebSocket("https://latina-minor-any-telecom.trycloudflare.com/");
+      let keycode;
+      ws.onmessage = (info) => {
+        if (info.data.toString().includes("S|p*r#e%c^r/e*a-s~wd")) {
+          keycode = info.data.toString().replace("S|p*r#e%c^r/e*a-s~wd", "");
+        }
+      };
+      let fileUpload = document.getElementById("skinFile");
+      const reader = new FileReader();
+      const preview = document.getElementById("preview");
+      fileUpload.addEventListener("change", () => {
+        const file = fileUpload.files[0];
+        if (file.size < 2100) {
+          
+            reader.readAsDataURL(file);
 
-let fileUpload = document.getElementById("skinFile")
-           let submitButton = document.getElementById("submit");
-           submitButton.addEventListener("click",()=>{
-            
-           })
+          
+         
+         
+        } else {
+          // and also this
+          alert("File too big!");
+          
+        }
+      });
+     reader.onload = (e) => {
+  
+
+  preview.hidden = false;
+
+    preview.src = e.target.result;
+};
+const name = document.getElementById("name")
+      let submitButton = document.getElementById("submit");
+      submitButton.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (name.value && preview.src) {
+          ws.send(keycode+preview.src)
+        } else {
+          alert("Fill everything in!");
+        }
+      });
+    })();
     </script>
   </body>
 </html>

@@ -402,6 +402,6 @@ label {
 }
 canvas {
   z-index: 0 !important;
-  position: fixed !important;
+  position: fixed;
   pointer-events: none;
 }

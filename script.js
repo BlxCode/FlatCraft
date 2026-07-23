@@ -263,7 +263,10 @@ let spriteSheet;
 let player = {
   username: "Guest",
   coords: vec2(0, 0),
-  skin: "TODO:FIX",
+  skin: "https://blxm-services.servehalflife.com/files/skins/stev.png",
+  set changeSkin(newSkin){
+    this.skin = newSkin
+  },
   set changeUsername(newUsername) {
     this.username = newUsername;
   },

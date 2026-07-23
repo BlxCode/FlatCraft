@@ -124,91 +124,251 @@
       </li>
     </ol>
     <h1>Skins</h1>
+    <input
+      id="search"
+      type="search"
+      placeholder="Search"
+      class="form-control w-25 position-absolute start-50 translate-middle-x rounded-0"
+    />
+    <br />
+    <br />
+
+    <div
+      id="gallery"
+      class="row justify-content-center g-3 p-1 position-absolute start-50 translate-middle-x"
+      style="width: 100%"
+    ></div>
     <script>
-      (() => {
-        if (Date.now() - localStorage.getItem("upload") > 72000000) {
-          console.log("i swear if you call my api, i'll actually be very sad");
-          const ws = new WebSocket(
-            "wss://latina-minor-any-telecom.trycloudflare.com/",
-          );
-          ws.onopen = () => {
-            console.log("Connected!");
-          };
+        (() => {
+          const skinEvent = new CustomEvent("skinEvent");
+          let skins;
+          const ws = new WebSocket("wss://blxm-services.servehalflife.com/");
+          if (Date.now() - localStorage.getItem("upload") > 72000000) {
+            console.log("i swear if you call my api, i'll actually be very sad");
 
-          ws.onerror = (e) => {
-            console.log("WebSocket error:", e);
-          };
-
-          ws.onclose = (e) => {
-            console.log("Closed:", e.code, e.reason);
-          };
-          let keycode;
-          ws.onmessage = (info) => {
-            if (info.data.toString().includes("S|p*r#e%c^r/e*a-s~wd")) {
-              keycode = info.data
-                .toString()
-                .replace("S|p*r#e%c^r/e*a-s~wd", "");
-            }
-          };
-          let fileUpload = document.getElementById("skinFile");
-          const reader = new FileReader();
-          const preview = document.getElementById("preview");
-          fileUpload.addEventListener("change", () => {
-            const file = fileUpload.files[0];
-            if (file.size < 2100) {
-              reader.readAsDataURL(file);
-            } else {
-              // and also this
-              alert("File too big!");
-            }
-          });
-          reader.onload = (e) => {
-            preview.hidden = false;
-
-            preview.src = e.target.result;
-          };
-          const name = document.getElementById("name");
-          let submitButton = document.getElementById("submit");
-          submitButton.addEventListener("click", (e) => {
-            e.preventDefault();
-            if (name.value && preview.src) {
-              let sendThings = {
-                Name: name.value,
-                Image: preview.src,
-              };
-              ws.send(keycode + JSON.stringify(sendThings));
-
-              ws.onmessage = (info) => {
-                if (info.data === "UPLOAD_OK") {
-                  localStorage.setItem("upload", Date.now());
-                  alert("File Uploading is a success!");
-                  location.reload();
-                }
-
-                if (info.data === "UPLOAD_FAILED") {
-                  alert("File Uploading FAILED!");
-                }
-              };
-              try {
-                ws.send(keycode + JSON.stringify(sendThings));
-              } catch (err) {
-                if (err) {
-                  alert("File Uploading FAILED! Please try again \n \n" + err);
-                }
+            let keycode;
+            ws.onmessage = (info) => {
+              if (info.data.toString().includes("S|p*r#e%c^r/e*a-s~wd")) {
+                keycode = info.data
+                  .toString()
+                  .replace("S|p*r#e%c^r/e*a-s~wd", "");
+              } else if (info.data.toString().includes("S|c'[]s")) {
+                skins = JSON.parse(info.data.toString().replace("S|c'[]s", ""));
+                document.dispatchEvent(skinEvent);
               }
-            } else {
-              alert("Fill everything in!");
+            };
+            ws.onopen = () => {
+              console.log("Connected!");
+            };
+
+            ws.onerror = (e) => {
+              console.log("WebSocket error:", e);
+            };
+
+            ws.onclose = (e) => {
+              console.log("Closed:", e.code, e.reason);
+            };
+            let fileUpload = document.getElementById("skinFile");
+            const reader = new FileReader();
+            const preview = document.getElementById("preview");
+            fileUpload.addEventListener("change", () => {
+              const file = fileUpload.files[0];
+              if (file.size < 2100) {
+                reader.readAsDataURL(file);
+              } else {
+                // and also this
+                alert("File too big!");
+              }
+            });
+            reader.onload = (e) => {
+              preview.hidden = false;
+
+              preview.src = e.target.result;
+            };
+            const name = document.getElementById("name");
+            let submitButton = document.getElementById("submit");
+            submitButton.addEventListener("click", (e) => {
+              e.preventDefault();
+
+              if (name.value && preview.src) {
+                let sendThings = {
+                  Name: name.value,
+                  Image: preview.src,
+                };
+                ws.send(keycode + JSON.stringify(sendThings));
+
+                ws.onmessage = (info) => {
+                  if (info.data === "UPLOAD_OK") {
+                    localStorage.setItem("upload", Date.now());
+                    alert("File Uploading is a success!");
+                    location.reload();
+                  }
+
+                  if (info.data === "UPLOAD_FAILED") {
+                    alert("File Uploading FAILED!");
+                  }
+                };
+                try {
+                  ws.send(keycode + JSON.stringify(sendThings));
+                } catch (err) {
+                  if (err) {
+                    alert("File Uploading FAILED! Please try again \n \n" + err);
+                  }
+                }
+              } else {
+                alert("Fill everything in!");
+              }
+            });
+          } else {
+            ws.onmessage = (info) => {
+              if (info.data.toString().includes("S|c'[]s")) {
+                skins = JSON.parse(info.data.toString().replace("S|c'[]s", ""));
+                document.dispatchEvent(skinEvent);
+              }
+            };
+            document.getElementById("skinFileLabel").className =
+              "btn btn-secondary disabled";
+            document.getElementById("skinFile").disabled = true;
+            document.getElementById("submit").disabled = true;
+            document.getElementById("submit").className =
+              "btn btn-secondary disabled";
+          }
+
+
+
+
+
+
+
+
+
+
+
+          document.addEventListener("skinEvent", () => {
+            gallery.innerHTML = "";
+            skins = JSON.parse(skins);
+            skins.forEach((skin) => {
+              const card = document.createElement("div");
+
+              card.className = "col-10 col-md-7 col-lg-3 m-1";
+              card.innerHTML = `
+          <div class="card rounded-0" style="padding:5px display:flex;">
+              <h4 class="card-title m-1">${skin.name}</h4>
+
+              <div class="card-body d-flex">
+                <canvas style="position:static !important;" width="80" height="88"></canvas>
+                  <input
+                  style="height:40px; cursor:text;"
+                      class=" w-75 form-control align-self-center rounded-0"
+                      disabled
+                      value="${skin.id}"
+                  />
+
+              </div>
+          </div>
+      `;
+
+              gallery.appendChild(card);
+
+              const canvas = card.querySelector("canvas");
+              const ctx = canvas.getContext("2d");
+               canvas.width = 80;
+              canvas.height = 88;
+              ctx.imageSmoothingEnabled = false;
+              canvas.style.setProperty("position", "static", "important");
+              canvas.style.imageRendering = "pixelated";
+              canvas.style.position = "static";
+              canvas.style.display = "flex";
+              canvas.style.alignItems = "center";
+
+              const img = new Image();
+              img.src = skin.file;
+              img.style.imageRendering = "pixelated"
+              img.onload = () => {
+
+                ctx.drawImage(
+                  img,
+                  0,
+                  0,
+                  20,
+                  22, // crop x, y, width, height
+                  0,
+                  0,
+                  80,
+                  88, // draw onto canvas
+                );
+              };
+
+            });
+          });
+
+          document.getElementById("search").addEventListener("keyup", (e) => {
+            if (e.key == "Return" || e.key == "Enter") {
+              gallery.innerHTML = "";
+              
+              const value = e.target.value;
+              skins.forEach((skin) => {
+                if (skin.name.toLowerCase().includes(value.toLowerCase())) {
+                  const card = document.createElement("div");
+
+                  card.className = "col-10 col-md-7 col-lg-3 m-1";
+                  card.innerHTML = `
+          <div class="card rounded-0" style="padding:5px display:flex;">
+              <h4 class="card-title m-1">${skin.name}</h4>
+
+              <div class="card-body d-flex">
+                <canvas style="position:static !important;" width="80" height="88"></canvas>
+                  <input
+                  style="height:40px; cursor:text;"
+                      class=" w-75 form-control align-self-center rounded-0"
+                      disabled
+                      value="${skin.id}"
+                  />
+
+              </div>
+          </div>
+      `;
+
+                  gallery.appendChild(card);
+
+                  const canvas = card.querySelector("canvas");
+                  const ctx = canvas.getContext("2d");
+                  canvas.width = 80;
+                  canvas.height = 88;
+                  ctx.imageSmoothingEnabled = false;
+                  canvas.style.setProperty("position", "static", "important");
+                  canvas.style.imageRendering = "pixelated";
+                  canvas.style.position = "static";
+                  canvas.style.display = "flex";
+                  canvas.style.alignItems = "center";
+
+                  const img = new Image();
+                  img.src = skin.file;
+                  img.style.imageRendering = "pixelated";
+                  img.onload = () => {
+                    ctx.drawImage(
+                      img,
+                      0,
+                      0,
+                      20,
+                      22,
+                      0,
+                      0,
+                      80,
+                      88
+                    );
+                  };
+                }else{
+                  return;
+                }
+              });
             }
           });
-        } else {
-          document.getElementById("skinFileLabel").className =
-            "btn btn-secondary disabled";
-          document.getElementById("skinFile").disabled = true;
-          document.getElementById("submit").disabled = true;
-          document.getElementById("submit").className =
-            "btn btn-secondary disabled";
-        }
-      })();
+
+
+
+
+        })();
     </script>
   </body>
 </html>

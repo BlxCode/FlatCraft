@@ -129,6 +129,7 @@ ul {
 }
 
 #settings {
+  display: flex;
   text-align: center;
 
   position: absolute;
@@ -405,3 +406,39 @@ canvas {
   position: fixed;
   pointer-events: none;
 }
+#settingsNav {
+  display: flexbox;
+  align-content: center;
+  border-top: 1px solid var(--primary-bg-color);
+  background-color: rgb(44, 43, 43);
+  color: white;
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  height: 100%;
+  width: 18%;
+ 
+  
+}
+.settingsNavItem {
+  align-self: center;
+  margin: 1dvh auto 1dvh auto;
+  width:100%;
+  font-size: 4dvh;
+  text-align:left;
+  padding:1dvh;
+  cursor: pointer;
+  transition:background 0.2s, color 0.2s;
+  
+}
+.settingsNavItem:hover{
+   color: rgb(245, 245, 69);
+ background: rgba(252, 255, 171, 0.1);
+background: linear-gradient(90deg, rgba(252, 255, 171, 0) 0%, rgba(254, 243, 169, 0.1) 89%, rgba(254, 243, 169, 0.1) 94%, rgba(196, 183, 139, 1) 100%);
+}
+.settingsNavItemSelected {
+  color: rgb(245, 245, 69);
+ background: rgba(252, 255, 171, 0.1);
+background: linear-gradient(90deg, rgba(252, 255, 171, 0) 0%, rgba(254, 243, 169, 0.1) 89%, rgba(254, 243, 169, 0.1) 94%, rgba(196, 183, 139, 1) 100%);
+}
+

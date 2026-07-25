@@ -195,7 +195,7 @@
                   Name: name.value,
                   Image: preview.src,
                 };
-                ws.send(keycode + JSON.stringify(sendThings));
+              
 
                 ws.onmessage = (info) => {
                   if (info.data === "UPLOAD_OK") {

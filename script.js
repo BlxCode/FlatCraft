@@ -263,6 +263,8 @@ let player = {
   username: "Guest",
   coords: vec2(0 * 85, 0 * 85),
   skin: "https://blxm-services.servehalflife.com/files/skins/stev.png",
+  animation: "idle",
+  animationLocation: vec2(0,0),
   setCoords: (newCoordsX, newCoordsY) => {
     this.coords = vec2(newCoordsX * 85, newCoordsY * 85);
   },
@@ -272,11 +274,15 @@ let player = {
   setUsername: (newUsername) => {
     this.username = newUsername;
   },
-  setAnimate: (animationName) => {
+  Animate: (animationName) => {
     const spriteSheetLocations = {
       idle: vec2(0, 0),
       walk1: vec2(0, -22),
+      
     };
+  },
+  drawPlayer: () => {
+
   },
 };
 /*

@@ -258,24 +258,26 @@ function switchSlots(slot) {
 ▝▘     ▀▀  ▀▀▝▘  █   ▝▀▀  ▀          ▀▀  ▝▀▀ ▝▘ ▝▘ ▝▀▀  ▀    ▀▀▝▘  ▀▀ ▝▀▀▀▘ ▝▀▘ ▝▘ ▝▘
                 █▌                                                                   
                                                                                      */
-let spriteSheet;
 
 let player = {
   username: "Guest",
-  coords: vec2(0, 0),
+  coords: vec2(0 * 85, 0 * 85),
   skin: "https://blxm-services.servehalflife.com/files/skins/stev.png",
-  set changeSkin(newSkin){
-    this.skin = newSkin
+  setCoords: (newCoordsX, newCoordsY) => {
+    this.coords = vec2(newCoordsX * 85, newCoordsY * 85);
   },
-  set changeUsername(newUsername) {
+  setSkin: (newSkin) => {
+    this.skin = newSkin;
+  },
+  setUsername: (newUsername) => {
     this.username = newUsername;
   },
-  set animate(animationName){
+  setAnimate: (animationName) => {
     const spriteSheetLocations = {
-      idle : vec2(0,0),
-      walk1:vec2(0,-22)
-    }
-  }
+      idle: vec2(0, 0),
+      walk1: vec2(0, -22),
+    };
+  },
 };
 /*
    ___                  ___             _         _           

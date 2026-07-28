@@ -160,7 +160,13 @@
 
           <div class="settingsNavItem" id="settingsNavItemSkin">Skin</div>
         </div>
-        <div id="settingsBody"></div>
+        <div id="settingsBody">
+
+          <div class="settingsBodyContent" id="settingsSkin">
+            <label for="skinId" class="form-label">Skin ID</label>
+            <input class="form-control w-50 bg-dark rounded-0 text-white" style="border-color:rgb(17, 20, 34);"type="number" id="skinId">
+          </div>
+        </div>
       </div>
       <div id="worldSelect" class="visually-hidden text-center">
         <h1
@@ -261,24 +267,26 @@
             <div class="form-floating w-25 m-auto p-1">
               <input
                 type="text"
-                class="form-control rounded-0 bg-dark-subtle text-black worldCreateForm"
+                class="form-control rounded-0 bg-dark text-white worldCreateForm"
+                style="border-color: rgb(17, 20, 34);"
                 id="createWorld-WorldName"
                 placeholder="My World"
                 value="My World"
               />
-              <label class="text-black" for="createWorld-WorldName"
+              <label class="text-white" for="createWorld-WorldName"
                 >World Name</label
               >
             </div>
             <div class="form-floating w-75 m-auto p-1">
               <input
                 type="text"
-                class="form-control rounded-0 bg-dark-subtle text-black worldCreateForm"
+                class="form-control rounded-0 bg-dark text-white worldCreateForm"
+                style="border-color: rgb(17, 20, 34);"
                 id="createWorld-WorldDesc"
                 placeholder="Lorem Ipsum"
                 value="A new world!"
               />
-              <label class="text-black" for="createWorld-WorldDesc"
+              <label class="text-white" for="createWorld-WorldDesc"
                 >World Description</label
               >
             </div>
@@ -290,7 +298,8 @@
             <div style="text-align: left" class="w-25">
               <div class="form-check">
                 <input
-                  class="form-check-input"
+                  class="form-check-input bg-dark"
+                  style="border-color: rgb(17, 20, 34);"
                   type="radio"
                   name="radioWorldType"
                   id="worldSelect-WorldSandbox"
@@ -303,7 +312,8 @@
               </div>
               <div class="form-check">
                 <input
-                  class="form-check-input"
+                  class="form-check-input bg-dark"
+                  style="border-color: rgb(17, 20, 34);"
                   type="radio"
                   name="radioWorldType"
                   id="worldSelect-WorldFlat"
@@ -318,7 +328,8 @@
             <div class="form-floating w-75 m-auto p-1">
               <input
                 type="text"
-                class="form-control rounded-0 bg-dark-subtle text-black worldCreateForm"
+                class="form-control rounded-0 bg-dark text-white worldCreateForm"
+                style="border-color: rgb(17, 20, 34);"
                 id="createWorld-WorldSeed"
                 placeholder="49683203"
               />
@@ -326,7 +337,7 @@
                 document.getElementById("createWorld-WorldSeed").value =
                   Math.round(Math.random() * 1000000) + 100000;
               </script>
-              <label class="text-black" for="createWorld-WorldSeed"
+              <label class="text-white" for="createWorld-WorldSeed"
                 >World Seed</label
               >
             </div>

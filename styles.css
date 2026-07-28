@@ -195,7 +195,14 @@ ul {
  grid-area:content;
   z-index: 198;
 }
+.settingsBodyContent{
+ 
+  top:0;
+  left:0;
+  width:inherit;
+  height:100%;
 
+}
 #woldSelectButton {
   width: fit-content !important;
 }

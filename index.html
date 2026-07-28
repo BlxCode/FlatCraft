@@ -75,13 +75,15 @@
           x
         </button>
 
-        <ul style="position: relative; margin-bottom: 0.5dvh">
+        <ul style="position: relative; margin-top: 1.5dvh">
           <h2 style="margin: 0px">Owner</h2>
           <li>BlxCode</li>
 
           <h2 style="margin: 0px">Artists</h2>
-          <li>fjfjf-code</li>
+
           <li>BlxCode</li>
+          <li>fjfjf-code</li>
+          <li>candymoose1530</li>
 
           <h2 style="margin: 0px">Music</h2>
           <li>
@@ -126,10 +128,9 @@
       </div>
 
       <div id="settings" class="visually-hidden">
-        <div class="fixed-top">
+        <div style="z-index: 199; grid-area: header; height: fit-content">
           <h1
             style="
-              margin: 0.1dvh;
               margin-bottom: 0px;
               font-size: 7dvh;
               background-color: rgb(44, 43, 43);
@@ -144,11 +145,19 @@
             x
           </button>
         </div>
+
         <div id="settingsNav">
-          <div class="settingsNavItem settingsNavItemSelected" id="settingsNavItemGeneral">General</div>
-        
-          <div class="settingsNavItem" id="settingsNavItemGraphics">Graphics</div>
-       
+          <div
+            class="settingsNavItem settingsNavItemSelected"
+            id="settingsNavItemGeneral"
+          >
+            General
+          </div>
+
+          <div class="settingsNavItem" id="settingsNavItemGraphics">
+            Graphics
+          </div>
+
           <div class="settingsNavItem" id="settingsNavItemSkin">Skin</div>
         </div>
         <div id="settingsBody"></div>

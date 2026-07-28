@@ -98,12 +98,17 @@ var progressBar = setInterval(() => {
 //initialized game
 async function startInit() {
   clearInterval(progressBar);
+ 
 
   loadingProgressBar.ariaValueNow = 100;
   loadingProgressBar.style.width = "100%";
 
   await new Promise((r) => setTimeout(r, 3400));
+ if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+  // true for mobile device
 
+  alert("FlatCraft is not designed for mobile devices!")
+}
   document.getElementById("loadingScreenWrapper").className = "popCloseHide";
   enterGameButtonLoadingScreenWrapper.className = "popAnim";
   loadingScreen.className = "loadingScreenChangeColor";
@@ -230,10 +235,26 @@ backdropUI.addEventListener("click", () => {
   backdropUI.hidden = true;
 });
 
-// Resize the game canvas to match the browser window size.
+// SETTINGS UI
+function dgeID(id) {
+  return document.getElementById(id);
+}
 
-// Popup UI elements for showing temporary error/messages.
 
+const settingsNavItemGeneral = dgeID("settingsNavItemGeneral");
+const settingsNavItemGraphics = dgeID("settingsNavItemGraphics");
+const settingsNavItemSkin = dgeID("settingsNavItemSkin");
+let currentSettingsTab = settingsNavItemGeneral;
+
+function switchSettingsTab(newTab) {
+  currentSettingsTab.classList.remove("settingsNavItemSelected");
+  newTab.classList.add("settingsNavItemSelected");
+  currentSettingsTab=newTab;
+}
+
+settingsNavItemGeneral.addEventListener("click",()=>{ switchSettingsTab(settingsNavItemGeneral)});
+settingsNavItemGraphics.addEventListener("click",()=>{ switchSettingsTab(settingsNavItemGraphics)});
+settingsNavItemSkin.addEventListener("click",()=>{ switchSettingsTab(settingsNavItemSkin)});
 // Close button hides the popup and its backdrop.
 document.getElementById("popupClose").addEventListener("click", () => {
   errorDiv.className = "popCloseHide";
@@ -256,7 +277,7 @@ function switchSlots(slot) {
 ▐▌    ▐▌  ▗█▀▜▌ ▐█▛ ▐▛▀▀▘ █        ▐▌▝▜▌▐▛▀▀▘▐▌ ▐▌▐▛▀▀▘ █   ▗█▀▜▌ ▐▌    █  ▐▌ ▐▌▐▌ ▐▌
 ▐▌    ▐▙▄ ▐▙▄█▌  █▌ ▝█▄▄▌ █         █▄▟▌▝█▄▄▌▐▌ ▐▌▝█▄▄▌ █   ▐▙▄█▌ ▐▙▄ ▗▄█▄▖▝█▄█▘▐▌ ▐▌
 ▝▘     ▀▀  ▀▀▝▘  █   ▝▀▀  ▀          ▀▀  ▝▀▀ ▝▘ ▝▘ ▝▀▀  ▀    ▀▀▝▘  ▀▀ ▝▀▀▀▘ ▝▀▘ ▝▘ ▝▘
-                █▌                                                                   
+                  █▌                                                                   
                                                                                      */
 
 let player = {
@@ -280,9 +301,7 @@ let player = {
       walk1: vec2(0, -22),
     };
   },
-  drawPlayer: () => {
-   
-  },
+  drawPlayer: () => {},
   cameraToPlayer: () => {},
 };
 /*

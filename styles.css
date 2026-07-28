@@ -135,9 +135,8 @@ ul {
     "menu content";
   grid-template-columns: 1fr 4fr;
   grid-template-rows: 1fr 8fr;
- 
+
   text-align: center;
-  
 
   position: absolute;
   top: 50%;
@@ -174,9 +173,9 @@ ul {
   background: rgba(252, 255, 171, 0.1);
   background: linear-gradient(
     90deg,
-    rgba(252, 255, 171, 0) 0%,
-    rgba(254, 243, 169, 0.1) 89%,
-    rgba(254, 243, 169, 0.1) 94%,
+    rgba(254, 243, 169, 0.1) 0%,
+    rgba(254, 243, 169, 0.1) 97%,
+    rgba(196, 183, 139, 1) 97%,
     rgba(196, 183, 139, 1) 100%
   );
 }
@@ -185,23 +184,21 @@ ul {
   background: rgba(252, 255, 171, 0.1);
   background: linear-gradient(
     90deg,
-    rgba(252, 255, 171, 0) 0%,
-    rgba(254, 243, 169, 0.1) 89%,
-    rgba(254, 243, 169, 0.1) 94%,
+    rgba(254, 243, 169, 0.1) 0%,
+    rgba(254, 243, 169, 0.1) 97%,
+    rgba(196, 183, 139, 1) 97%,
     rgba(196, 183, 139, 1) 100%
   );
 }
 #settingsBody {
- grid-area:content;
+  grid-area: content;
   z-index: 198;
 }
-.settingsBodyContent{
- 
-  top:0;
-  left:0;
-  width:inherit;
-  height:100%;
-
+.settingsBodyContent {
+  top: 0;
+  left: 0;
+  width: inherit;
+  height: 100%;
 }
 #woldSelectButton {
   width: fit-content !important;

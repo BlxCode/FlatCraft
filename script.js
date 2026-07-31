@@ -98,24 +98,27 @@ var progressBar = setInterval(() => {
 //initialized game
 async function startInit() {
   clearInterval(progressBar);
- 
 
   loadingProgressBar.ariaValueNow = 100;
   loadingProgressBar.style.width = "100%";
 
   await new Promise((r) => setTimeout(r, 3400));
- if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
-  // true for mobile device
+  if (
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent,
+    )
+  ) {
+    // true for mobile device
 
-  alert("FlatCraft is not designed for mobile devices!")
-}
+    alert("FlatCraft is not designed for mobile devices!");
+  }
   document.getElementById("loadingScreenWrapper").className = "popCloseHide";
   enterGameButtonLoadingScreenWrapper.className = "popAnim";
   loadingScreen.className = "loadingScreenChangeColor";
 }
-
-startInit();
-
+window.addEventListener("load", () => {
+  startInit();
+});
 // MAIN MENU
 enterGameButtonLoadingScreenWrapper.addEventListener("click", () => {
   mainMenuAudio.play();
@@ -240,21 +243,43 @@ function dgeID(id) {
   return document.getElementById(id);
 }
 
-
 const settingsNavItemGeneral = dgeID("settingsNavItemGeneral");
 const settingsNavItemGraphics = dgeID("settingsNavItemGraphics");
 const settingsNavItemSkin = dgeID("settingsNavItemSkin");
+const settingsGeneral = dgeID("settingsGeneral");
+const settingsGraphics = dgeID("settingsGraphics");
+const settingsSkin = dgeID("settingsSkin");
 let currentSettingsTab = settingsNavItemGeneral;
 
-function switchSettingsTab(newTab) {
+function switchSettingsTab(newTab, newTabValue) {
   currentSettingsTab.classList.remove("settingsNavItemSelected");
   newTab.classList.add("settingsNavItemSelected");
-  currentSettingsTab=newTab;
+  currentSettingsTab = newTab;
+
+  if (newTabValue === "General") {
+    settingsGeneral.hidden = false;
+    settingsGraphics.hidden = true;
+    settingsSkin.hidden = true;
+  } else if (newTabValue === "Graphics") {
+    settingsGeneral.hidden = true;
+    settingsGraphics.hidden = false;
+    settingsSkin.hidden = true;
+  } else if (newTabValue === "Skin") {
+    settingsGeneral.hidden = true;
+    settingsGraphics.hidden = true;
+    settingsSkin.hidden = false;
+  }
 }
 
-settingsNavItemGeneral.addEventListener("click",()=>{ switchSettingsTab(settingsNavItemGeneral)});
-settingsNavItemGraphics.addEventListener("click",()=>{ switchSettingsTab(settingsNavItemGraphics)});
-settingsNavItemSkin.addEventListener("click",()=>{ switchSettingsTab(settingsNavItemSkin)});
+settingsNavItemGeneral.addEventListener("click", () => {
+  switchSettingsTab(settingsNavItemGeneral, "General");
+});
+settingsNavItemGraphics.addEventListener("click", () => {
+  switchSettingsTab(settingsNavItemGraphics, "Graphics");
+});
+settingsNavItemSkin.addEventListener("click", () => {
+  switchSettingsTab(settingsNavItemSkin, "Skin");
+});
 // Close button hides the popup and its backdrop.
 document.getElementById("popupClose").addEventListener("click", () => {
   errorDiv.className = "popCloseHide";
@@ -279,31 +304,8 @@ function switchSlots(slot) {
 ▝▘     ▀▀  ▀▀▝▘  █   ▝▀▀  ▀          ▀▀  ▝▀▀ ▝▘ ▝▘ ▝▀▀  ▀    ▀▀▝▘  ▀▀ ▝▀▀▀▘ ▝▀▘ ▝▘ ▝▘
                   █▌                                                                   
                                                                                      */
+// create skin image thing
 
-let player = {
-  username: "Guest",
-  coords: vec2(0 * 85, 0 * 85),
-  skin: "https://blxm-services.servehalflife.com/files/skins/stev.png",
-  animation: "idle",
-  animationLocation: vec2(0, 0),
-  setCoords: (newCoordsX, newCoordsY) => {
-    this.coords = vec2(newCoordsX * 85, newCoordsY * 85);
-  },
-  setSkin: (newSkin) => {
-    this.skin = newSkin;
-  },
-  setUsername: (newUsername) => {
-    this.username = newUsername;
-  },
-  Animate: (animationName) => {
-    const spriteSheetLocations = {
-      idle: vec2(0, 0),
-      walk1: vec2(0, -22),
-    };
-  },
-  drawPlayer: () => {},
-  cameraToPlayer: () => {},
-};
 /*
    ___                  ___             _         _           
   / __|__ _ _ __  ___  | _ \___ _ _  __| |___ _ _(_)_ _  __ _ 
@@ -367,7 +369,10 @@ async function loadAllImages() {
   );
 }
 let ctx;
-
+let playerTextureImageSrc;
+let playerTexture;
+let playerImage = new Image();
+let player;
 async function gameInit() {
   combineCanvases();
 
@@ -397,13 +402,76 @@ async function gameInit() {
     }
   });
 
+  await new Promise((resolve) => {
+    playerImage.onload = resolve;
+
+    playerImage.src =
+      localStorage.getItem("skinData") ||
+      "data:image/png;base64,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";
+  });
+  playerTexture = new TextureInfo(playerImage);
+
+  let spriteSheet = {
+    idle: new TileInfo(vec2(0, 0), vec2(20, 22), playerTexture),
+    walk1: new TileInfo(vec2(0, 22), vec2(20, 22), playerTexture),
+    walk2: new TileInfo(vec2(0, 44), vec2(20, 22), playerTexture),
+    walk3: new TileInfo(vec2(0, 66), vec2(20, 22), playerTexture),
+    walk4: new TileInfo(vec2(0, 88), vec2(20, 22), playerTexture),
+    walk5: new TileInfo(vec2(0, 110), vec2(20, 22), playerTexture),
+    walk6: new TileInfo(vec2(0, 132), vec2(20, 22), playerTexture),
+    walk7: new TileInfo(vec2(0, 154), vec2(20, 22), playerTexture),
+    crouch: new TileInfo(vec2(0, 176), vec2(20, 22), playerTexture),
+    crouchWalk: new TileInfo(vec2(0, 198), vec2(20, 22), playerTexture),
+    raise1: new TileInfo(vec2(0, 220), vec2(20, 22), playerTexture),
+    raise2: new TileInfo(vec2(0, 242), vec2(20, 22), playerTexture),
+    break1: new TileInfo(vec2(0, 264), vec2(20, 22), playerTexture),
+    break2: new TileInfo(vec2(0, 286), vec2(20, 22), playerTexture),
+    fall: new TileInfo(vec2(0, 308), vec2(20, 22), playerTexture),
+  };
+
+ player = {
+    username: "Guest",
+    coords: vec2(0 * 85, 0 * 85),
+    state: "idle",
+    animation: "idle",
+    directionPositive: false,
+    animationLocation: vec2(0, 0),
+    changeState: (newState) => {
+      player.state = newState;
+    },
+    setCoords: (newCoordsX, newCoordsY) => {
+      player.coords = vec2(newCoordsX * 85, newCoordsY * 85);
+    },
+    setSkin: (newSkin) => {
+      player.skin = newSkin;
+      playerTextureImageSrc = newSkin;
+      localStorage.setItem("skinData", newSkin);
+      playerImage.src = playerTextureImageSrc;
+      playerTexture = new TextureInfo(playerImage);
+      
+      document.dispatchEvent(skinChangedEvent);
+    },
+    setUsername: (newUsername) => {
+      player.username = newUsername;
+    },
+    Animate: (animationName) => {},
+    drawPlayer: () => {
+      drawTile(cameraPos,vec2(7.5),spriteSheet[player.animation],WHITE,0,false);
+     player.coords = cameraPos;
+    },
+    cameraToPlayer: () => {},
+  };
+
   console.log("Game engine initialized.");
+  
 }
 
 function gameUpdate() {}
 function gameUpdatePost() {}
 
 function gameRender() {
+   player.drawPlayer();
+ 
   if (keyIsDown("KeyW")) {
     cameraPos = cameraPos.add(vec2(0, -10));
   }
@@ -447,7 +515,6 @@ function gameRender() {
       }
     }
   };
-
   renderBlocks();
 }
 function destroyBlock(x, y) {
@@ -458,6 +525,7 @@ function destroyBlock(x, y) {
 function createBlock(x, y, blockType) {
   // check if block already exist
   if (blocks[`${x},${y}`]) {
+    console.log("Tried to create a "+blockType+" that already existed at engine coords: vec2("+String(x)+","+String(y)+")")
     return;
   } else {
     return (blocks[`${x},${y}`] = blockType);
@@ -494,6 +562,7 @@ var blockMetaData = {
     collision: true,
     translucent: false,
     liquid: false,
+    color: "#2EB53A",
   },
   dirt: {
     breakTime: 1,
@@ -501,6 +570,7 @@ var blockMetaData = {
     collision: true,
     translucent: false,
     liquid: false,
+    color: "#593F2D",
   },
   stone: {
     breakTime: 2,
@@ -508,6 +578,7 @@ var blockMetaData = {
     collision: true,
     translucent: false,
     liquid: false,
+    color: "#545454",
   },
   mapleLog: {
     breakTime: 1,
@@ -515,6 +586,7 @@ var blockMetaData = {
     collision: true,
     translucent: false,
     liquid: false,
+    color: "#634A2E",
   },
   mapleLeaf: {
     breakTime: 0.5,
@@ -522,6 +594,7 @@ var blockMetaData = {
     collision: false,
     translucent: true,
     liquid: false,
+    color: "#48834C",
   },
 };
 const biomes = ["plains", "mapleForest", "desert"];

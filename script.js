@@ -468,7 +468,7 @@ async function gameInit() {
 
 function gameUpdate() {}
 function gameUpdatePost() {}
-
+ 
 function gameRender() {
    player.drawPlayer();
  

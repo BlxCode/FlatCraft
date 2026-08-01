@@ -1,3 +1,5 @@
+// Sorry that everything is in one file lol
+// still too lazy to import and export variables and stuff like that
 "use strict";
 import { createNoise2D } from "https://cdn.jsdelivr.net/npm/simplex-noise/+esm";
 const loadingScreen = document.getElementById("loadingScreen");
@@ -314,6 +316,7 @@ function switchSlots(slot) {
                                                         |___/ 
 
 */
+
 // Remember that ALL vec2 coords should have BOTH parameters multiplied by 85
 
 let texture = {};
@@ -429,9 +432,9 @@ async function gameInit() {
     fall: new TileInfo(vec2(0, 308), vec2(20, 22), playerTexture),
   };
 
- player = {
+  player = {
     username: "Guest",
-    coords: vec2(0 * 85, 0 * 85),
+    coords: vec2(0 * 85, -6.7* 85),
     state: "idle",
     animation: "idle",
     directionPositive: false,
@@ -448,7 +451,7 @@ async function gameInit() {
       localStorage.setItem("skinData", newSkin);
       playerImage.src = playerTextureImageSrc;
       playerTexture = new TextureInfo(playerImage);
-      
+
       document.dispatchEvent(skinChangedEvent);
     },
     setUsername: (newUsername) => {
@@ -456,35 +459,31 @@ async function gameInit() {
     },
     Animate: (animationName) => {},
     drawPlayer: () => {
-      drawTile(cameraPos,vec2(7.5),spriteSheet[player.animation],WHITE,0,false);
-     player.coords = cameraPos;
+      drawTile(
+        player.coords,
+        vec2(7.5),
+        spriteSheet[player.animation],
+        WHITE,
+        0,
+        player.directionPositive,
+      );
+      drawRect(player.coords.add(vec2(0, -3.7)), vec2(0.07));
+      console.log(Math.floor(player.coords.x/85) + "," + String(Math.floor(player.coords.add(vec2(0, -3.7)).y / 85 + 6.8)));
+      console.log(player)
+      
     },
-    cameraToPlayer: () => {},
+    cameraToPlayer: () => {
+      cameraPos = player.coords;
+    },
   };
 
   console.log("Game engine initialized.");
-  
 }
 
 function gameUpdate() {}
 function gameUpdatePost() {}
- 
-function gameRender() {
-   player.drawPlayer();
- 
-  if (keyIsDown("KeyW")) {
-    cameraPos = cameraPos.add(vec2(0, -10));
-  }
-  if (keyIsDown("KeyS")) {
-    cameraPos = cameraPos.add(vec2(0, 10));
-  }
-  if (keyIsDown("KeyA")) {
-    cameraPos = cameraPos.add(vec2(-10, 0));
-  }
-  if (keyIsDown("KeyD")) {
-    cameraPos = cameraPos.add(vec2(10, 0));
-  }
 
+function gameRender() {
   const renderBlocks = () => {
     const viewWidthBlocks = Math.ceil(window.innerWidth / 85);
     const viewHeightBlocks = Math.ceil(window.innerHeight / 90);
@@ -515,7 +514,26 @@ function gameRender() {
       }
     }
   };
+
   renderBlocks();
+  player.drawPlayer();
+
+  if (keyIsDown("KeyW")) {
+    player.coords = player.coords.add(vec2(0, -1));
+  }
+  if (keyIsDown("KeyS")) {
+    player.coords = player.coords.add(vec2(0, 1));
+  }
+  if (keyIsDown("KeyA")) {
+    player.coords = player.coords.add(vec2(-1, 0));
+    player.directionPositive = false;
+  }
+  if (keyIsDown("KeyD")) {
+    player.coords = player.coords.add(vec2(1, 0));
+    player.directionPositive = true;
+  }
+
+  player.cameraToPlayer();
 }
 function destroyBlock(x, y) {
   if (blocks[`${x},${y}`]) {
@@ -525,7 +543,15 @@ function destroyBlock(x, y) {
 function createBlock(x, y, blockType) {
   // check if block already exist
   if (blocks[`${x},${y}`]) {
-    console.log("Tried to create a "+blockType+" that already existed at engine coords: vec2("+String(x)+","+String(y)+")")
+    console.log(
+      "Tried to create a " +
+        blockType +
+        " that already existed at engine coords: vec2(" +
+        String(x) +
+        "," +
+        String(y) +
+        ")",
+    );
     return;
   } else {
     return (blocks[`${x},${y}`] = blockType);

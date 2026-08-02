@@ -1,5 +1,6 @@
 // Sorry that everything is in one file lol
 // still too lazy to import and export variables and stuff like that
+// this is also the first time i've ever used littleJS
 "use strict";
 import { createNoise2D } from "https://cdn.jsdelivr.net/npm/simplex-noise/+esm";
 const loadingScreen = document.getElementById("loadingScreen");
@@ -395,7 +396,6 @@ async function gameInit() {
     mainMenuAudio.pause();
     document.getElementById("mainMenu").className = "popCloseHide";
 
-    cameraPos = vec2(0, 0);
     console.log(blocks);
     paused = false;
     if (event.detail.worldType == "sandbox") {
@@ -434,49 +434,57 @@ async function gameInit() {
 
   player = {
     username: "Guest",
-    coords: vec2(0 * 85, -6.7* 85),
-    state: "idle",
+    coords: vec2(0, -6.62 * 85),
+
     animation: "idle",
     directionPositive: false,
     animationLocation: vec2(0, 0),
-    changeState: (newState) => {
-      player.state = newState;
-    },
-    setCoords: (newCoordsX, newCoordsY) => {
-      player.coords = vec2(newCoordsX * 85, newCoordsY * 85);
-    },
+
     setSkin: (newSkin) => {
       player.skin = newSkin;
       playerTextureImageSrc = newSkin;
       localStorage.setItem("skinData", newSkin);
       playerImage.src = playerTextureImageSrc;
       playerTexture = new TextureInfo(playerImage);
-
-      document.dispatchEvent(skinChangedEvent);
+    },
+    getFeetCoords: () => {
+      return vec2(
+        Math.floor(player.coords.x / 85),
+        Math.floor(player.coords.add(vec2(0, -3.5)).y / 85 + 6.62),
+      );
+    },
+    isStandingOnBlock: () => {
+      return (
+        blocks[player.getFeetCoords().x + "," + player.getFeetCoords().y] ||
+        false
+      );
     },
     setUsername: (newUsername) => {
       player.username = newUsername;
     },
-    Animate: (animationName) => {},
+
     drawPlayer: () => {
       drawTile(
         player.coords,
-        vec2(7.5),
+        vec2(7),
         spriteSheet[player.animation],
         WHITE,
         0,
         player.directionPositive,
       );
-      drawRect(player.coords.add(vec2(0, -3.7)), vec2(0.07));
-      console.log(Math.floor(player.coords.x/85) + "," + String(Math.floor(player.coords.add(vec2(0, -3.7)).y / 85 + 6.8)));
-      console.log(player)
-      
+    },
+    calculatePlayerPhysics: () => {
+      // check if standing on block
+      if (player.isStandingOnBlock()) {
+      } else if (!player.isStandingOnBlock()) {
+        player.animation = "falling";
+      }
     },
     cameraToPlayer: () => {
       cameraPos = player.coords;
     },
   };
-
+  player.cameraToPlayer();
   console.log("Game engine initialized.");
 }
 
@@ -515,8 +523,8 @@ function gameRender() {
     }
   };
 
-  renderBlocks();
   player.drawPlayer();
+  renderBlocks();
 
   if (keyIsDown("KeyW")) {
     player.coords = player.coords.add(vec2(0, -1));
@@ -532,9 +540,9 @@ function gameRender() {
     player.coords = player.coords.add(vec2(1, 0));
     player.directionPositive = true;
   }
-
   player.cameraToPlayer();
 }
+
 function destroyBlock(x, y) {
   if (blocks[`${x},${y}`]) {
     delete blocks[`${x},${y}`];

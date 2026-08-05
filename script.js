@@ -326,12 +326,18 @@ function loadImage(name) {
     const img = new Image();
 
     img.onload = () => {
-      texture[name] = img;
-      resolve(img);
+      const textureInfo = new TextureInfo(img);
+
+      texture[name] = new TileInfo(
+        vec2(0, 0),
+        vec2(8, 8), // or vec2(8, 8) if every block texture is 8×8
+        textureInfo,
+      );
+
+      resolve();
     };
 
     img.onerror = reject;
-
     img.src = "./assets/textures/" + name + ".png";
   });
 }
@@ -379,13 +385,14 @@ let playerImage = new Image();
 let player;
 async function gameInit() {
   combineCanvases();
-
+  cameraScale = 85;
+  cameraPos = vec2(0, 0);
   ctx = mainCanvas.getContext("2d");
   canvasPixelated = true;
   console.log("Game engine initializing...");
 
   console.log(mainCanvas);
-  mainCanvas.style.zIndex = 0;
+  mainCanvas.style.zIndex = -1;
   await loadAllImages();
   console.log(texture["grass"]);
 
@@ -419,13 +426,13 @@ async function gameInit() {
     username: "Guest",
     jumping: false,
     jumpFrame: 1,
-    coords: vec2(0, -8 * 85),
+    coords: vec2(0, 0),
     isFalling: true,
     momentum: 0,
     fallMultiplier: 1,
     jumpMultiplier: 1,
     crouching: false,
-    canFly: false,
+    canFly: true,
     isWalking: false,
     animation: "idle",
     directionPositive: false,
@@ -440,10 +447,7 @@ async function gameInit() {
       playerTexture = new TextureInfo(playerImage);
     },
     getFeetCoords: () => {
-      return vec2(
-        Math.floor(player.coords.x / 85),
-        Math.floor(player.coords.add(vec2(0, -3.3)).y / 85 + 6.37),
-      );
+      return vec2(Math.floor(player.coords.x), Math.floor(player.coords.y + 1));
     },
     isStandingOnBlock: () => {
       return (
@@ -473,27 +477,25 @@ async function gameInit() {
         player.crouching &&
         player.animationChangeTimer > 17
       ) {
-        if(player.animation == "crouchWalk") {
+        if (player.animation == "crouchWalk") {
           player.animation = "crouch";
         } else {
           player.animation = "crouchWalk";
         }
-       
+
         player.animationChangeTimer = 0;
       }
       drawTile(
         player.coords,
-        vec2(5),
+        vec2(2.05882352941),
         spriteSheet[player.animation],
         WHITE,
         0,
         player.directionPositive,
       );
-      drawRect(
-        vec2(player.getFeetCoords().x * 85, player.getFeetCoords().y * 85),
-        vec2(10),
-        RED,
-      );
+      console.log("player", player.coords);
+      console.log("camera", cameraPos);
+      console.log("feet" + player.getFeetCoords());
     },
     calculatePlayerPhysics: () => {
       // check if standing on block
@@ -502,14 +504,13 @@ async function gameInit() {
         player.isFalling = false;
         player.fallMultiplier = 1;
       } else if (!player.isStandingOnBlock()) {
+        // Fall physics
         if (!player.canFly && !player.jumping) {
           player.isFalling = true;
           if (player.fallMultiplier < 2) {
             player.fallMultiplier += 0.04;
           }
-          player.coords = player.coords.add(
-            vec2(0, 0.05 * 85 * player.fallMultiplier),
-          );
+          player.coords.y += 0.05;
         }
       }
 
@@ -520,7 +521,8 @@ async function gameInit() {
         player.animation = "crouch";
       }
 
-      if (!player.isFalling && player.jumping) {
+      // Jumping physics
+      if (!player.isFalling && player.jumping && !player.canFly) {
         player.coords = player.coords.add(
           vec2(0, -0.1 * 85 * player.jumpMultiplier),
         );
@@ -537,12 +539,19 @@ async function gameInit() {
           player.isFalling = true;
         }
       }
-      if (player.isFalling) {
+
+      if (player.isFalling && !player.canFly) {
         player.animation = "fall";
+      }
+      if (player.jumping && player.canFly) {
+        player.coords = player.coords.add(vec2(0, -0.1 * 85));
       }
     },
     cameraToPlayer: () => {
-      cameraPos = player.coords;
+   cameraPos = vec2(
+    player.coords.x,
+    player.coords.y
+);
     },
   };
   player.cameraToPlayer();
@@ -560,7 +569,9 @@ async function gameInit() {
       procedurallyGenerateWorld(Number(event.detail.worldSeed));
     } else if (event.detail.worldType == "flat") {
       createFlatWorld(Number(event.detail.worldSeed));
-      player.coords = vec2(0, -8 * 85);
+      destroyBlock(0, 0);
+
+     player.coords = vec2(0,-8);
     }
   });
   console.log("Game engine initialized.");
@@ -571,65 +582,69 @@ function gameUpdatePost() {}
 
 function gameRender() {
   const renderBlocks = () => {
-    const viewWidthBlocks = Math.ceil(window.innerWidth / 85);
-    const viewHeightBlocks = Math.ceil(window.innerHeight / 90);
-    const startBlockX = Math.floor(cameraPos.x / 85);
-    const startBlockY = Math.floor(cameraPos.y / 85);
-    const endBlockX = Math.floor((cameraPos.x + viewWidthBlocks * 85) / 85);
-    const endBlockY = Math.floor((cameraPos.y + viewHeightBlocks * 85) / 85);
+    let startX = Math.floor(cameraPos.x - 10);
+    let endX = Math.ceil(cameraPos.x + 10);
 
-    for (let blockX = startBlockX; blockX <= endBlockX; blockX++) {
-      for (let blockY = startBlockY; blockY <= endBlockY; blockY++) {
-        const blockKey = `${blockX},${blockY}`;
+    let startY = Math.floor(cameraPos.y - 8);
+    let endY = Math.ceil(cameraPos.y + 8);
 
-        if (blocks[blockKey]) {
-          drawImageColor(
-            ctx,
-            texture[blocks[blockKey]],
-            0,
-            0,
-            8,
-            8,
-            blockX * 85 - cameraPos.x,
-            blockY * 85 - cameraPos.y,
-            86,
-            86,
-            new Color(1, 1, 1, 1),
-          );
+    for (let x = startX; x <= endX; x++) {
+      for (let y = startY; y <= endY; y++) {
+        let block = blocks[`${x},${y}`];
+
+        if (block) {
+          drawTile(vec2(x, y), vec2(1, 1), texture[block]);
         }
       }
     }
   };
 
-  player.drawPlayer();
+  const renderSky = () => {
+    drawRectGradient(
+      cameraPos,
+      vec2(
+        Math.floor(window.innerWidth / 2),
+        Math.floor(window.innerHeight / 2),
+      ),
+      new Color().setHex("#5DB8FF"),
+      new Color().setHex("#CFF4FF"),
+      90,
+      false, // <-- force Canvas2D instead of WebGL
+      false,
+      ctx,
+    );
+  };
+
+  renderSky();
   renderBlocks();
+
+  player.drawPlayer();
+
   player.isWalking = false;
   player.crouching = false;
   if (keyIsDown("KeyW") && !player.isFalling) {
     player.jumping = true;
-    player.isWalking = false;
-    player.isFalling = false;
   }
   if (keyIsDown("KeyS")) {
     player.crouching = true;
   }
   if (keyIsDown("KeyA")) {
-    if(player.crouching) {
+    if (player.crouching) {
       player.coords = player.coords.add(vec2(-2, 0));
     } else {
       player.coords = player.coords.add(vec2(-5, 0));
     }
-   
+
     player.isWalking = true;
     player.directionPositive = false;
   }
   if (keyIsDown("KeyD")) {
-    if(player.crouching) {
+    if (player.crouching) {
       player.coords = player.coords.add(vec2(2, 0));
     } else {
       player.coords = player.coords.add(vec2(5, 0));
     }
- 
+
     player.isWalking = true;
     player.directionPositive = true;
   }

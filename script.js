@@ -106,6 +106,13 @@ async function startInit() {
   loadingProgressBar.style.width = "100%";
 
   await new Promise((r) => setTimeout(r, 3400));
+
+  document.getElementById("loadingScreenWrapper").className = "popCloseHide";
+  enterGameButtonLoadingScreenWrapper.className = "popAnim";
+  loadingScreen.className = "loadingScreenChangeColor";
+}
+window.addEventListener("load", () => {
+  startInit();
   if (
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
       navigator.userAgent,
@@ -113,14 +120,10 @@ async function startInit() {
   ) {
     // true for mobile device
 
-    alert("FlatCraft is not designed for mobile devices!");
+    alert(
+      "FlatCraft is not designed for mobile devices! You WILL encounter rendering issues. Please ONLY play on a desktop or laptop computer with a display aspect ratio of 16:9.",
+    );
   }
-  document.getElementById("loadingScreenWrapper").className = "popCloseHide";
-  enterGameButtonLoadingScreenWrapper.className = "popAnim";
-  loadingScreen.className = "loadingScreenChangeColor";
-}
-window.addEventListener("load", () => {
-  startInit();
 });
 // MAIN MENU
 enterGameButtonLoadingScreenWrapper.addEventListener("click", () => {
@@ -319,7 +322,7 @@ function switchSlots(slot) {
 */
 
 // Remember that ALL vec2 coords should have BOTH parameters multiplied by 85
-
+var blocks = {};
 let texture = {};
 function loadImage(name) {
   return new Promise((resolve, reject) => {
@@ -420,19 +423,20 @@ async function gameInit() {
     break1: new TileInfo(vec2(0, 242), vec2(20, 22), playerTexture, 0, 0.1),
     break2: new TileInfo(vec2(0, 264), vec2(20, 22), playerTexture, 0, 0.1),
     fall: new TileInfo(vec2(0, 286), vec2(20, 22), playerTexture, 0, 0.1),
+    testLol: texture["grass"],
   };
 
   player = {
     username: "Guest",
     jumping: false,
     jumpFrame: 1,
-    coords: vec2(0, 0),
+    coords: vec2(0, 5),
     isFalling: true,
     momentum: 0,
     fallMultiplier: 1,
     jumpMultiplier: 1,
     crouching: false,
-    canFly: true,
+    canFly: false,
     isWalking: false,
     animation: "idle",
     directionPositive: false,
@@ -447,13 +451,103 @@ async function gameInit() {
       playerTexture = new TextureInfo(playerImage);
     },
     getFeetCoords: () => {
-      return vec2(Math.floor(player.coords.x), Math.floor(player.coords.y + 1));
+      return vec2(player.coords.x, Math.ceil(player.coords.y - 0.6));
     },
     isStandingOnBlock: () => {
-      return (
-        blocks[player.getFeetCoords().x + "," + player.getFeetCoords().y] ||
-        false
+      const leftFeetCoords = vec2(
+        player.getFeetCoords().x - 0.4,
+        player.getFeetCoords().y,
       );
+      const rightFeetCoords = vec2(
+        player.getFeetCoords().x + 0.4,
+        player.getFeetCoords().y,
+      );
+
+      if (
+        blocks[
+          `${Math.floor(leftFeetCoords.x)},${Math.floor(leftFeetCoords.y)}`
+        ] ||
+        blocks[
+          `${Math.floor(rightFeetCoords.x)},${Math.floor(rightFeetCoords.y)}`
+        ]
+      ) {
+        return (
+          blocks[
+            `${Math.floor(leftFeetCoords.x)},${Math.floor(leftFeetCoords.y)}`
+          ] ||
+          blocks[
+            `${Math.floor(rightFeetCoords.x)},${Math.floor(rightFeetCoords.y)}`
+          ]
+        );
+      } else {
+        return false;
+      }
+    },
+     isBelowABlock: () => {
+      const leftHeadCoords = vec2(
+        player.coords.x - 0.4,
+        player.coords.y+0.4,
+      );
+      const rightHeadCoords = vec2(
+        player.coords.x + 0.4,
+        player.coords.y+0.4,
+      );
+
+      if (
+        blocks[
+          `${Math.floor(leftHeadCoords.x)},${Math.floor(leftHeadCoords.y)}`
+        ] ||
+        blocks[
+          `${Math.floor(rightHeadCoords.x)},${Math.floor(rightHeadCoords.y)}`
+        ]
+      ) {
+        return (
+          blocks[
+            `${Math.floor(leftHeadCoords.x)},${Math.floor(leftHeadCoords.y)}`
+          ] ||
+          blocks[
+            `${Math.floor(rightHeadCoords.x)},${Math.floor(rightHeadCoords.y)}`
+          ]
+        );
+      } else {
+        return false;
+      }
+    },
+    isThereABlockAtBottomRight: () => {
+      const bottomRightCoords = vec2(
+        Math.ceil(player.getFeetCoords().x + 0.5),
+        player.getFeetCoords().y,
+      );
+      return !!blocks[
+        `${Math.floor(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y)}`
+      ];
+    },
+    isThereABlockAtBottomLeft: () => {
+      const bottomRightCoords = vec2(
+        Math.floor(player.getFeetCoords().x - 0.5),
+        player.getFeetCoords().y,
+      );
+      return !!blocks[
+        `${Math.floor(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y)}`
+      ];
+    },
+    isThereABlockAtTopRight: () => {
+      const bottomRightCoords = vec2(
+        Math.ceil(player.getFeetCoords().x + 0.5),
+        player.coords.y + 0.4,
+      );
+        return !!blocks[
+        `${Math.floor(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y)}`
+      ];
+    },
+    isThereABlockAtTopLeft: () => {
+      const bottomRightCoords = vec2(
+        Math.floor(player.getFeetCoords().x - 0.5),
+        player.coords.y + 0.4,
+      );
+      return !!blocks[
+        `${Math.floor(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y)}`
+      ];
     },
     setUsername: (newUsername) => {
       player.username = newUsername;
@@ -499,7 +593,7 @@ async function gameInit() {
     },
     calculatePlayerPhysics: () => {
       // check if standing on block
-
+      console.log(player.isStandingOnBlock());
       if (player.isStandingOnBlock()) {
         player.isFalling = false;
         player.fallMultiplier = 1;
@@ -510,7 +604,7 @@ async function gameInit() {
           if (player.fallMultiplier < 2) {
             player.fallMultiplier += 0.04;
           }
-          player.coords.y += 0.05;
+          player.coords.y -= 0.05 * player.fallMultiplier;
         }
       }
 
@@ -524,15 +618,15 @@ async function gameInit() {
       // Jumping physics
       if (!player.isFalling && player.jumping && !player.canFly) {
         player.coords = player.coords.add(
-          vec2(0, -0.1 * 85 * player.jumpMultiplier),
+          vec2(0, 0.175 * player.jumpMultiplier),
         );
         player.jumpMultiplier -= 0.05;
         player.jumpFrame += 1;
         player.isFalling = false;
-        if (player.jumpFrame > 10 && player.jumpFrame < 17) {
-          player.jumpFrame += 1;
+        if (player.jumpFrame > 10 && player.jumpFrame < 14) {
+          
           player.jumpMultiplier -= 0.05;
-        } else if (player.jumpFrame > 17) {
+        } else if (player.jumpFrame > 14) {
           player.jumpFrame = 1;
           player.jumpMultiplier = 1;
           player.jumping = false;
@@ -548,10 +642,7 @@ async function gameInit() {
       }
     },
     cameraToPlayer: () => {
-   cameraPos = vec2(
-    player.coords.x,
-    player.coords.y
-);
+      cameraPos = vec2(player.coords.x, player.coords.y);
     },
   };
   player.cameraToPlayer();
@@ -571,23 +662,32 @@ async function gameInit() {
       createFlatWorld(Number(event.detail.worldSeed));
       destroyBlock(0, 0);
 
-     player.coords = vec2(0,-8);
+      player.coords = vec2(0, 5);
     }
   });
   console.log("Game engine initialized.");
 }
-  
+
 function gameUpdate() {}
 function gameUpdatePost() {}
 
 function gameRender() {
   const renderBlocks = () => {
-    let startX = Math.floor(cameraPos.x - 10);
-    let endX = Math.ceil(cameraPos.x + 10);
+    let startX = Math.floor(cameraPos.x - 12);
+    let endX = Math.floor(cameraPos.x + 12);
 
-    let startY = Math.floor(cameraPos.y - 8);
-    let endY = Math.ceil(cameraPos.y + 8);
-
+    let startY = Math.floor(cameraPos.y - 10);
+    let endY = Math.floor(cameraPos.y + 10);
+    console.log(
+      "Rendering blocks from " +
+        startX +
+        "," +
+        startY +
+        " to " +
+        endX +
+        "," +
+        endY,
+    );
     for (let x = startX; x <= endX; x++) {
       for (let y = startY; y <= endY; y++) {
         let block = blocks[`${x},${y}`];
@@ -603,12 +703,12 @@ function gameRender() {
     drawRectGradient(
       cameraPos,
       vec2(
-        Math.floor(window.innerWidth / 2),
-        Math.floor(window.innerHeight / 2),
+        Math.floor(window.innerWidth / 75),
+        Math.floor(window.innerHeight / 80),
       ),
       new Color().setHex("#5DB8FF"),
       new Color().setHex("#CFF4FF"),
-      90,
+      0,
       false, // <-- force Canvas2D instead of WebGL
       false,
       ctx,
@@ -629,20 +729,30 @@ function gameRender() {
     player.crouching = true;
   }
   if (keyIsDown("KeyA")) {
+    if(player.coords.x - Math.floor(player.coords.x) > 0.1) {
+    if(player.isThereABlockAtBottomLeft() || player.isThereABlockAtTopLeft()) {
+      return;
+    }
+  }
     if (player.crouching) {
-      player.coords = player.coords.add(vec2(-2, 0));
+      player.coords = player.coords.add(vec2(-0.01, 0));
     } else {
-      player.coords = player.coords.add(vec2(-5, 0));
+      player.coords = player.coords.add(vec2(-0.04, 0));
     }
 
     player.isWalking = true;
     player.directionPositive = false;
   }
   if (keyIsDown("KeyD")) {
+     if(player.coords.x - Math.floor(player.coords.x) > 0.9) {
+    if(player.isThereABlockAtBottomRight() || player.isThereABlockAtTopRight()) {
+      return;
+    }
+  }
     if (player.crouching) {
-      player.coords = player.coords.add(vec2(2, 0));
+      player.coords = player.coords.add(vec2(0.01, 0));
     } else {
-      player.coords = player.coords.add(vec2(5, 0));
+      player.coords = player.coords.add(vec2(0.04, 0));
     }
 
     player.isWalking = true;
@@ -676,7 +786,6 @@ function createBlock(x, y, blockType) {
 }
 
 // Store current world block placement by grid coordinate string.
-var blocks = {};
 
 // Biome metadata used for world generation and environment rules.
 
@@ -781,10 +890,10 @@ function procedurallyGenerateWorld(seed) {
 function createFlatWorld(seed) {
   for (let i = -2000; i < worldWidth; i++) {
     createBlock(i, 0, "grass");
-    createBlock(i, 1, "dirt");
-    createBlock(i, 2, "dirt");
-    createBlock(i, 3, "dirt");
-    createBlock(i, 4, "bedrock");
+    createBlock(i, -1, "dirt");
+    createBlock(i, -2, "dirt");
+    createBlock(i, -3, "dirt");
+    createBlock(i, -4, "bedrock");
   }
   console.log(blocks);
 }

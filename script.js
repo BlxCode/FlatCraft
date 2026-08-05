@@ -576,7 +576,7 @@ async function gameInit() {
   });
   console.log("Game engine initialized.");
 }
-
+  
 function gameUpdate() {}
 function gameUpdatePost() {}
 

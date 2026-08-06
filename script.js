@@ -378,7 +378,7 @@ async function loadAllImages() {
   console.log(
     "Loaded all textures! Proof: " +
       texture["grass"] +
-      "(it should return objectObject or something like that)",
+      "(it should return imageObject or something like that)",
   );
 }
 let ctx;
@@ -451,21 +451,21 @@ async function gameInit() {
       playerTexture = new TextureInfo(playerImage);
     },
     getFeetCoords: () => {
-      return vec2(player.coords.x, Math.ceil(player.coords.y - 0.6));
+      return vec2(player.coords.x, player.coords.y - 0.6);
     },
     isStandingOnBlock: () => {
       const leftFeetCoords = vec2(
-        player.getFeetCoords().x - 0.4,
-        player.getFeetCoords().y,
+        player.getFeetCoords().x - 0.35,
+        player.getFeetCoords().y + 0.01,
       );
       const rightFeetCoords = vec2(
-        player.getFeetCoords().x + 0.4,
-        player.getFeetCoords().y,
+        player.getFeetCoords().x + 0.35,
+        player.getFeetCoords().y + 0.01,
       );
 
       if (
         blocks[
-          `${Math.floor(leftFeetCoords.x)},${Math.floor(leftFeetCoords.y)}`
+          `${Math.ceil(leftFeetCoords.x)},${Math.floor(leftFeetCoords.y)}`
         ] ||
         blocks[
           `${Math.floor(rightFeetCoords.x)},${Math.floor(rightFeetCoords.y)}`
@@ -473,7 +473,7 @@ async function gameInit() {
       ) {
         return (
           blocks[
-            `${Math.floor(leftFeetCoords.x)},${Math.floor(leftFeetCoords.y)}`
+            `${Math.ceil(leftFeetCoords.x)},${Math.floor(leftFeetCoords.y)}`
           ] ||
           blocks[
             `${Math.floor(rightFeetCoords.x)},${Math.floor(rightFeetCoords.y)}`
@@ -483,19 +483,19 @@ async function gameInit() {
         return false;
       }
     },
-     isBelowABlock: () => {
+    isBelowABlock: () => {
       const leftHeadCoords = vec2(
-        player.coords.x - 0.4,
-        player.coords.y+0.4,
+        player.coords.x - 0.2,
+        player.coords.y + 0.85,
       );
       const rightHeadCoords = vec2(
-        player.coords.x + 0.4,
-        player.coords.y+0.4,
+        player.coords.x + 0.2,
+        player.coords.y + 0.85,
       );
 
       if (
         blocks[
-          `${Math.floor(leftHeadCoords.x)},${Math.floor(leftHeadCoords.y)}`
+          `${Math.ceil(leftHeadCoords.x)},${Math.floor(leftHeadCoords.y)}`
         ] ||
         blocks[
           `${Math.floor(rightHeadCoords.x)},${Math.floor(rightHeadCoords.y)}`
@@ -503,7 +503,7 @@ async function gameInit() {
       ) {
         return (
           blocks[
-            `${Math.floor(leftHeadCoords.x)},${Math.floor(leftHeadCoords.y)}`
+            `${Math.ceil(leftHeadCoords.x)},${Math.floor(leftHeadCoords.y)}`
           ] ||
           blocks[
             `${Math.floor(rightHeadCoords.x)},${Math.floor(rightHeadCoords.y)}`
@@ -515,39 +515,105 @@ async function gameInit() {
     },
     isThereABlockAtBottomRight: () => {
       const bottomRightCoords = vec2(
-        Math.ceil(player.getFeetCoords().x + 0.5),
-        player.getFeetCoords().y,
+        Math.ceil(player.getFeetCoords().x + 0.2),
+        player.getFeetCoords().y + 0.1,
       );
-      return !!blocks[
-        `${Math.floor(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y)}`
-      ];
+
+      if (
+        blocks[
+          `${Math.ceil(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y + 0.1)}`
+        ]
+      ) {
+      
+        if (
+          player.coords.x - Math.floor(player.coords.x) > 0.5 &&
+           Math.floor(bottomRightCoords.x)-  Math.ceil(player.coords.x) == 1
+        ) {
+          return !!blocks[
+            `${Math.ceil(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y + 0.1)}`
+          ];
+        }
+      } else {
+        return false;
+      }
     },
     isThereABlockAtBottomLeft: () => {
       const bottomRightCoords = vec2(
-        Math.floor(player.getFeetCoords().x - 0.5),
-        player.getFeetCoords().y,
+        Math.floor(player.getFeetCoords().x - 0.03),
+        player.getFeetCoords().y + 0.1,
       );
-      return !!blocks[
-        `${Math.floor(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y)}`
-      ];
+      console.log(
+        "bottom left" +
+          !!blocks[
+            `${Math.ceil(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y + 0.1)}`
+          ],
+      );
+      if (player.coords.x - Math.floor(player.coords.x) < 0.75) {
+        return !!blocks[
+          `${Math.ceil(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y + 0.1)}`
+        ];
+      } else {
+        return false;
+      }
     },
     isThereABlockAtTopRight: () => {
       const bottomRightCoords = vec2(
-        Math.ceil(player.getFeetCoords().x + 0.5),
-        player.coords.y + 0.4,
+        player.getFeetCoords().x + 0.3,
+        player.coords.y + 0.85,
       );
+      console.log(
+        "top right" +
+          !!blocks[
+            `${Math.floor(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y)}`
+          ],
+      );
+      if (player.coords.x - Math.floor(player.coords.x) > 0.25) {
         return !!blocks[
-        `${Math.floor(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y)}`
-      ];
+          `${Math.ceil(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y + 0.1)}`
+        ];
+      } else {
+        return false;
+      }
     },
     isThereABlockAtTopLeft: () => {
       const bottomRightCoords = vec2(
-        Math.floor(player.getFeetCoords().x - 0.5),
-        player.coords.y + 0.4,
+        player.getFeetCoords().x - 0.3,
+        player.coords.y + 0.85,
       );
-      return !!blocks[
-        `${Math.floor(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y)}`
-      ];
+      console.log(
+        "top left" +
+          !!blocks[
+            `${Math.ceil(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y)}`
+          ],
+      );
+      if (player.coords.x - Math.floor(player.coords.x) < 0.75) {
+        return !!blocks[
+          `${Math.ceil(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y + 0.1)}`
+        ];
+      } else {
+        return false;
+      }
+    },
+    isThereABlockInMe: () => {
+      if (
+        !blocks[
+          `${Math.ceil(player.coords.x)},${Math.floor(player.coords.y - 0.3)}`
+        ] &&
+        !blocks[
+          `${Math.floor(player.coords.x)},${Math.floor(player.coords.y + 0.3)}`
+        ]
+      ) {
+        return false;
+      } else {
+        return (
+          blocks[
+            `${Math.ceil(player.coords.x)},${Math.floor(player.coords.y - 0.3)}`
+          ] ||
+          blocks[
+            `${Math.floor(player.coords.x)},${Math.floor(player.coords.y + 0.3)}`
+          ]
+        );
+      }
     },
     setUsername: (newUsername) => {
       player.username = newUsername;
@@ -587,18 +653,16 @@ async function gameInit() {
         0,
         player.directionPositive,
       );
-      console.log("player", player.coords);
-      console.log("camera", cameraPos);
-      console.log("feet" + player.getFeetCoords());
     },
     calculatePlayerPhysics: () => {
       // check if standing on block
-      console.log(player.isStandingOnBlock());
+
       if (player.isStandingOnBlock()) {
         player.isFalling = false;
         player.fallMultiplier = 1;
       } else if (!player.isStandingOnBlock()) {
         // Fall physics
+
         if (!player.canFly && !player.jumping) {
           player.isFalling = true;
           if (player.fallMultiplier < 2) {
@@ -624,7 +688,6 @@ async function gameInit() {
         player.jumpFrame += 1;
         player.isFalling = false;
         if (player.jumpFrame > 10 && player.jumpFrame < 14) {
-          
           player.jumpMultiplier -= 0.05;
         } else if (player.jumpFrame > 14) {
           player.jumpFrame = 1;
@@ -678,22 +741,13 @@ function gameRender() {
 
     let startY = Math.floor(cameraPos.y - 10);
     let endY = Math.floor(cameraPos.y + 10);
-    console.log(
-      "Rendering blocks from " +
-        startX +
-        "," +
-        startY +
-        " to " +
-        endX +
-        "," +
-        endY,
-    );
+
     for (let x = startX; x <= endX; x++) {
       for (let y = startY; y <= endY; y++) {
         let block = blocks[`${x},${y}`];
 
         if (block) {
-          drawTile(vec2(x, y), vec2(1, 1), texture[block]);
+          drawTile(vec2(x , y), vec2(1, 1), texture[block]);
         }
       }
     }
@@ -717,11 +771,14 @@ function gameRender() {
 
   renderSky();
   renderBlocks();
-
+  player.calculatePlayerPhysics();
   player.drawPlayer();
+
+  player.cameraToPlayer();
 
   player.isWalking = false;
   player.crouching = false;
+
   if (keyIsDown("KeyW") && !player.isFalling) {
     player.jumping = true;
   }
@@ -729,11 +786,15 @@ function gameRender() {
     player.crouching = true;
   }
   if (keyIsDown("KeyA")) {
-    if(player.coords.x - Math.floor(player.coords.x) > 0.1) {
-    if(player.isThereABlockAtBottomLeft() || player.isThereABlockAtTopLeft()) {
-      return;
+    if (player.coords.x - Math.floor(player.coords.x) > 0.1) {
+      if (
+        player.isThereABlockAtBottomLeft() ||
+        player.isThereABlockAtTopLeft()
+      ) {
+        player.directionPositive = false;
+        return;
+      }
     }
-  }
     if (player.crouching) {
       player.coords = player.coords.add(vec2(-0.01, 0));
     } else {
@@ -744,11 +805,15 @@ function gameRender() {
     player.directionPositive = false;
   }
   if (keyIsDown("KeyD")) {
-     if(player.coords.x - Math.floor(player.coords.x) > 0.9) {
-    if(player.isThereABlockAtBottomRight() || player.isThereABlockAtTopRight()) {
-      return;
+    if (player.coords.x - Math.floor(player.coords.x) > 0.9) {
+      if (
+        player.isThereABlockAtBottomRight() ||
+        player.isThereABlockAtTopRight()
+      ) {
+        player.directionPositive = true;
+        return;
+      }
     }
-  }
     if (player.crouching) {
       player.coords = player.coords.add(vec2(0.01, 0));
     } else {
@@ -758,8 +823,6 @@ function gameRender() {
     player.isWalking = true;
     player.directionPositive = true;
   }
-  player.calculatePlayerPhysics();
-  player.cameraToPlayer();
 }
 
 function destroyBlock(x, y) {

@@ -300,19 +300,6 @@ function switchSlots(slot) {
   slotElement.className += "slotHover";
 }
 /*
-                                                                                     
-▗▄▄▖ ▗▄▖                             ▄▄                                 █            
-▐▛▀▜▖▝▜▌                            █▀▀▌                          ▐▌    ▀            
-▐▌ ▐▌ ▐▌   ▟██▖▝█ █▌ ▟█▙  █▟█▌     ▐▌    ▟█▙ ▐▙██▖ ▟█▙  █▟█▌ ▟██▖▐███  ██   ▟█▙ ▐▙██▖
-▐██▛  ▐▌   ▘▄▟▌ █▖█ ▐▙▄▟▌ █▘       ▐▌▗▄▖▐▙▄▟▌▐▛ ▐▌▐▙▄▟▌ █▘   ▘▄▟▌ ▐▌    █  ▐▛ ▜▌▐▛ ▐▌
-▐▌    ▐▌  ▗█▀▜▌ ▐█▛ ▐▛▀▀▘ █        ▐▌▝▜▌▐▛▀▀▘▐▌ ▐▌▐▛▀▀▘ █   ▗█▀▜▌ ▐▌    █  ▐▌ ▐▌▐▌ ▐▌
-▐▌    ▐▙▄ ▐▙▄█▌  █▌ ▝█▄▄▌ █         █▄▟▌▝█▄▄▌▐▌ ▐▌▝█▄▄▌ █   ▐▙▄█▌ ▐▙▄ ▗▄█▄▖▝█▄█▘▐▌ ▐▌
-▝▘     ▀▀  ▀▀▝▘  █   ▝▀▀  ▀          ▀▀  ▝▀▀ ▝▘ ▝▘ ▝▀▀  ▀    ▀▀▝▘  ▀▀ ▝▀▀▀▘ ▝▀▘ ▝▘ ▝▘
-                  █▌                                                                   
-                                                                                     */
-// create skin image thing
-
-/*
    ___                  ___             _         _           
   / __|__ _ _ __  ___  | _ \___ _ _  __| |___ _ _(_)_ _  __ _ 
  | (_ / _` | '  \/ -_) |   / -_) ' \/ _` / -_) '_| | ' \/ _` |
@@ -370,6 +357,7 @@ async function loadAllImages() {
     "sugiliteBlock",
     "sugiliteOre",
     "bedrock",
+    "rickRoll",
   ];
 
   for (const name of textureNames) {
@@ -386,6 +374,7 @@ let playerTextureImageSrc;
 let playerTexture;
 let playerImage = new Image();
 let player;
+
 async function gameInit() {
   combineCanvases();
   cameraScale = 85;
@@ -485,14 +474,16 @@ async function gameInit() {
     },
     isBelowABlock: () => {
       const leftHeadCoords = vec2(
-        player.coords.x - 0.2,
-        player.coords.y + 0.85,
+        player.getFeetCoords().x - 0.2,
+        player.coords.y + 1.7,
       );
       const rightHeadCoords = vec2(
-        player.coords.x + 0.2,
-        player.coords.y + 0.85,
+        player.getFeetCoords().x + 0.2,
+        Math.floor(player.coords.y + 1.7),
       );
-
+      drawTile(leftHeadCoords, vec2(0.5), texture["rickRoll"]);
+      drawTile(rightHeadCoords, vec2(0.5), texture["rickRoll"]);
+      console.log("top" + leftHeadCoords + rightHeadCoords);
       if (
         blocks[
           `${Math.ceil(leftHeadCoords.x)},${Math.floor(leftHeadCoords.y)}`
@@ -515,20 +506,23 @@ async function gameInit() {
     },
     isThereABlockAtBottomRight: () => {
       const bottomRightCoords = vec2(
-        Math.ceil(player.getFeetCoords().x + 0.2),
+        player.getFeetCoords().x + 0.22,
         player.getFeetCoords().y + 0.1,
       );
-
+      drawTile(bottomRightCoords, vec2(0.5), texture["rickRoll"]);
+      console.log(
+        "bottom right" +
+          bottomRightCoords +
+          !!blocks[
+            `${Math.ceil(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y + 0.1)}`
+          ],
+      );
       if (
         blocks[
           `${Math.ceil(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y + 0.1)}`
         ]
       ) {
-      
-        if (
-          player.coords.x - Math.floor(player.coords.x) > 0.5 &&
-           Math.floor(bottomRightCoords.x)-  Math.ceil(player.coords.x) == 1
-        ) {
+        if (bottomRightCoords.x > 0.5) {
           return !!blocks[
             `${Math.ceil(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y + 0.1)}`
           ];
@@ -542,12 +536,7 @@ async function gameInit() {
         Math.floor(player.getFeetCoords().x - 0.03),
         player.getFeetCoords().y + 0.1,
       );
-      console.log(
-        "bottom left" +
-          !!blocks[
-            `${Math.ceil(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y + 0.1)}`
-          ],
-      );
+      drawTile(bottomRightCoords, vec2(0.5), texture["rickRoll"]);
       if (player.coords.x - Math.floor(player.coords.x) < 0.75) {
         return !!blocks[
           `${Math.ceil(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y + 0.1)}`
@@ -558,34 +547,38 @@ async function gameInit() {
     },
     isThereABlockAtTopRight: () => {
       const bottomRightCoords = vec2(
-        player.getFeetCoords().x + 0.3,
-        player.coords.y + 0.85,
+        player.getFeetCoords().x + 0.22,
+        player.coords.y + 0.57,
       );
+      drawTile(bottomRightCoords, vec2(0.5), texture["rickRoll"]);
       console.log(
         "top right" +
+          bottomRightCoords +
           !!blocks[
-            `${Math.floor(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y)}`
+            `${Math.ceil(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y + 0.1)}`
           ],
       );
-      if (player.coords.x - Math.floor(player.coords.x) > 0.25) {
-        return !!blocks[
+      if (
+        blocks[
           `${Math.ceil(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y + 0.1)}`
-        ];
+        ]
+      ) {
+        if (bottomRightCoords.x > 0.5) {
+          return !!blocks[
+            `${Math.ceil(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y + 0.1)}`
+          ];
+        }
       } else {
         return false;
       }
     },
     isThereABlockAtTopLeft: () => {
       const bottomRightCoords = vec2(
-        player.getFeetCoords().x - 0.3,
-        player.coords.y + 0.85,
+        Math.floor(player.getFeetCoords().x - 0.03),
+        player.coords.y + 0.75,
       );
-      console.log(
-        "top left" +
-          !!blocks[
-            `${Math.ceil(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y)}`
-          ],
-      );
+      drawTile(bottomRightCoords, vec2(0.5), texture["rickRoll"]);
+
       if (player.coords.x - Math.floor(player.coords.x) < 0.75) {
         return !!blocks[
           `${Math.ceil(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y + 0.1)}`
@@ -680,7 +673,12 @@ async function gameInit() {
       }
 
       // Jumping physics
-      if (!player.isFalling && player.jumping && !player.canFly) {
+      if (
+        !player.isFalling &&
+        player.jumping &&
+        !player.canFly &&
+        !player.isBelowABlock()
+      ) {
         player.coords = player.coords.add(
           vec2(0, 0.175 * player.jumpMultiplier),
         );
@@ -695,6 +693,8 @@ async function gameInit() {
           player.jumping = false;
           player.isFalling = true;
         }
+      } else if(player.jumping && player.isBelowABlock()){
+        player.jumping = false;
       }
 
       if (player.isFalling && !player.canFly) {
@@ -724,6 +724,18 @@ async function gameInit() {
     } else if (event.detail.worldType == "flat") {
       createFlatWorld(Number(event.detail.worldSeed));
       destroyBlock(0, 0);
+      destroyBlock(0, -1);
+      destroyBlock(0, -2);
+      destroyBlock(1, -1);
+      destroyBlock(1, -2);
+      destroyBlock(2, -1);
+      destroyBlock(2, -2);
+      destroyBlock(3, -1);
+      destroyBlock(3, -2);
+      destroyBlock(4, -1);
+      destroyBlock(-1,0);
+      destroyBlock(-1, -1);
+      destroyBlock(-2,-2)
 
       player.coords = vec2(0, 5);
     }
@@ -734,7 +746,7 @@ async function gameInit() {
 function gameUpdate() {}
 function gameUpdatePost() {}
 
-function gameRender() {
+async function gameRender() {
   const renderBlocks = () => {
     let startX = Math.floor(cameraPos.x - 12);
     let endX = Math.floor(cameraPos.x + 12);
@@ -747,7 +759,7 @@ function gameRender() {
         let block = blocks[`${x},${y}`];
 
         if (block) {
-          drawTile(vec2(x , y), vec2(1, 1), texture[block]);
+          drawTile(vec2(x, y), vec2(1, 1), texture[block]);
         }
       }
     }
@@ -787,10 +799,12 @@ function gameRender() {
   }
   if (keyIsDown("KeyA")) {
     if (player.coords.x - Math.floor(player.coords.x) > 0.1) {
-      if (
-        player.isThereABlockAtBottomLeft() ||
-        player.isThereABlockAtTopLeft()
-      ) {
+      if (player.isThereABlockAtBottomLeft()) {
+        player.directionPositive = false;
+        return;
+      }
+
+      if (player.isThereABlockAtTopLeft()) {
         player.directionPositive = false;
         return;
       }
@@ -805,15 +819,16 @@ function gameRender() {
     player.directionPositive = false;
   }
   if (keyIsDown("KeyD")) {
-    if (player.coords.x - Math.floor(player.coords.x) > 0.9) {
-      if (
-        player.isThereABlockAtBottomRight() ||
-        player.isThereABlockAtTopRight()
-      ) {
-        player.directionPositive = true;
-        return;
-      }
+    if (player.isThereABlockAtBottomRight()) {
+      player.directionPositive = true;
+      return;
     }
+
+    if (player.isThereABlockAtTopRight()) {
+      player.directionPositive = true;
+      return;
+    }
+
     if (player.crouching) {
       player.coords = player.coords.add(vec2(0.01, 0));
     } else {

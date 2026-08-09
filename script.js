@@ -608,6 +608,23 @@ async function gameInit() {
         );
       }
     },
+    getCoordsAt: (where) => {
+      if (where == "bl" || where == "bottomLeft") {
+        return vec2(
+          player.getFeetCoords().x - 0.22,
+          player.getFeetCoords().y + 0.1,
+        );
+      } else if (where == "br" || where == "bottomRight") {
+        return vec2(
+          player.getFeetCoords().x + 0.22,
+          player.getFeetCoords().y + 0.1,
+        );
+      } else if (where == "tl" || where == "topLeft") {
+        return vec2(player.getFeetCoords().x - 0.022, player.coords.y + 0.57);
+      } else if (where == "tr" || where == "topRight") {
+        vec2(player.getFeetCoords().x + 0.22, player.coords.y + 0.57);
+      }
+    },
     setUsername: (newUsername) => {
       player.username = newUsername;
     },
@@ -693,7 +710,7 @@ async function gameInit() {
           player.jumping = false;
           player.isFalling = true;
         }
-      } else if(player.jumping && player.isBelowABlock()){
+      } else if (player.jumping && player.isBelowABlock()) {
         player.jumping = false;
       }
 
@@ -733,9 +750,9 @@ async function gameInit() {
       destroyBlock(3, -1);
       destroyBlock(3, -2);
       destroyBlock(4, -1);
-      destroyBlock(-1,0);
+      destroyBlock(-1, 0);
       destroyBlock(-1, -1);
-      destroyBlock(-2,-2)
+      destroyBlock(-2, -2);
 
       player.coords = vec2(0, 5);
     }
@@ -798,6 +815,8 @@ async function gameRender() {
     player.crouching = true;
   }
   if (keyIsDown("KeyA")) {
+    player.isWalking = true;
+    player.directionPositive = false;
     if (player.coords.x - Math.floor(player.coords.x) > 0.1) {
       if (player.isThereABlockAtBottomLeft()) {
         player.directionPositive = false;
@@ -810,15 +829,18 @@ async function gameRender() {
       }
     }
     if (player.crouching) {
-      player.coords = player.coords.add(vec2(-0.01, 0));
+      if (Math.abs(player.getCoordsAt("bl").x) > 0.25) {
+        player.coords = player.coords.add(vec2(-0.01, 0));
+      } else {
+        player.isWalking = false;
+      }
     } else {
       player.coords = player.coords.add(vec2(-0.04, 0));
     }
-
-    player.isWalking = true;
-    player.directionPositive = false;
   }
   if (keyIsDown("KeyD")) {
+    player.isWalking = true;
+    player.directionPositive = true;
     if (player.isThereABlockAtBottomRight()) {
       player.directionPositive = true;
       return;
@@ -830,13 +852,14 @@ async function gameRender() {
     }
 
     if (player.crouching) {
-      player.coords = player.coords.add(vec2(0.01, 0));
+      if (Math.abs(player.getCoordsAt("br").x) > 0.25) {
+        player.coords = player.coords.add(vec2(0.01, 0));
+      } else {
+        player.isWalking = false;
+      }
     } else {
       player.coords = player.coords.add(vec2(0.04, 0));
     }
-
-    player.isWalking = true;
-    player.directionPositive = true;
   }
 }
 

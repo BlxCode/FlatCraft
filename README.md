@@ -7,10 +7,11 @@ FlatCraft is an open source, MIT licensed 2d Minecraft inspired game. It uses Li
 # Credits
 ## Art:
 Me, My little brother
+Inspired by https://www.planetminecraft.com/texture-pack/digs-simple-pack-1-15-100-complete/, and https://bloxd.io
 ## Programming:
 Me
 ## Libraries used:
 * LittleJS
-* seedrandom
+
 * simplex-noise
 

@@ -429,7 +429,6 @@ async function gameInit() {
     frame5: new TileInfo(vec2(0, 36), vec2(8, 8), blockBreakTexture, 0, 0.05),
     frame6: new TileInfo(vec2(0, 44), vec2(8, 8), blockBreakTexture, 0, 0.05),
     frame7: new TileInfo(vec2(0, 56), vec2(8, 8), blockBreakTexture, 0, 0.05),
-  
   };
   /*
  ███████████  ████                                                ███████    █████          ███                     █████   
@@ -851,17 +850,25 @@ async function gameRender() {
       drawTile(blockMousePos, vec2(1), texture["hoverFar"]);
     } else {
       drawTile(blockMousePos, vec2(1), texture["hoverClose"]);
+      console.log(`${blockMousePos.x},${blockMousePos.y}`)
+      const blockType = blocks[`${blockMousePos.x},${blockMousePos.y}`] || "Air";
 
-      if (mouseIsDown(1)) {
-        if(blockBreakNoSpam > 10 * blockMetaData.blocks[blockMousePos.x,blockMousePos.y].breakTime){
-        blockBreak += 1;
-        blockBreakNoSpam = 0;
-       
-        } else{
+      console.log(blockType);
+      console.log(blockMetaData[blockType]);
+      console.log(blockMetaData[blockType]["breakTime"]);
+      if (mouseIsDown(0)) {
+        if (blockBreakNoSpam > 10 * blockMetaData[blockType]["breakTime"]) {
+          blockBreak += 1;
+          blockBreakNoSpam = 0;
+        } else {
           blockBreakNoSpam += 1;
-         
         }
-          drawTile(blockMousePos, vec2(0.75), blockBreakingTexture["frame" + blockBreak]);
+        console.log(blockBreakingTexture["frame" + blockBreak]);
+        drawTile(
+          blockMousePos,
+          vec2(0.75),
+          blockBreakingTexture["frame" + blockBreak],
+        );
       }
     }
   };

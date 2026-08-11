@@ -377,6 +377,7 @@ let playerTexture;
 let playerImage = new Image();
 let player;
 let blockBreakTexture = new Image();
+let blockBreakingTexture;
 async function gameInit() {
   combineCanvases();
   cameraScale = 85;
@@ -400,7 +401,7 @@ async function gameInit() {
   await new Promise((resolve) => {
     blockBreakTexture.onload = resolve;
 
-    blockBreakTexture.src = "assets/misc/breakBlocks.png";
+    blockBreakTexture.src = "./assets/misc/breakBlocks.png";
   });
   playerTexture = new TextureInfo(playerImage);
 
@@ -421,14 +422,15 @@ async function gameInit() {
     fall: new TileInfo(vec2(0, 286), vec2(20, 22), playerTexture, 0, 0.1),
     testLol: texture["grass"],
   };
-  const blockBreakingTexture = {
-    frame1: new TileInfo(vec2(0, 0), vec2(8, 8), blockBreakTexture, 0, 0.05),
-    frame2: new TileInfo(vec2(0, 8), vec2(8, 8), blockBreakTexture, 0, 0.05),
-    frame3: new TileInfo(vec2(0, 16), vec2(8, 8), blockBreakTexture, 0, 0.05),
-    frame4: new TileInfo(vec2(0, 24), vec2(8, 8), blockBreakTexture, 0, 0.05),
-    frame5: new TileInfo(vec2(0, 36), vec2(8, 8), blockBreakTexture, 0, 0.05),
-    frame6: new TileInfo(vec2(0, 44), vec2(8, 8), blockBreakTexture, 0, 0.05),
-    frame7: new TileInfo(vec2(0, 56), vec2(8, 8), blockBreakTexture, 0, 0.05),
+  blockBreakTexture = new TextureInfo(blockBreakTexture);
+  blockBreakingTexture = {
+    frame0: new TileInfo(vec2(0, 0), vec2(8, 8), blockBreakTexture, 0, 0.05),
+    frame1: new TileInfo(vec2(0, 8), vec2(8, 8), blockBreakTexture, 0, 0.05),
+    frame2: new TileInfo(vec2(0, 16), vec2(8, 8), blockBreakTexture, 0, 0.05),
+    frame3: new TileInfo(vec2(0, 24), vec2(8, 8), blockBreakTexture, 0, 0.05),
+    frame4: new TileInfo(vec2(0, 32), vec2(8, 8), blockBreakTexture, 0, 0.05),
+    frame5: new TileInfo(vec2(0, 40), vec2(8, 8), blockBreakTexture, 0, 0.05),
+    frame6: new TileInfo(vec2(0, 48), vec2(8, 8), blockBreakTexture, 0, 0.05),
   };
   /*
  ███████████  ████                                                ███████    █████          ███                     █████   
@@ -443,6 +445,15 @@ async function gameInit() {
                               ▒▒██████                                                ▒▒██████                              
                                ▒▒▒▒▒▒                                                  ▒▒▒▒▒▒                               
 */
+  function getCollidableBlockTypeAt(x, y) {
+    const blockType = blocks[`${x},${y}`];
+    return blockType && blockMetaData[blockType]?.collision ? blockType : false;
+  }
+
+  function isCollidableBlockAt(x, y) {
+    return !!getCollidableBlockTypeAt(x, y);
+  }
+
   player = {
     username: "Guest",
     jumping: false,
@@ -453,12 +464,15 @@ async function gameInit() {
     fallMultiplier: 1,
     jumpMultiplier: 1,
     crouching: false,
+    isBreakingBlock: false,
     canFly: false,
     isWalking: false,
     animation: "idle",
     directionPositive: false,
     animationLocation: vec2(0, 0),
+    animationBreakFrame: 0,
     animationWalkingFrame: 1,
+    raisedArms: false,
     animationChangeTimer: 0,
     setSkin: (newSkin) => {
       player.skin = newSkin;
@@ -480,25 +494,17 @@ async function gameInit() {
         player.getFeetCoords().y + 0.01,
       );
 
-      if (
-        blocks[
-          `${Math.ceil(leftFeetCoords.x)},${Math.floor(leftFeetCoords.y)}`
-        ] ||
-        blocks[
-          `${Math.floor(rightFeetCoords.x)},${Math.floor(rightFeetCoords.y)}`
-        ]
-      ) {
-        return (
-          blocks[
-            `${Math.ceil(leftFeetCoords.x)},${Math.floor(leftFeetCoords.y)}`
-          ] ||
-          blocks[
-            `${Math.floor(rightFeetCoords.x)},${Math.floor(rightFeetCoords.y)}`
-          ]
-        );
-      } else {
-        return false;
-      }
+      return (
+        getCollidableBlockTypeAt(
+          Math.ceil(leftFeetCoords.x),
+          Math.floor(leftFeetCoords.y),
+        ) ||
+        getCollidableBlockTypeAt(
+          Math.floor(rightFeetCoords.x),
+          Math.floor(rightFeetCoords.y),
+        ) ||
+        false
+      );
     },
     isBelowABlock: () => {
       const leftHeadCoords = vec2(
@@ -510,26 +516,17 @@ async function gameInit() {
         Math.floor(player.coords.y + 1.7),
       );
 
-      console.log("top" + leftHeadCoords + rightHeadCoords);
-      if (
-        blocks[
-          `${Math.ceil(leftHeadCoords.x)},${Math.floor(leftHeadCoords.y)}`
-        ] ||
-        blocks[
-          `${Math.floor(rightHeadCoords.x)},${Math.floor(rightHeadCoords.y)}`
-        ]
-      ) {
-        return (
-          blocks[
-            `${Math.ceil(leftHeadCoords.x)},${Math.floor(leftHeadCoords.y)}`
-          ] ||
-          blocks[
-            `${Math.floor(rightHeadCoords.x)},${Math.floor(rightHeadCoords.y)}`
-          ]
-        );
-      } else {
-        return false;
-      }
+      return (
+        getCollidableBlockTypeAt(
+          Math.ceil(leftHeadCoords.x),
+          Math.floor(leftHeadCoords.y),
+        ) ||
+        getCollidableBlockTypeAt(
+          Math.floor(rightHeadCoords.x),
+          Math.floor(rightHeadCoords.y),
+        ) ||
+        false
+      );
     },
     isThereABlockAtBottomRight: () => {
       const bottomRightCoords = vec2(
@@ -537,26 +534,13 @@ async function gameInit() {
         player.getFeetCoords().y + 0.1,
       );
 
-      console.log(
-        "bottom right" +
-          bottomRightCoords +
-          !!blocks[
-            `${Math.ceil(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y + 0.1)}`
-          ],
-      );
-      if (
-        blocks[
-          `${Math.ceil(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y + 0.1)}`
-        ]
-      ) {
-        if (bottomRightCoords.x > 0.5) {
-          return !!blocks[
-            `${Math.ceil(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y + 0.1)}`
-          ];
-        }
-      } else {
-        return false;
+      if (bottomRightCoords.x - Math.floor(bottomRightCoords.x) > 0.35) {
+        return isCollidableBlockAt(
+          Math.ceil(bottomRightCoords.x),
+          Math.floor(bottomRightCoords.y + 0.1),
+        );
       }
+      return false;
     },
     isThereABlockAtBottomLeft: () => {
       const bottomRightCoords = vec2(
@@ -565,12 +549,12 @@ async function gameInit() {
       );
 
       if (player.coords.x - Math.floor(player.coords.x) < 0.75) {
-        return !!blocks[
-          `${Math.ceil(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y + 0.1)}`
-        ];
-      } else {
-        return false;
+        return isCollidableBlockAt(
+          Math.ceil(bottomRightCoords.x),
+          Math.floor(bottomRightCoords.y + 0.1),
+        );
       }
+      return false;
     },
     isThereABlockAtTopRight: () => {
       const bottomRightCoords = vec2(
@@ -578,26 +562,13 @@ async function gameInit() {
         player.coords.y + 0.57,
       );
 
-      console.log(
-        "top right" +
-          bottomRightCoords +
-          !!blocks[
-            `${Math.ceil(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y + 0.1)}`
-          ],
-      );
-      if (
-        blocks[
-          `${Math.ceil(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y + 0.1)}`
-        ]
-      ) {
-        if (bottomRightCoords.x > 0.5) {
-          return !!blocks[
-            `${Math.ceil(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y + 0.1)}`
-          ];
-        }
-      } else {
-        return false;
+      if (bottomRightCoords.x - Math.floor(bottomRightCoords.x) > 0.25) {
+        return isCollidableBlockAt(
+          Math.ceil(bottomRightCoords.x),
+          Math.floor(bottomRightCoords.y + 0.1),
+        );
       }
+      return false;
     },
     isThereABlockAtTopLeft: () => {
       const bottomRightCoords = vec2(
@@ -606,33 +577,24 @@ async function gameInit() {
       );
 
       if (player.coords.x - Math.floor(player.coords.x) < 0.75) {
-        return !!blocks[
-          `${Math.ceil(bottomRightCoords.x)},${Math.floor(bottomRightCoords.y + 0.1)}`
-        ];
-      } else {
-        return false;
-      }
-    },
-    isThereABlockInMe: () => {
-      if (
-        !blocks[
-          `${Math.ceil(player.coords.x)},${Math.floor(player.coords.y - 0.3)}`
-        ] &&
-        !blocks[
-          `${Math.floor(player.coords.x)},${Math.floor(player.coords.y + 0.3)}`
-        ]
-      ) {
-        return false;
-      } else {
-        return (
-          blocks[
-            `${Math.ceil(player.coords.x)},${Math.floor(player.coords.y - 0.3)}`
-          ] ||
-          blocks[
-            `${Math.floor(player.coords.x)},${Math.floor(player.coords.y + 0.3)}`
-          ]
+        return isCollidableBlockAt(
+          Math.ceil(bottomRightCoords.x),
+          Math.floor(bottomRightCoords.y + 0.1),
         );
       }
+      return false;
+    },
+    isThereABlockInMe: () => {
+      const topBlock = getCollidableBlockTypeAt(
+        Math.ceil(player.coords.x),
+        Math.floor(player.coords.y - 0.3),
+      );
+      const bottomBlock = getCollidableBlockTypeAt(
+        Math.floor(player.coords.x),
+        Math.floor(player.coords.y + 0.3),
+      );
+
+      return topBlock || bottomBlock || false;
     },
     getCoordsAt: (where) => {
       if (where == "bl" || where == "bottomLeft") {
@@ -661,6 +623,7 @@ async function gameInit() {
         !player.isFalling &&
         player.isWalking &&
         !player.crouching &&
+        !player.isBreakingBlock &&
         player.animationChangeTimer > 3
       ) {
         player.animation = "walk" + player.animationWalkingFrame;
@@ -671,6 +634,7 @@ async function gameInit() {
         !player.isFalling &&
         player.isWalking &&
         player.crouching &&
+        !player.isBreakingBlock &&
         player.animationChangeTimer > 17
       ) {
         if (player.animation == "crouchWalk") {
@@ -681,9 +645,26 @@ async function gameInit() {
 
         player.animationChangeTimer = 0;
       }
+      if (player.isBreakingBlock && player.animationChangeTimer > 4) {
+        player.animationChangeTimer = 0;
+        if (!player.raisedArms) {
+          if (!player.animation.includes("raise")) {
+            player.animation = "raise1";
+          } else {
+            player.animation = "raise2";
+            player.raisedArms = true;
+          }
+        } else {
+          if (!player.animation == "break1") {
+            player.animation = "break1";
+          } else {
+            player.animation = "break2";
+          }
+        }
+      }
       drawTile(
         player.coords,
-        vec2(2.05882352941),
+        vec2(2.059),
         spriteSheet[player.animation],
         WHITE,
         0,
@@ -804,6 +785,7 @@ let hoveredBlock = vec2(0, 0);
 let blockBreak = 0;
 let blockBreakNoSpam = 0;
 async function gameRender() {
+  
   const renderBlocks = () => {
     let startX = Math.floor(cameraPos.x - 12);
     let endX = Math.floor(cameraPos.x + 12);
@@ -842,7 +824,10 @@ async function gameRender() {
     const diff = blockMousePos.subtract(player.coords);
 
     const diffAbs = diff.abs();
-    if (hoveredBlock != blockMousePos) {
+    if (
+      hoveredBlock.x != blockMousePos.x ||
+      hoveredBlock.y != blockMousePos.y
+    ) {
       blockBreak = 0;
     }
     hoveredBlock = blockMousePos;
@@ -850,25 +835,35 @@ async function gameRender() {
       drawTile(blockMousePos, vec2(1), texture["hoverFar"]);
     } else {
       drawTile(blockMousePos, vec2(1), texture["hoverClose"]);
-      console.log(`${blockMousePos.x},${blockMousePos.y}`)
-      const blockType = blocks[`${blockMousePos.x},${blockMousePos.y}`] || "Air";
+      let blockType = blocks[`${blockMousePos.x},${blockMousePos.y}`];
+      if (blockType == undefined) {
+        blockType = "Air";
+      }
 
-      console.log(blockType);
-      console.log(blockMetaData[blockType]);
-      console.log(blockMetaData[blockType]["breakTime"]);
-      if (mouseIsDown(0)) {
-        if (blockBreakNoSpam > 10 * blockMetaData[blockType]["breakTime"]) {
+      if (mouseIsDown(0) && blockType != "Air") {
+        if (blockBreakNoSpam > 12 * blockMetaData[blockType]["breakTime"]) {
           blockBreak += 1;
           blockBreakNoSpam = 0;
         } else {
           blockBreakNoSpam += 1;
         }
-        console.log(blockBreakingTexture["frame" + blockBreak]);
-        drawTile(
-          blockMousePos,
-          vec2(0.75),
-          blockBreakingTexture["frame" + blockBreak],
-        );
+      
+             player.isBreakingBlock = true;
+        if (blockBreak > 6) {
+          destroyBlock(blockMousePos.x, blockMousePos.y);
+          blockBreak = 0;
+        } else {
+          drawTile(
+            vec2(blockMousePos.x, blockMousePos.y),
+            vec2(0.75),
+            blockBreakingTexture["frame" + blockBreak],
+          );
+      
+        }
+      } else if (mouseWasReleased) {
+        blockBreakNoSpam = 0;
+        blockBreak = 0;
+        player.isBreakingBlock = false;
       }
     }
   };
@@ -986,6 +981,13 @@ var chunks = {
 };
 
 var blockMetaData = {
+  Air: {
+    breakTime: -1,
+    tool: "hands",
+    collision: false,
+    translucent: true,
+    liquid: false,
+  },
   grass: {
     breakTime: 1,
     tool: "shovel",
@@ -1022,9 +1024,17 @@ var blockMetaData = {
     breakTime: 0.5,
     tool: "axe/hoe/sheers",
     collision: false,
-    translucent: true,
+    translucent: false,
     liquid: false,
     color: "#48834C",
+  },
+  bedrock: {
+    breakTime: Infinity,
+    tool: "hands",
+    collision: true,
+    translucent: false,
+    liquid: false,
+    color: "#5e5b5e",
   },
 };
 const biomes = ["plains", "mapleForest", "desert"];

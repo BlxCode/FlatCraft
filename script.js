@@ -837,6 +837,15 @@ async function gameRender() {
     hoveredBlock = blockMousePos;
     if (diffAbs.x > 5 || diffAbs.y > 5) {
       drawTile(blockMousePos, vec2(1), texture["hoverFar"]);
+      if (player.isBreakingBlock) {
+        blockBreak = 0;
+        blockBreakNoSpam = 0;
+        blockBreak = 0;
+        player.isBreakingBlock = false;
+        player.raisedArms = false;
+        player.lowerArms = true;
+        player.animationChangeTimer = 0;
+      }
     } else {
       drawTile(blockMousePos, vec2(1), texture["hoverClose"]);
       let blockType = blocks[`${blockMousePos.x},${blockMousePos.y}`];
@@ -902,15 +911,8 @@ async function gameRender() {
   if (keyIsDown("KeyA")) {
     player.isWalking = true;
     player.directionPositive = false;
-    if (player.coords.x - Math.floor(player.coords.x) > 0.1) {
-      if (player.isThereABlockAtBottomLeft()) {
-        player.directionPositive = false;
-      }
+    console.log(player.getCoordsAt("bl"));
 
-      if (player.isThereABlockAtTopLeft()) {
-        player.directionPositive = false;
-      }
-    }
     if (player.crouching) {
       console.log(
         Math.abs(player.getCoordsAt("bl").x) -
@@ -923,11 +925,10 @@ async function gameRender() {
       ) {
         player.coords = player.coords.add(vec2(-0.01, 0));
       } else {
-        drawTile( vec2(Math.abs(player.getCoordsAt("bl").x) -
-          Math.floor(Math.abs(player.getCoordsAt("bl").x)),Math.floor(player.getFeetCoords().y + 0.2)), vec2(0.5), texture["rickRoll"] )
+      
         if (
           blocks[
-            `${Math.floor(player.getCoordsAt("bl").x + 0.2)},${Math.floor(player.getFeetCoords().y + 0.2)}`
+            `${Math.floor(player.getCoordsAt("bl").x + 0.2)},${Math.floor(player.getFeetCoords().y - 0.2)}`
           ]
         ) {
           player.coords = player.coords.add(vec2(-0.01, 0));
@@ -936,6 +937,20 @@ async function gameRender() {
         }
       }
     } else {
+      if (
+        player.getCoordsAt("bl").x - Math.floor(player.getCoordsAt("bl").x) >
+        0.19
+      ) {
+        if (
+          player.isThereABlockAtBottomLeft() ||
+          player.isThereABlockAtTopLeft()
+        ) {
+          player.directionPositive = false;
+          player.isWalking = false;
+        }
+      }
+    }
+    if (player.isWalking && !player.crouching) {
       player.coords = player.coords.add(vec2(-0.04, 0));
     }
   }

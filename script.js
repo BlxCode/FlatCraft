@@ -2,7 +2,7 @@
 // still too lazy to import and export variables and stuff like that
 // this is also the first time i've ever used littleJS
 "use strict";
-import { createNoise2D } from "https://cdn.jsdelivr.net/npm/simplex-noise/+esm";
+// import { createNoise2D } from "https://cdn.jsdelivr.net/npm/simplex-noise/+esm";
 const loadingScreen = document.getElementById("loadingScreen");
 const loadingTitle = document.getElementById("loadingTitle");
 const loadingProgressBar = document.getElementById("loadingProgress");
@@ -474,6 +474,7 @@ async function gameInit() {
     animationWalkingFrame: 1,
     raisedArms: false,
     animationChangeTimer: 0,
+    lowerArms: false,
     setSkin: (newSkin) => {
       player.skin = newSkin;
       playerTextureImageSrc = newSkin;
@@ -645,20 +646,25 @@ async function gameInit() {
 
         player.animationChangeTimer = 0;
       }
-      if (player.isBreakingBlock && player.animationChangeTimer > 4) {
+      if (player.isBreakingBlock && player.animationChangeTimer > 6) {
         player.animationChangeTimer = 0;
+
         if (!player.raisedArms) {
-          if (!player.animation.includes("raise")) {
-            player.animation = "raise1";
-          } else {
-            player.animation = "raise2";
-            player.raisedArms = true;
-          }
+          player.animation = "raise2";
+          player.raisedArms = true;
+        } else if (player.animation === "raise2") {
+          player.animation = "break1";
+        } else if (player.animation === "break1") {
+          player.animation = "break2";
         } else {
-          if (!player.animation == "break1") {
-            player.animation = "break1";
-          } else {
-            player.animation = "break2";
+          player.animation = "break1";
+        }
+      } else if (!player.isBreakingBlock && player.lowerArms) {
+        if (!player.lowerArms) {
+          player.animation = "raise2";
+          if (player.animationChangeTimer > 7) {
+            player.lowerArms = true;
+            player.animationChangeTimer = 0;
           }
         }
       }
@@ -671,6 +677,7 @@ async function gameInit() {
         player.directionPositive,
       );
     },
+
     calculatePlayerPhysics: () => {
       // check if standing on block
 
@@ -689,10 +696,20 @@ async function gameInit() {
         }
       }
 
-      if (!player.isWalking && !player.isFalling && !player.crouching) {
+      if (
+        !player.isWalking &&
+        !player.isFalling &&
+        !player.crouching &&
+        !player.isBreakingBlock
+      ) {
         player.animation = "idle";
       }
-      if (!player.isWalking && !player.isFalling && player.crouching) {
+      if (
+        !player.isWalking &&
+        !player.isFalling &&
+        player.crouching &&
+        !player.isBreakingBlock
+      ) {
         player.animation = "crouch";
       }
 
@@ -747,19 +764,6 @@ async function gameInit() {
       procedurallyGenerateWorld(Number(event.detail.worldSeed));
     } else if (event.detail.worldType == "flat") {
       createFlatWorld(Number(event.detail.worldSeed));
-      destroyBlock(0, 0);
-      destroyBlock(0, -1);
-      destroyBlock(0, -2);
-      destroyBlock(1, -1);
-      destroyBlock(1, -2);
-      destroyBlock(2, -1);
-      destroyBlock(2, -2);
-      destroyBlock(3, -1);
-      destroyBlock(3, -2);
-      destroyBlock(4, -1);
-      destroyBlock(-1, 0);
-      destroyBlock(-1, -1);
-      destroyBlock(-2, -2);
 
       player.coords = vec2(0, 5);
     }
@@ -785,7 +789,6 @@ let hoveredBlock = vec2(0, 0);
 let blockBreak = 0;
 let blockBreakNoSpam = 0;
 async function gameRender() {
-  
   const renderBlocks = () => {
     let startX = Math.floor(cameraPos.x - 12);
     let endX = Math.floor(cameraPos.x + 12);
@@ -824,6 +827,7 @@ async function gameRender() {
     const diff = blockMousePos.subtract(player.coords);
 
     const diffAbs = diff.abs();
+
     if (
       hoveredBlock.x != blockMousePos.x ||
       hoveredBlock.y != blockMousePos.y
@@ -847,24 +851,33 @@ async function gameRender() {
         } else {
           blockBreakNoSpam += 1;
         }
-      
-             player.isBreakingBlock = true;
+
+        player.isBreakingBlock = true;
         if (blockBreak > 6) {
           destroyBlock(blockMousePos.x, blockMousePos.y);
           blockBreak = 0;
+          blockBreakNoSpam = 0;
+          blockBreak = 0;
+          player.isBreakingBlock = false;
+          player.raisedArms = false;
+          player.lowerArms = true;
+          player.animationChangeTimer = 0;
         } else {
           drawTile(
             vec2(blockMousePos.x, blockMousePos.y),
             vec2(0.75),
             blockBreakingTexture["frame" + blockBreak],
           );
-      
         }
-      } else if (mouseWasReleased) {
-        blockBreakNoSpam = 0;
-        blockBreak = 0;
-        player.isBreakingBlock = false;
       }
+    }
+    if (!mouseIsDown(0) && player.isBreakingBlock) {
+      blockBreakNoSpam = 0;
+      blockBreak = 0;
+      player.isBreakingBlock = false;
+      player.raisedArms = false;
+      player.lowerArms = true;
+      player.animationChangeTimer = 0;
     }
   };
 
@@ -892,19 +905,35 @@ async function gameRender() {
     if (player.coords.x - Math.floor(player.coords.x) > 0.1) {
       if (player.isThereABlockAtBottomLeft()) {
         player.directionPositive = false;
-        return;
       }
 
       if (player.isThereABlockAtTopLeft()) {
         player.directionPositive = false;
-        return;
       }
     }
     if (player.crouching) {
-      if (Math.abs(player.getCoordsAt("bl").x) > 0.25) {
+      console.log(
+        Math.abs(player.getCoordsAt("bl").x) -
+          Math.floor(Math.abs(player.getCoordsAt("bl").x)),
+      );
+      if (
+        Math.abs(player.getCoordsAt("bl").x) -
+          Math.floor(Math.abs(player.getCoordsAt("bl").x)) <
+        0.75
+      ) {
         player.coords = player.coords.add(vec2(-0.01, 0));
       } else {
-        player.isWalking = false;
+        drawTile( vec2(Math.abs(player.getCoordsAt("bl").x) -
+          Math.floor(Math.abs(player.getCoordsAt("bl").x)),Math.floor(player.getFeetCoords().y + 0.2)), vec2(0.5), texture["rickRoll"] )
+        if (
+          blocks[
+            `${Math.floor(player.getCoordsAt("bl").x + 0.2)},${Math.floor(player.getFeetCoords().y + 0.2)}`
+          ]
+        ) {
+          player.coords = player.coords.add(vec2(-0.01, 0));
+        } else {
+          player.isWalking = false;
+        }
       }
     } else {
       player.coords = player.coords.add(vec2(-0.04, 0));
@@ -924,10 +953,22 @@ async function gameRender() {
     }
 
     if (player.crouching) {
-      if (Math.abs(player.getCoordsAt("br").x) > 0.25) {
+      if (
+        Math.abs(player.getCoordsAt("br").x) -
+          Math.floor(Math.abs(player.getCoordsAt("br").x)) >
+        0.25
+      ) {
         player.coords = player.coords.add(vec2(0.01, 0));
       } else {
-        player.isWalking = false;
+        if (
+          blocks[
+            `${Math.floor(player.getCoordsAt("br").x + 0.35)},${Math.floor(player.getFeetCoords().y + 0.01)}`
+          ]
+        ) {
+          player.coords = player.coords.add(vec2(0.01, 0));
+        } else {
+          player.isWalking = false;
+        }
       }
     } else {
       player.coords = player.coords.add(vec2(0.04, 0));

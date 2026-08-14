@@ -380,6 +380,7 @@ let blockBreakTexture = new Image();
 let blockBreakingTexture;
 async function gameInit() {
   combineCanvases();
+  gamepadsEnable = false;
   cameraScale = 85;
   cameraPos = vec2(0, 0);
   ctx = mainCanvas.getContext("2d");
@@ -668,8 +669,12 @@ async function gameInit() {
           }
         }
       }
+
       drawTile(
-        player.coords,
+        vec2(
+          Math.round(player.coords.x * 100) / 100,
+          Math.round(player.coords.y * 100) / 100,
+        ),
         vec2(2.059),
         spriteSheet[player.animation],
         WHITE,
@@ -738,6 +743,37 @@ async function gameInit() {
         player.jumping = false;
       }
 
+      // walking physics
+      if (player.isWalking && !player.crouching) {
+        player.coords = player.coords.add(
+          vec2(
+            Math.sign(player.momentum) *
+              (Math.floor((Math.abs(player.momentum) / 16.4) * 100) / 100),
+            0,
+          ),
+        );
+        new ParticleEmitter(
+          player.getFeetCoords(),
+          0,
+          vec2(0.5, 0.02),
+          3,
+          30,
+          PI,
+          undefined,
+          new Color(),
+        );
+      }
+      console.log(player.momentum);
+      console.log(player.coords);
+      if (!player.iswalking && !player.crouching && player.momentum != 0) {
+        player.coords = player.coords.add(
+          vec2(
+            Math.sign(player.momentum) *
+              (Math.floor((Math.abs(player.momentum) / 16.4) * 100) / 100),
+            0,
+          ),
+        );
+      }
       if (player.isFalling && !player.canFly) {
         player.animation = "fall";
       }
@@ -746,7 +782,10 @@ async function gameInit() {
       }
     },
     cameraToPlayer: () => {
-      cameraPos = vec2(player.coords.x, player.coords.y);
+      cameraPos = vec2(
+        Math.round(player.coords.x * 100) / 100,
+        Math.round(player.coords.y * 100) / 100,
+      );
     },
   };
   player.cameraToPlayer();
@@ -911,7 +950,6 @@ async function gameRender() {
   if (keyIsDown("KeyA")) {
     player.isWalking = true;
     player.directionPositive = false;
-    console.log(player.getCoordsAt("bl"));
 
     if (player.crouching) {
       console.log(
@@ -925,7 +963,6 @@ async function gameRender() {
       ) {
         player.coords = player.coords.add(vec2(-0.01, 0));
       } else {
-      
         if (
           blocks[
             `${Math.floor(player.getCoordsAt("bl").x + 0.2)},${Math.floor(player.getFeetCoords().y - 0.2)}`
@@ -939,7 +976,7 @@ async function gameRender() {
     } else {
       if (
         player.getCoordsAt("bl").x - Math.floor(player.getCoordsAt("bl").x) >
-        0.19
+        0.21
       ) {
         if (
           player.isThereABlockAtBottomLeft() ||
@@ -951,7 +988,9 @@ async function gameRender() {
       }
     }
     if (player.isWalking && !player.crouching) {
-      player.coords = player.coords.add(vec2(-0.04, 0));
+      player.momentum <= -1
+        ? (player.momentum = -1)
+        : (player.momentum += -0.2);
     }
   }
   if (keyIsDown("KeyD")) {
@@ -959,12 +998,12 @@ async function gameRender() {
     player.directionPositive = true;
     if (player.isThereABlockAtBottomRight()) {
       player.directionPositive = true;
-      return;
+      player.isWalking = false;
     }
 
     if (player.isThereABlockAtTopRight()) {
       player.directionPositive = true;
-      return;
+      player.isWalking = false;
     }
 
     if (player.crouching) {
@@ -986,8 +1025,13 @@ async function gameRender() {
         }
       }
     } else {
-      player.coords = player.coords.add(vec2(0.04, 0));
+      player.momentum >= 1 ? (player.momentum = 1) : (player.momentum += 0.2);
     }
+  }
+  if (player.momentum > 0) {
+    player.momentum = Math.max(0, player.momentum - 0.1);
+  } else if (player.momentum < 0) {
+    player.momentum = Math.min(0, player.momentum + 0.1);
   }
 }
 
@@ -1044,53 +1088,89 @@ var blockMetaData = {
     translucent: true,
     liquid: false,
   },
+
   grass: {
     breakTime: 1,
     tool: "shovel",
     collision: true,
     translucent: false,
     liquid: false,
-    color: "#2EB53A",
+
+    color1: "#239d2d",
+    color1Class: new Color(0.137, 0.616, 0.176, 1),
+
+    color2: "#1b7f24",
+    color2Class: new Color(0.106, 0.498, 0.141, 1),
   },
+
   dirt: {
     breakTime: 1,
     tool: "shovel",
     collision: true,
     translucent: false,
     liquid: false,
-    color: "#593F2D",
+
+    color1: "#593F2D",
+    color1Class: new Color(0.349, 0.247, 0.176, 1),
+
+    color2: "#493323",
+    color2Class: new Color(0.286, 0.2, 0.137, 1),
   },
+
   stone: {
     breakTime: 2,
     tool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
-    color: "#545454",
+
+    color1: "#545454",
+    color1Class: new Color(0.329, 0.329, 0.329, 1),
+
+    color2: "#464646",
+    color2Class: new Color(0.275, 0.275, 0.275, 1),
   },
+
   mapleLog: {
     breakTime: 1.5,
     tool: "axe",
     collision: true,
     translucent: false,
     liquid: false,
-    color: "#634A2E",
+
+    color1: "#634A2E",
+    color1Class: new Color(0.388, 0.29, 0.18, 1),
+
+    color2: "#503C25",
+    color2Class: new Color(0.314, 0.235, 0.145, 1),
   },
+
   mapleLeaf: {
     breakTime: 0.5,
     tool: "axe/hoe/sheers",
     collision: false,
     translucent: false,
     liquid: false,
-    color: "#48834C",
+
+    color1: "#48834C",
+    color1Class: new Color(0.282, 0.514, 0.298, 1),
+
+    color2: "#396A3D",
+    color2Class: new Color(0.224, 0.416, 0.239, 1),
   },
+
   bedrock: {
     breakTime: Infinity,
     tool: "hands",
     collision: true,
     translucent: false,
     liquid: false,
-    color: "#5e5b5e",
+
+    color1: "#5e5b5e",
+    color1Class: new Color(0.369, 0.357, 0.369, 1),
+
+    color2: "#4d4a4d",
+    color2Class: new Color(0.302, 0.29, 0.302, 1),
   },
 };
 const biomes = ["plains", "mapleForest", "desert"];

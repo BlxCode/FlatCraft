@@ -108,7 +108,7 @@
       <li>
         Download this template
         <a
-          href="https://blxm-services.servehalflife.com/files/skins/stev.png"
+          href="https://test-api.blxm.me/files/skins/stev.png"
           download
           ><button class="btn btn-secondary">Download</button></a
         >
@@ -142,7 +142,7 @@
         (() => {
           const skinEvent = new CustomEvent("skinEvent");
           let skins;
-          const ws = new WebSocket("wss://blxm-services.servehalflife.com/");
+          const ws = new WebSocket("wss://test-api.blxm.me/");
           if (Date.now() - localStorage.getItem("upload") > 72000000) {
             console.log("i swear if you call my api, i'll actually be very sad");
 

@@ -378,6 +378,7 @@ let playerImage = new Image();
 let player;
 let blockBreakTexture = new Image();
 let blockBreakingTexture;
+let drops = {};
 async function gameInit() {
   combineCanvases();
   gamepadsEnable = false;
@@ -433,6 +434,16 @@ async function gameInit() {
     frame5: new TileInfo(vec2(0, 40), vec2(8, 8), blockBreakTexture, 0, 0.05),
     frame6: new TileInfo(vec2(0, 48), vec2(8, 8), blockBreakTexture, 0, 0.05),
   };
+
+  class droppedItem {
+    constructor(item, pos) {
+      drops[pos] = item;
+      this.animationPosYOffset = Math.sin(time) * 0.2;
+    }
+    draw() {
+      drawTile();
+    }
+  }
   /*
  ███████████  ████                                                ███████    █████          ███                     █████   
 ▒▒███▒▒▒▒▒███▒▒███                                              ███▒▒▒▒▒███ ▒▒███          ▒▒▒                     ▒▒███    
@@ -612,7 +623,7 @@ async function gameInit() {
       } else if (where == "tl" || where == "topLeft") {
         return vec2(player.getFeetCoords().x - 0.022, player.coords.y + 0.57);
       } else if (where == "tr" || where == "topRight") {
-        vec2(player.getFeetCoords().x + 0.22, player.coords.y + 0.57);
+        return vec2(player.getFeetCoords().x + 0.22, player.coords.y + 0.57);
       }
     },
     setUsername: (newUsername) => {
@@ -681,13 +692,86 @@ async function gameInit() {
         0,
         player.directionPositive,
       );
+      let elipsePosY =   Math.round(player.getFeetCoords().y * 100) / 100 - 0.44;
+      if(player.jumping || player.isFalling){
+        elipsePosY = -90100011001000011;
+        // find a block under
+        for(let i = Math.floor(player.getFeetCoords().y); i > Math.floor(player.getFeetCoords().y)-12; i -= 1){
+          if(blocks[`${player.coords.x},${i}`]){
+            elipsePosY =   i + 0.44;
+            break
+          }
+        }
+      }
+
+      drawEllipse(
+        vec2(
+          Math.round(player.coords.x * 100) / 100,
+        elipsePosY,
+        ),
+        vec2(0.65, 0.1),
+        new Color(0.2, 0.2, 0.2, 0.5),
+      );
+      if (!player.isFalling && player.isWalking) {
+        let block =
+          blocks[
+            `${Math.floor(player.getFeetCoords().x)},${Math.floor(player.getFeetCoords().y - 0.2)}`
+          ];
+        if (block == undefined || !block) {
+          block = "Air";
+        }
+        if (!player.crouching) {
+          new ParticleEmitter(
+            vec2(player.getFeetCoords().x, player.getFeetCoords().y - 0.3),
+            0,
+            vec2(0.1, 0.01),
+            0.2,
+            10,
+            180,
+            undefined,
+            blockMetaData[block].color1Class,
+            blockMetaData[block].color2Class,
+            CLEAR_WHITE,
+            CLEAR_WHITE,
+            0.1,
+            0.1,
+            0.1,
+          );
+        }
+      }
     },
 
     calculatePlayerPhysics: () => {
       // check if standing on block
 
       if (player.isStandingOnBlock()) {
-        player.isFalling = false;
+        if (player.isFalling) {
+          let block =
+            blocks[
+              `${Math.floor(player.getFeetCoords().x)},${Math.floor(player.getFeetCoords().y - 0.2)}`
+            ];
+          if (block == undefined || !block) {
+            block = "Air";
+          }
+          new ParticleEmitter(
+            vec2(player.getFeetCoords().x, player.getFeetCoords().y - 0.5),
+            0,
+            vec2(0.7, 0.01),
+            0.2,
+            50,
+            0,
+            undefined,
+            blockMetaData[block].color1Class,
+            blockMetaData[block].color2Class,
+            CLEAR_WHITE,
+            CLEAR_WHITE,
+            0.1,
+            0.1,
+            0.1,
+          );
+          player.isFalling = false;
+        }
+
         player.fallMultiplier = 1;
       } else if (!player.isStandingOnBlock()) {
         // Fall physics
@@ -743,37 +827,6 @@ async function gameInit() {
         player.jumping = false;
       }
 
-      // walking physics
-      if (player.isWalking && !player.crouching) {
-        player.coords = player.coords.add(
-          vec2(
-            Math.sign(player.momentum) *
-              (Math.floor((Math.abs(player.momentum) / 16.4) * 100) / 100),
-            0,
-          ),
-        );
-        new ParticleEmitter(
-          player.getFeetCoords(),
-          0,
-          vec2(0.5, 0.02),
-          3,
-          30,
-          PI,
-          undefined,
-          new Color(),
-        );
-      }
-      console.log(player.momentum);
-      console.log(player.coords);
-      if (!player.iswalking && !player.crouching && player.momentum != 0) {
-        player.coords = player.coords.add(
-          vec2(
-            Math.sign(player.momentum) *
-              (Math.floor((Math.abs(player.momentum) / 16.4) * 100) / 100),
-            0,
-          ),
-        );
-      }
       if (player.isFalling && !player.canFly) {
         player.animation = "fall";
       }
@@ -901,6 +954,7 @@ async function gameRender() {
         }
 
         player.isBreakingBlock = true;
+
         if (blockBreak > 6) {
           destroyBlock(blockMousePos.x, blockMousePos.y);
           blockBreak = 0;
@@ -917,6 +971,30 @@ async function gameRender() {
             blockBreakingTexture["frame" + blockBreak],
           );
         }
+      }
+      if (mouseIsDown(0) && blockType == "Air") {
+        blockBreakNoSpam = 0;
+        blockBreak = 0;
+        player.isBreakingBlock = false;
+        player.raisedArms = false;
+        player.lowerArms = true;
+        player.animationChangeTimer = 0;
+        new ParticleEmitter(
+          blockMousePos,
+          0,
+          vec2(0.4, 0.4),
+          0.05,
+          5,
+          180,
+          undefined,
+          blockMetaData[blockType || "Air"].color1Class,
+          blockMetaData[blockType || "Air"].color2Class,
+          CLEAR_WHITE,
+          CLEAR_WHITE,
+          0.1,
+          0.1,
+          0.1,
+        );
       }
     }
     if (!mouseIsDown(0) && player.isBreakingBlock) {
@@ -951,11 +1029,7 @@ async function gameRender() {
     player.isWalking = true;
     player.directionPositive = false;
 
-    if (player.crouching) {
-      console.log(
-        Math.abs(player.getCoordsAt("bl").x) -
-          Math.floor(Math.abs(player.getCoordsAt("bl").x)),
-      );
+    if (player.crouching && player.isWalking) {
       if (
         Math.abs(player.getCoordsAt("bl").x) -
           Math.floor(Math.abs(player.getCoordsAt("bl").x)) <
@@ -963,6 +1037,7 @@ async function gameRender() {
       ) {
         player.coords = player.coords.add(vec2(-0.01, 0));
       } else {
+        
         if (
           blocks[
             `${Math.floor(player.getCoordsAt("bl").x + 0.2)},${Math.floor(player.getFeetCoords().y - 0.2)}`
@@ -973,11 +1048,12 @@ async function gameRender() {
           player.isWalking = false;
         }
       }
-    } else {
+    } else if (player.isWalking) {
       if (
         player.getCoordsAt("bl").x - Math.floor(player.getCoordsAt("bl").x) >
         0.21
       ) {
+        console.log(player.isThereABlockAtTopLeft());
         if (
           player.isThereABlockAtBottomLeft() ||
           player.isThereABlockAtTopLeft()
@@ -988,9 +1064,7 @@ async function gameRender() {
       }
     }
     if (player.isWalking && !player.crouching) {
-      player.momentum <= -1
-        ? (player.momentum = -1)
-        : (player.momentum += -0.2);
+      player.coords = player.coords.add(vec2(-0.06, 0));
     }
   }
   if (keyIsDown("KeyD")) {
@@ -1006,7 +1080,7 @@ async function gameRender() {
       player.isWalking = false;
     }
 
-    if (player.crouching) {
+    if (player.crouching && player.isWalking) {
       if (
         Math.abs(player.getCoordsAt("br").x) -
           Math.floor(Math.abs(player.getCoordsAt("br").x)) >
@@ -1024,14 +1098,9 @@ async function gameRender() {
           player.isWalking = false;
         }
       }
-    } else {
-      player.momentum >= 1 ? (player.momentum = 1) : (player.momentum += 0.2);
+    } else if (player.isWalking) {
+      player.coords = player.coords.add(vec2(0.06, 0));
     }
-  }
-  if (player.momentum > 0) {
-    player.momentum = Math.max(0, player.momentum - 0.1);
-  } else if (player.momentum < 0) {
-    player.momentum = Math.min(0, player.momentum + 0.1);
   }
 }
 
@@ -1087,6 +1156,11 @@ var blockMetaData = {
     collision: false,
     translucent: true,
     liquid: false,
+    color1: "#239d2d00",
+    color1Class: new Color(0.137, 0.616, 0.176, 0),
+
+    color2: "#1b7f2300",
+    color2Class: new Color(0.106, 0.498, 0.141, 0),
   },
 
   grass: {

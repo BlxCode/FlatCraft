@@ -379,6 +379,15 @@ let player;
 let blockBreakTexture = new Image();
 let blockBreakingTexture;
 let drops = {};
+
+function getCollidableBlockTypeAt(x, y) {
+  const blockType = blocks[`${x},${y}`];
+  return blockType && blockMetaData[blockType]?.collision ? blockType : false;
+}
+
+function isCollidableBlockAt(x, y) {
+  return !!getCollidableBlockTypeAt(x, y);
+}
 async function gameInit() {
   combineCanvases();
   gamepadsEnable = false;
@@ -457,14 +466,6 @@ async function gameInit() {
                               ▒▒██████                                                ▒▒██████                              
                                ▒▒▒▒▒▒                                                  ▒▒▒▒▒▒                               
 */
-  function getCollidableBlockTypeAt(x, y) {
-    const blockType = blocks[`${x},${y}`];
-    return blockType && blockMetaData[blockType]?.collision ? blockType : false;
-  }
-
-  function isCollidableBlockAt(x, y) {
-    return !!getCollidableBlockTypeAt(x, y);
-  }
 
   player = {
     username: "Guest",
@@ -671,7 +672,7 @@ async function gameInit() {
         } else {
           player.animation = "break1";
         }
-      } else if (!player.isBreakingBlock && player.lowerArms) {
+      } else if (!player.isBreakingBlock && !player.lowerArms) {
         if (!player.lowerArms) {
           player.animation = "raise2";
           if (player.animationChangeTimer > 7) {
@@ -692,23 +693,24 @@ async function gameInit() {
         0,
         player.directionPositive,
       );
-      let elipsePosY =   Math.round(player.getFeetCoords().y * 100) / 100 - 0.44;
-      if(player.jumping || player.isFalling){
+      let elipsePosY = Math.round(player.getFeetCoords().y * 100) / 100 - 0.44;
+      if (player.jumping || player.isFalling) {
         elipsePosY = -90100011001000011;
         // find a block under
-        for(let i = Math.floor(player.getFeetCoords().y); i > Math.floor(player.getFeetCoords().y)-12; i -= 1){
-          if(blocks[`${player.coords.x},${i}`]){
-            elipsePosY =   i + 0.44;
-            break
+        for (
+          let i = Math.floor(player.getFeetCoords().y);
+          i > Math.floor(player.getFeetCoords().y) - 12;
+          i -= 1
+        ) {
+          if (isCollidableBlockAt(Math.floor(player.coords.x), i)) {
+            elipsePosY = i + 0.44;
+            break;
           }
         }
       }
 
       drawEllipse(
-        vec2(
-          Math.round(player.coords.x * 100) / 100,
-        elipsePosY,
-        ),
+        vec2(Math.round(player.coords.x * 100) / 100, elipsePosY),
         vec2(0.65, 0.1),
         new Color(0.2, 0.2, 0.2, 0.5),
       );
@@ -721,7 +723,7 @@ async function gameInit() {
           block = "Air";
         }
         if (!player.crouching) {
-          new ParticleEmitter(
+          const particleWalk = new ParticleEmitter(
             vec2(player.getFeetCoords().x, player.getFeetCoords().y - 0.3),
             0,
             vec2(0.1, 0.01),
@@ -737,6 +739,9 @@ async function gameInit() {
             0.1,
             0.1,
           );
+          setTimeout(() => {
+            particleWalk.destroy(true);
+          }, 200);
         }
       }
     },
@@ -753,7 +758,7 @@ async function gameInit() {
           if (block == undefined || !block) {
             block = "Air";
           }
-          new ParticleEmitter(
+          let fallParticle = new ParticleEmitter(
             vec2(player.getFeetCoords().x, player.getFeetCoords().y - 0.5),
             0,
             vec2(0.7, 0.01),
@@ -769,6 +774,9 @@ async function gameInit() {
             0.1,
             0.1,
           );
+          setTimeout(() => {
+            fallParticle.destroy(true);
+          }, 200);
           player.isFalling = false;
         }
 
@@ -956,10 +964,28 @@ async function gameRender() {
         player.isBreakingBlock = true;
 
         if (blockBreak > 6) {
+          let breakParticle = new ParticleEmitter(
+            blockMousePos,
+            0,
+            vec2(0.5, 0.5),
+            0.05,
+            1902,
+            180,
+            undefined,
+            blockMetaData[blockType || "Air"].color1Class,
+            blockMetaData[blockType || "Air"].color2Class,
+            CLEAR_WHITE,
+            CLEAR_WHITE,
+            0.1,
+            0.1,
+            0.1,
+          );
+          setTimeout(() => {
+            breakParticle.destroy(true);
+          }, 200);
           destroyBlock(blockMousePos.x, blockMousePos.y);
           blockBreak = 0;
           blockBreakNoSpam = 0;
-          blockBreak = 0;
           player.isBreakingBlock = false;
           player.raisedArms = false;
           player.lowerArms = true;
@@ -979,22 +1005,6 @@ async function gameRender() {
         player.raisedArms = false;
         player.lowerArms = true;
         player.animationChangeTimer = 0;
-        new ParticleEmitter(
-          blockMousePos,
-          0,
-          vec2(0.4, 0.4),
-          0.05,
-          5,
-          180,
-          undefined,
-          blockMetaData[blockType || "Air"].color1Class,
-          blockMetaData[blockType || "Air"].color2Class,
-          CLEAR_WHITE,
-          CLEAR_WHITE,
-          0.1,
-          0.1,
-          0.1,
-        );
       }
     }
     if (!mouseIsDown(0) && player.isBreakingBlock) {
@@ -1030,30 +1040,36 @@ async function gameRender() {
     player.directionPositive = false;
 
     if (player.crouching && player.isWalking) {
+     
       if (
-        Math.abs(player.getCoordsAt("bl").x) -
-          Math.floor(Math.abs(player.getCoordsAt("bl").x)) <
-        0.75
+        blocks[
+          `${Math.floor(player.getCoordsAt("bl").x+ 0.6)},${Math.floor(player.getFeetCoords().y - 0.2)}`
+        ]
       ) {
-        player.coords = player.coords.add(vec2(-0.01, 0));
-      } else {
-        
         if (
-          blocks[
-            `${Math.floor(player.getCoordsAt("bl").x + 0.2)},${Math.floor(player.getFeetCoords().y - 0.2)}`
-          ]
+          player.getCoordsAt("bl").x - Math.floor(player.getCoordsAt("bl").x) >
+          0.21
         ) {
-          player.coords = player.coords.add(vec2(-0.01, 0));
-        } else {
-          player.isWalking = false;
+          if (
+            player.isThereABlockAtBottomLeft() ||
+            player.isThereABlockAtTopLeft()
+          ) {
+            player.directionPositive = false;
+            player.isWalking = false;
+            
+          }
         }
+      } else {
+        player.isWalking = false;
       }
-    } else if (player.isWalking) {
+      if(player.isWalking && player.crouching){
+        player.coords = player.coords.add(vec2(-0.01, 0));
+      }
+    } else if (player.isWalking && !player.crouching) {
       if (
         player.getCoordsAt("bl").x - Math.floor(player.getCoordsAt("bl").x) >
         0.21
       ) {
-        console.log(player.isThereABlockAtTopLeft());
         if (
           player.isThereABlockAtBottomLeft() ||
           player.isThereABlockAtTopLeft()
@@ -1084,7 +1100,7 @@ async function gameRender() {
       if (
         Math.abs(player.getCoordsAt("br").x) -
           Math.floor(Math.abs(player.getCoordsAt("br").x)) >
-        0.25
+        0.75
       ) {
         player.coords = player.coords.add(vec2(0.01, 0));
       } else {
@@ -1098,20 +1114,20 @@ async function gameRender() {
           player.isWalking = false;
         }
       }
-    } else if (player.isWalking) {
+    } else if (player.isWalking && !player.crouching) {
       player.coords = player.coords.add(vec2(0.06, 0));
     }
   }
 }
 
 function destroyBlock(x, y) {
-  if (blocks[`${x},${y}`]) {
+  if (isCollidableBlockAt(x, y)) {
     delete blocks[`${x},${y}`];
   }
 }
 function createBlock(x, y, blockType) {
   // check if block already exist
-  if (blocks[`${x},${y}`]) {
+  if (isCollidableBlockAt(x, y)) {
     console.log(
       "Tried to create a " +
         blockType +

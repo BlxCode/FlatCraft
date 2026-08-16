@@ -725,7 +725,6 @@ async function gameInit() {
           }
         }
       }
-
       drawEllipse(
         vec2(Math.round(player.coords.x * 100) / 100, elipsePosY),
         vec2(0.65, 0.1),

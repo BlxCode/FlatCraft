@@ -447,10 +447,26 @@ async function gameInit() {
   class droppedItem {
     constructor(item, pos) {
       drops[pos] = item;
-      this.animationPosYOffset = Math.sin(time) * 0.2;
+      this.animationPosYOffset = 0;
     }
     draw() {
-      drawTile();
+      if (!getCollidableBlockTypeAt(Math.round(pos.x), Math.floor(pos.y))) {
+        this.pos = this.pos.subtract(0, 0.05);
+        this.animationPosYOffset = 0;
+      } else if (
+        !getCollidableBlockTypeAt(Math.round(pos.x), Math.floor(pos.y))
+      ) {
+        this.animationPosYOffset = Math.sin(time) * 0.2;
+      }
+
+      drawTile(
+        vec2(
+          this.pos.x,
+          this.animationPosYOffset != 0 ? this.animationPosYOffset : this.pos.y,
+        ),
+        vec2(0.25),
+        texture[item],
+      );
     }
   }
   /*
@@ -693,6 +709,7 @@ async function gameInit() {
         0,
         player.directionPositive,
       );
+      // SHADOW
       let elipsePosY = Math.round(player.getFeetCoords().y * 100) / 100 - 0.44;
       if (player.jumping || player.isFalling) {
         elipsePosY = -90100011001000011;
@@ -702,8 +719,8 @@ async function gameInit() {
           i > Math.floor(player.getFeetCoords().y) - 12;
           i -= 1
         ) {
-          if (isCollidableBlockAt(Math.floor(player.coords.x), i)) {
-            elipsePosY = i + 0.44;
+          if (isCollidableBlockAt(Math.round(player.coords.x), i)) {
+            elipsePosY = i + 0.5;
             break;
           }
         }
@@ -1040,10 +1057,9 @@ async function gameRender() {
     player.directionPositive = false;
 
     if (player.crouching && player.isWalking) {
-     
       if (
         blocks[
-          `${Math.floor(player.getCoordsAt("bl").x+ 0.6)},${Math.floor(player.getFeetCoords().y - 0.2)}`
+          `${Math.floor(player.getCoordsAt("bl").x + 0.6)},${Math.floor(player.getFeetCoords().y - 0.2)}`
         ]
       ) {
         if (
@@ -1054,15 +1070,16 @@ async function gameRender() {
             player.isThereABlockAtBottomLeft() ||
             player.isThereABlockAtTopLeft()
           ) {
+            if(!player.isFalling){
             player.directionPositive = false;
             player.isWalking = false;
-            
+            }
           }
         }
       } else {
         player.isWalking = false;
       }
-      if(player.isWalking && player.crouching){
+      if (player.isWalking && player.crouching) {
         player.coords = player.coords.add(vec2(-0.01, 0));
       }
     } else if (player.isWalking && !player.crouching) {
@@ -1074,8 +1091,11 @@ async function gameRender() {
           player.isThereABlockAtBottomLeft() ||
           player.isThereABlockAtTopLeft()
         ) {
-          player.directionPositive = false;
-          player.isWalking = false;
+          if (!player.isFalling) {
+          
+            player.directionPositive = false;
+            player.isWalking = false;
+          }
         }
       }
     }

@@ -388,6 +388,9 @@ function getCollidableBlockTypeAt(x, y) {
 function isCollidableBlockAt(x, y) {
   return !!getCollidableBlockTypeAt(x, y);
 }
+function drawRickAstleyAt(x, y) {
+  drawTile(vec2(x, y), vec2(0.25), texture["rickRoll"]);
+}
 async function gameInit() {
   combineCanvases();
   gamepadsEnable = false;
@@ -514,13 +517,30 @@ async function gameInit() {
     getFeetCoords: () => {
       return vec2(player.coords.x, player.coords.y - 0.6);
     },
+    getCoordsAt: (where) => {
+      if (where == "bl" || where == "bottomLeft") {
+        return vec2(
+          player.getFeetCoords().x - 0.22,
+          player.getFeetCoords().y + 0.1,
+        );
+      } else if (where == "br" || where == "bottomRight") {
+        return vec2(
+          player.getFeetCoords().x + 0.22,
+          player.getFeetCoords().y + 0.1,
+        );
+      } else if (where == "tl" || where == "topLeft") {
+        return vec2(player.getFeetCoords().x - 0.22, player.coords.y + 0.57);
+      } else if (where == "tr" || where == "topRight") {
+        return vec2(player.getFeetCoords().x + 0.22, player.coords.y + 0.57);
+      }
+    },
     isStandingOnBlock: () => {
       const leftFeetCoords = vec2(
-        player.getFeetCoords().x - 0.35,
+        player.getFeetCoords().x - 0.2,
         player.getFeetCoords().y + 0.01,
       );
       const rightFeetCoords = vec2(
-        player.getFeetCoords().x + 0.35,
+        player.getFeetCoords().x + 0.2,
         player.getFeetCoords().y + 0.01,
       );
 
@@ -559,57 +579,69 @@ async function gameInit() {
       );
     },
     isThereABlockAtBottomRight: () => {
-      const bottomRightCoords = vec2(
-        player.getFeetCoords().x + 0.22,
-        player.getFeetCoords().y + 0.1,
-      );
+      const bottomRightCoords = player.getCoordsAt("br");
 
-      if (bottomRightCoords.x - Math.floor(bottomRightCoords.x) > 0.35) {
+      if (
+        Math.abs(player.coords.x) -
+          Math.abs(Math.floor(Math.abs(player.coords.x))) <
+        0.9
+      ) {
         return isCollidableBlockAt(
-          Math.ceil(bottomRightCoords.x),
+          Math.ceil(player.coords.x),
           Math.floor(bottomRightCoords.y + 0.1),
         );
       }
       return false;
     },
     isThereABlockAtBottomLeft: () => {
-      const bottomRightCoords = vec2(
-        Math.floor(player.getFeetCoords().x - 0.03),
-        player.getFeetCoords().y + 0.1,
-      );
+      const bottomRightCoords = player.getCoordsAt("bl");
 
-      if (player.coords.x - Math.floor(player.coords.x) < 0.75) {
+      console.log(
+        Math.abs(player.coords.x) -
+          Math.abs(Math.floor(Math.abs(player.coords.x))),
+      );
+      if (
+        Math.abs(player.coords.x) -
+          Math.abs(Math.floor(Math.abs(player.coords.x))) >
+        0.1
+      ) {
         return isCollidableBlockAt(
-          Math.ceil(bottomRightCoords.x),
+          Math.floor(player.coords.x),
           Math.floor(bottomRightCoords.y + 0.1),
         );
       }
       return false;
     },
     isThereABlockAtTopRight: () => {
-      const bottomRightCoords = vec2(
-        player.getFeetCoords().x + 0.22,
-        player.coords.y + 0.57,
-      );
+      const bottomRightCoords = player.getCoordsAt("tr");
 
-      if (bottomRightCoords.x - Math.floor(bottomRightCoords.x) > 0.25) {
+      if (
+        Math.abs(player.coords.x) -
+          Math.abs(Math.floor(Math.abs(player.coords.x))) <
+        0.9
+      ) {
         return isCollidableBlockAt(
-          Math.ceil(bottomRightCoords.x),
-          Math.floor(bottomRightCoords.y + 0.1),
+          Math.ceil(player.coords.x),
+          Math.floor(player.coords.y + 0.5),
         );
       }
       return false;
     },
     isThereABlockAtTopLeft: () => {
-      const bottomRightCoords = vec2(
-        Math.floor(player.getFeetCoords().x - 0.03),
-        player.coords.y + 0.75,
-      );
+      const bottomRightCoords = player.getCoordsAt("tl");
 
-      if (player.coords.x - Math.floor(player.coords.x) < 0.75) {
+      console.log(
+        Math.abs(player.coords.x) -
+          Math.abs(Math.floor(Math.abs(player.coords.x))),
+      );
+      if (
+        Math.abs(player.coords.x) -
+          Math.abs(Math.floor(Math.abs(player.coords.x))) >
+        0.1
+      ) {
         return isCollidableBlockAt(
-          Math.ceil(bottomRightCoords.x),
-          Math.floor(bottomRightCoords.y + 0.1),
+          Math.floor(player.coords.x),
+          Math.floor(player.coords.y + 0.5),
         );
       }
       return false;
@@ -626,23 +658,7 @@ async function gameInit() {
 
       return topBlock || bottomBlock || false;
     },
-    getCoordsAt: (where) => {
-      if (where == "bl" || where == "bottomLeft") {
-        return vec2(
-          player.getFeetCoords().x - 0.22,
-          player.getFeetCoords().y + 0.1,
-        );
-      } else if (where == "br" || where == "bottomRight") {
-        return vec2(
-          player.getFeetCoords().x + 0.22,
-          player.getFeetCoords().y + 0.1,
-        );
-      } else if (where == "tl" || where == "topLeft") {
-        return vec2(player.getFeetCoords().x - 0.022, player.coords.y + 0.57);
-      } else if (where == "tr" || where == "topRight") {
-        return vec2(player.getFeetCoords().x + 0.22, player.coords.y + 0.57);
-      }
-    },
+
     setUsername: (newUsername) => {
       player.username = newUsername;
     },
@@ -769,7 +785,7 @@ async function gameInit() {
         if (player.isFalling) {
           let block =
             blocks[
-              `${Math.floor(player.getFeetCoords().x)},${Math.floor(player.getFeetCoords().y - 0.2)}`
+              `${Math.round(player.getFeetCoords().x)},${Math.floor(player.getFeetCoords().y - 0.2)}`
             ];
           if (block == undefined || !block) {
             block = "Air";
@@ -1045,97 +1061,90 @@ async function gameRender() {
   player.isWalking = false;
   player.crouching = false;
 
-  if (keyIsDown("KeyW") && !player.isFalling) {
+  function moveSideways(direction) {
+    player.isWalking = true;
+    // collision checks
+    if (direction == "r") {
+      if (
+        player.isThereABlockAtBottomRight() ||
+        player.isThereABlockAtTopRight()
+      ) {
+        player.isWalking = false;
+        console.log("no r");
+      } else {
+        player.isWalking = true;
+      }
+    } else if (direction == "l") {
+      if (
+        player.isThereABlockAtBottomLeft() ||
+        player.isThereABlockAtTopLeft()
+      ) {
+        player.isWalking = false;
+        console.log("no l");
+      } else {
+        player.isWalking = true;
+      }
+    }
+
+    if (player.isWalking) {
+      if (player.crouching) {
+        //check if on edge of block
+
+        if (direction == "r") {
+          if (
+            isCollidableBlockAt(
+              Math.floor(player.getFeetCoords().x + 0.5),
+              Math.floor(player.getFeetCoords().y - 0.2),
+            )
+          ) {
+            if (player.isFalling) {
+              player.isWalking = true;
+            }
+          } else {
+            player.isWalking = false;
+          }
+        } else if (direction == "l") {
+          if (
+            isCollidableBlockAt(
+              Math.floor(player.getFeetCoords().x + 0.5),
+              Math.floor(player.getFeetCoords().y - 0.2),
+            )
+          ) {
+            if (player.isFalling) {
+              player.isWalking = true;
+            }
+          } else {
+            player.isWalking = false;
+          }
+        }
+        if (player.isWalking) {
+          if (direction == "r") {
+            player.coords = player.coords.add(vec2(0.01, 0));
+          } else if (direction == "l") {
+            player.coords = player.coords.add(vec2(-0.01, 0));
+          }
+        }
+      } else {
+        direction == "r"
+          ? (player.coords = player.coords.add(vec2(0.06, 0)))
+          : (player.coords = player.coords.add(vec2(-0.06, 0)));
+      }
+    }
+  }
+
+  if (keyIsDown("ArrowUp") && !player.isFalling) {
     player.jumping = true;
   }
-  if (keyIsDown("KeyS")) {
+  if (keyIsDown("ArrowDown")) {
     player.crouching = true;
   }
-  if (keyIsDown("KeyA")) {
-    player.isWalking = true;
+  if (keyIsDown("ArrowLeft")) {
+    moveSideways("l");
     player.directionPositive = false;
-
-    if (player.crouching && player.isWalking) {
-      if (
-        blocks[
-          `${Math.floor(player.getCoordsAt("bl").x + 0.6)},${Math.floor(player.getFeetCoords().y - 0.2)}`
-        ]
-      ) {
-        if (
-          player.getCoordsAt("bl").x - Math.floor(player.getCoordsAt("bl").x) >
-          0.21
-        ) {
-          if (
-            player.isThereABlockAtBottomLeft() ||
-            player.isThereABlockAtTopLeft()
-          ) {
-            if(!player.isFalling){
-            player.directionPositive = false;
-            player.isWalking = false;
-            }
-          }
-        }
-      } else {
-        player.isWalking = false;
-      }
-      if (player.isWalking && player.crouching) {
-        player.coords = player.coords.add(vec2(-0.01, 0));
-      }
-    } else if (player.isWalking && !player.crouching) {
-      if (
-        player.getCoordsAt("bl").x - Math.floor(player.getCoordsAt("bl").x) >
-        0.21
-      ) {
-        if (
-          player.isThereABlockAtBottomLeft() ||
-          player.isThereABlockAtTopLeft()
-        ) {
-          if (!player.isFalling) {
-          
-            player.directionPositive = false;
-            player.isWalking = false;
-          }
-        }
-      }
-    }
-    if (player.isWalking && !player.crouching) {
-      player.coords = player.coords.add(vec2(-0.06, 0));
-    }
   }
-  if (keyIsDown("KeyD")) {
-    player.isWalking = true;
+  if (keyIsDown("ArrowRight")) {
+    moveSideways("r");
     player.directionPositive = true;
-    if (player.isThereABlockAtBottomRight()) {
-      player.directionPositive = true;
-      player.isWalking = false;
-    }
-
-    if (player.isThereABlockAtTopRight()) {
-      player.directionPositive = true;
-      player.isWalking = false;
-    }
-
-    if (player.crouching && player.isWalking) {
-      if (
-        Math.abs(player.getCoordsAt("br").x) -
-          Math.floor(Math.abs(player.getCoordsAt("br").x)) >
-        0.75
-      ) {
-        player.coords = player.coords.add(vec2(0.01, 0));
-      } else {
-        if (
-          blocks[
-            `${Math.floor(player.getCoordsAt("br").x + 0.35)},${Math.floor(player.getFeetCoords().y + 0.01)}`
-          ]
-        ) {
-          player.coords = player.coords.add(vec2(0.01, 0));
-        } else {
-          player.isWalking = false;
-        }
-      }
-    } else if (player.isWalking && !player.crouching) {
-      player.coords = player.coords.add(vec2(0.06, 0));
-    }
   }
 }
 

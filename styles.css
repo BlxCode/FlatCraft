@@ -5,7 +5,7 @@
   --border: #444444;
   --slot: #5a6060;
   --slot-border: #111111bc;
-  --slot-hover: #8a3d09;
+  --slot-hover: #fff;
 }
 ::-webkit-scrollbar {
   width: 7px;
@@ -298,9 +298,7 @@ label.larger-font {
   border-radius: 1px !important;
   padding: 0.95dvh 1.95dvh 0.95dvh 1.95dvh !important;
 }
-.slotHover {
-  border-color: var(--slot-hover) !important;
-}
+
 .slot {
   aspect-ratio: 1/1;
   width: 7dvh;
@@ -313,6 +311,12 @@ label.larger-font {
   background: var(--slot);
   border: 0.5vh solid var(--slot-border);
   box-sizing: border-box;
+  transform: scale(1);
+  transition: transform 0.5s;
+}
+.slotHover {
+  border-color: var(--slot-hover) !important;
+  transform: scale(1.025);
 }
 #popup,
 #credits,
@@ -472,9 +476,9 @@ label.larger-font {
   font-size: 2dvh !important;
 }
 canvas {
-  
   position: fixed;
   pointer-events: none;
+ 
 }
 .blxm-bg-dark {
   background-color: #2d2c33 !important;

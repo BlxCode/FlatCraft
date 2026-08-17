@@ -1097,7 +1097,7 @@ async function gameRender() {
               Math.floor(player.getFeetCoords().y - 0.2),
             )
           ) {
-            if (player.isFalling) {
+            if (!player.isFalling) {
               player.isWalking = true;
             }
           } else {
@@ -1110,7 +1110,7 @@ async function gameRender() {
               Math.floor(player.getFeetCoords().y - 0.2),
             )
           ) {
-            if (player.isFalling) {
+            if (!player.isFalling) {
               player.isWalking = true;
             }
           } else {

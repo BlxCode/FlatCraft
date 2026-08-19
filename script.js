@@ -331,37 +331,36 @@ function loadImage(name) {
     img.src = "./assets/textures/" + name + ".png";
   });
 }
+const textureNames = [
+  "acaciaLog",
+  "cedarLog",
+  "coalBlock",
+  "coalOre",
+  "copperBlock",
+  "copperOre",
+  "diamondBlock",
+  "diamondOre",
+  "dirt",
+  "emeraldBlock",
+  "emeraldOre",
+  "goldBlock",
+  "goldOre",
+  "grass",
+  "ironBlock",
+  "ironOre",
+  "jungleLog",
+  "mapleLeaf",
+  "mapleLog",
+  "poplarLog",
+  "stone",
+  "sugiliteBlock",
+  "sugiliteOre",
+  "bedrock",
+  "rickRoll",
+  "hoverFar",
+  "hoverClose",
+];
 async function loadAllImages() {
-  const textureNames = [
-    "acaciaLog",
-    "cedarLog",
-    "coalBlock",
-    "coalOre",
-    "copperBlock",
-    "copperOre",
-    "diamondBlock",
-    "diamondOre",
-    "dirt",
-    "emeraldBlock",
-    "emeraldOre",
-    "goldBlock",
-    "goldOre",
-    "grass",
-    "ironBlock",
-    "ironOre",
-    "jungleLog",
-    "mapleLeaf",
-    "mapleLog",
-    "poplarLog",
-    "stone",
-    "sugiliteBlock",
-    "sugiliteOre",
-    "bedrock",
-    "rickRoll",
-    "hoverFar",
-    "hoverClose",
-  ];
-
   for (const name of textureNames) {
     await loadImage(name);
   }
@@ -379,7 +378,7 @@ let player;
 let blockBreakTexture = new Image();
 let blockBreakingTexture;
 let drops = {};
-
+let dropsAt = [];
 function getCollidableBlockTypeAt(x, y) {
   const blockType = blocks[`${x},${y}`];
   return blockType && blockMetaData[blockType]?.collision ? blockType : false;
@@ -390,6 +389,108 @@ function isCollidableBlockAt(x, y) {
 }
 function drawRickAstleyAt(x, y) {
   drawTile(vec2(x, y), vec2(0.25), texture["rickRoll"]);
+}
+class droppedItem {
+  constructor(item, posX, posY) {
+    this.pos = vec2(posX, posY - 0.2);
+    this.animationPosYOffset = 0;
+    this.item = item;
+    this.timeDropped = 0;
+    this.dropIndex;
+    if (!drops[`${posX},${posY}`]) {
+      drops[`${posX},${posY}`] = [];
+
+      dropsAt.push(`${posX},${posY}`);
+    }
+    drops[`${posX},${posY}`].push(this);
+  }
+  draw() {
+    this.timeDropped += 0.02;
+    if (this.timeDropped < 5) {
+      if (
+        !isCollidableBlockAt(
+          Math.round(this.pos.x),
+          Math.floor(this.pos.y + 0.22),
+        )
+      ) {
+        let oldPos = this.pos;
+        this.pos = this.pos.subtract(vec2(0, 0.04));
+        this.animationPosYOffset = 0;
+        // update coords
+        if (drops[`${oldPos.x},${oldPos.y}`]) {
+          if (drops[`${this.pos.x},${this.pos.y}`]) {
+            let indexInDrawDrop =
+              drops[`${oldPos.x},${oldPos.y}`].indexOf(this);
+            if (indexInDrawDrop) {
+              drops[`${oldPos.x},${oldPos.y}`].splice(indexInDrawDrop, 1);
+            }
+            drops[`${this.pos.x},${this.pos.y}`].push(this);
+            if (drops[`${oldPos.x},${oldPos.y}`].length <= 0) {
+              delete drops[`${oldPos.x},${oldPos.y}`];
+            }
+          } else {
+            Object.defineProperty(
+              drops,
+              `${this.pos.x},${this.pos.y}`,
+              Object.getOwnPropertyDescriptor(drops, `${oldPos.x},${oldPos.y}`),
+            );
+            if (drops[`${oldPos.x},${oldPos.y}`].length <= 0) {
+              delete drops[`${oldPos.x},${oldPos.y}`];
+            }
+          }
+        } else {
+          console.table(drops);
+          console.error(
+            "drops broke while tyring to find old drops what idk, very rare bug. basically you are f####d.",
+          );
+        }
+      } else if (
+        isCollidableBlockAt(
+          Math.round(this.pos.x),
+          Math.floor(this.pos.y + 0.22),
+        )
+      ) {
+        this.animationPosYOffset = Math.sin(this.timeDropped) * 0.035;
+      }
+
+      drawTile(
+        vec2(this.pos.x, this.pos.y + this.animationPosYOffset),
+        vec2(0.35),
+        texture[this.item],
+      );
+
+      let elipsePosY = Math.round(this.pos.y * 100) / 100 - 0.44;
+
+      elipsePosY = -90100011001000011;
+      // find a block under
+      for (
+        let i = Math.floor(this.pos.y + 0.24);
+        i > Math.floor(this.pos.y) - 12;
+        i -= 1
+      ) {
+        if (isCollidableBlockAt(Math.round(this.pos.x), i)) {
+          elipsePosY = i + 0.55;
+          break;
+        }
+      }
+      drawEllipse(
+        vec2(Math.round(this.pos.x * 100) / 100, elipsePosY),
+        vec2(0.34, 0.08),
+        new Color(0.2, 0.2, 0.2, 0.5),
+      );
+    } else {
+      this.destroy();
+    }
+  }
+  destroy() {
+    let index = drops[`${this.pos.x},${this.pos.y}`].indexOf(this);
+    if (index) {
+      drops[`${this.pos.x},${this.pos.y}`].splice(index, 1);
+    }
+    if (drops[`${this.pos.x},${this.pos.y}`].length <= 0) {
+      delete drops[`${this.pos.x},${this.pos.y}`];
+    }
+  }
 }
 async function gameInit() {
   combineCanvases();
@@ -447,31 +548,6 @@ async function gameInit() {
     frame6: new TileInfo(vec2(0, 48), vec2(8, 8), blockBreakTexture, 0, 0.05),
   };
 
-  class droppedItem {
-    constructor(item, pos) {
-      drops[pos] = item;
-      this.animationPosYOffset = 0;
-    }
-    draw() {
-      if (!getCollidableBlockTypeAt(Math.round(pos.x), Math.floor(pos.y))) {
-        this.pos = this.pos.subtract(0, 0.05);
-        this.animationPosYOffset = 0;
-      } else if (
-        !getCollidableBlockTypeAt(Math.round(pos.x), Math.floor(pos.y))
-      ) {
-        this.animationPosYOffset = Math.sin(time) * 0.2;
-      }
-
-      drawTile(
-        vec2(
-          this.pos.x,
-          this.animationPosYOffset != 0 ? this.animationPosYOffset : this.pos.y,
-        ),
-        vec2(0.25),
-        texture[item],
-      );
-    }
-  }
   /*
  ███████████  ████                                                ███████    █████          ███                     █████   
 ▒▒███▒▒▒▒▒███▒▒███                                              ███▒▒▒▒▒███ ▒▒███          ▒▒▒                     ▒▒███    
@@ -596,10 +672,6 @@ async function gameInit() {
     isThereABlockAtBottomLeft: () => {
       const bottomRightCoords = player.getCoordsAt("bl");
 
-      console.log(
-        Math.abs(player.coords.x) -
-          Math.abs(Math.floor(Math.abs(player.coords.x))),
-      );
       if (
         Math.abs(player.coords.x) -
           Math.abs(Math.floor(Math.abs(player.coords.x))) >
@@ -630,10 +702,6 @@ async function gameInit() {
     isThereABlockAtTopLeft: () => {
       const bottomRightCoords = player.getCoordsAt("tl");
 
-      console.log(
-        Math.abs(player.coords.x) -
-          Math.abs(Math.floor(Math.abs(player.coords.x))),
-      );
       if (
         Math.abs(player.coords.x) -
           Math.abs(Math.floor(Math.abs(player.coords.x))) >
@@ -818,7 +886,7 @@ async function gameInit() {
 
         if (!player.canFly && !player.jumping) {
           player.isFalling = true;
-          if (player.fallMultiplier < 2) {
+          if (player.fallMultiplier < 2.3) {
             player.fallMultiplier += 0.04;
           }
           player.coords.y -= 0.05 * player.fallMultiplier;
@@ -921,13 +989,27 @@ let hoveredBlock = vec2(0, 0);
 let blockBreak = 0;
 let blockBreakNoSpam = 0;
 async function gameRender() {
+  let halfWidth = mainCanvas.width / cameraScale / 2;
+  let halfHeight = mainCanvas.height / cameraScale / 2;
+
+  let startX = Math.floor(cameraPos.x - halfWidth) - 1;
+  let endX = Math.ceil(cameraPos.x + halfWidth) + 1;
+
+  let startY = Math.floor(cameraPos.y - halfHeight) - 1;
+  let endY = Math.ceil(cameraPos.y + halfHeight) + 1;
+  /*  if(time < 50){
+    let randomButtcheak = Math.floor(Math.random()*textureNames.length);
+    new droppedItem(textureNames[randomButtcheak],player.coords.x,player.coords.y)
+        randomButtcheak = Math.floor(Math.random()*textureNames.length);
+    new droppedItem(textureNames[randomButtcheak],player.coords.x,player.coords.y)
+   
+        randomButtcheak = Math.floor(Math.random()*textureNames.length);
+    new droppedItem(textureNames[randomButtcheak],player.coords.x,player.coords.y)
+   
+
+   
+  } */
   const renderBlocks = () => {
-    let startX = Math.floor(cameraPos.x - 12);
-    let endX = Math.floor(cameraPos.x + 12);
-
-    let startY = Math.floor(cameraPos.y - 10);
-    let endY = Math.floor(cameraPos.y + 10);
-
     for (let x = startX; x <= endX; x++) {
       for (let y = startY; y <= endY; y++) {
         let block = blocks[`${x},${y}`];
@@ -965,8 +1047,13 @@ async function gameRender() {
       hoveredBlock.y != blockMousePos.y
     ) {
       blockBreak = 0;
+
+      blockBreakNoSpam = 0;
+      blockBreak = 0;
+      player.isBreakingBlock = false;
     }
     hoveredBlock = blockMousePos;
+
     if (diffAbs.x > 5 || diffAbs.y > 5) {
       drawTile(blockMousePos, vec2(1), texture["hoverFar"]);
       if (player.isBreakingBlock) {
@@ -980,12 +1067,13 @@ async function gameRender() {
       }
     } else {
       drawTile(blockMousePos, vec2(1), texture["hoverClose"]);
+
       let blockType = blocks[`${blockMousePos.x},${blockMousePos.y}`];
       if (blockType == undefined) {
         blockType = "Air";
       }
 
-      if (mouseIsDown(0) && blockType != "Air") {
+      if (mouseIsDown(0) && blockType != "Air" && !player.isWalking) {
         if (blockBreakNoSpam > 12 * blockMetaData[blockType]["breakTime"]) {
           blockBreak += 1;
           blockBreakNoSpam = 0;
@@ -1012,6 +1100,12 @@ async function gameRender() {
             0.1,
             0.1,
           );
+          const drop = new droppedItem(
+            blockType,
+            blockMousePos.x,
+            blockMousePos.y,
+          );
+
           setTimeout(() => {
             breakParticle.destroy(true);
           }, 200);
@@ -1030,13 +1124,23 @@ async function gameRender() {
           );
         }
       }
-      if (mouseIsDown(0) && blockType == "Air") {
+      if (mouseIsDown(0) && blockType == "Air" && player.isBreakingBlock) {
         blockBreakNoSpam = 0;
         blockBreak = 0;
         player.isBreakingBlock = false;
         player.raisedArms = false;
         player.lowerArms = true;
-        player.animationChangeTimer = 0;
+      }
+      if (
+        mouseIsDown(0) &&
+        player.isBreakingBlock &&
+        (player.isWalking || player.isFalling || player.jumping)
+      ) {
+        blockBreakNoSpam = 0;
+        blockBreak = 0;
+        player.isBreakingBlock = false;
+        player.raisedArms = false;
+        player.lowerArms = true;
       }
     }
     if (!mouseIsDown(0) && player.isBreakingBlock) {
@@ -1047,6 +1151,38 @@ async function gameRender() {
       player.lowerArms = true;
       player.animationChangeTimer = 0;
     }
+    if (player.isWalking || player.isFalling || player.jumping) {
+      if (player.isBreakingBlock) {
+        blockBreak = 0;
+        blockBreakNoSpam = 0;
+        blockBreak = 0;
+        player.isBreakingBlock = false;
+        player.raisedArms = false;
+        player.lowerArms = true;
+        player.animationChangeTimer = 0;
+      }
+    }
+  };
+  let dropCoords;
+  const renderDrops = () => {
+    if (dropsAt.length > 0) {
+      for (const i of Object.values(drops)) {
+        dropCoords = Object.keys(drops)[0].split(",");
+        let dropCoordsX = dropCoords[0];
+        let dropCoordsY = dropCoords[1];
+
+        if (
+          dropCoordsX > startX &&
+          dropCoordsX < endX &&
+          dropCoordsY > startY &&
+          dropCoordsY < endY
+        ) {
+          for (let e = 1; e <= i.highestDropIndex; e++) {
+            i[e].draw();
+          }
+        }
+      }
+    }
   };
 
   renderSky();
@@ -1055,6 +1191,7 @@ async function gameRender() {
   player.calculatePlayerPhysics();
 
   player.drawPlayer();
+  renderDrops();
 
   player.cameraToPlayer();
 
@@ -1070,7 +1207,6 @@ async function gameRender() {
         player.isThereABlockAtTopRight()
       ) {
         player.isWalking = false;
-        console.log("no r");
       } else {
         player.isWalking = true;
       }
@@ -1080,7 +1216,6 @@ async function gameRender() {
         player.isThereABlockAtTopLeft()
       ) {
         player.isWalking = false;
-        console.log("no l");
       } else {
         player.isWalking = true;
       }
@@ -1138,11 +1273,11 @@ async function gameRender() {
   if (keyIsDown("ArrowDown")) {
     player.crouching = true;
   }
-  if (keyIsDown("ArrowLeft")) {
+  if (keyIsDown("ArrowLeft") && !keyIsDown("ArrowRight")) {
     moveSideways("l");
     player.directionPositive = false;
   }
-  if (keyIsDown("ArrowRight")) {
+  if (keyIsDown("ArrowRight") && !keyIsDown("ArrowLeft")) {
     moveSideways("r");
     player.directionPositive = true;
   }

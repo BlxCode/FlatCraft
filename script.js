@@ -378,7 +378,7 @@ let player;
 let blockBreakTexture = new Image();
 let blockBreakingTexture;
 let drops = {};
-let dropsAt = [];
+
 function getCollidableBlockTypeAt(x, y) {
   const blockType = blocks[`${x},${y}`];
   return blockType && blockMetaData[blockType]?.collision ? blockType : false;
@@ -397,16 +397,15 @@ class droppedItem {
     this.item = item;
     this.timeDropped = 0;
     this.dropIndex;
-    if (!drops[`${posX},${posY}`]) {
-      drops[`${posX},${posY}`] = [];
-
-      dropsAt.push(`${posX},${posY}`);
+    if (!drops[`${this.pos.x},${this.pos.y}`]) {
+      drops[`${this.pos.x},${this.pos.y}`] = [];
     }
-    drops[`${posX},${posY}`].push(this);
+    drops[`${this.pos.x},${this.pos.y}`].push(this);
   }
   draw() {
+    console.table(drops);
     this.timeDropped += 0.02;
-    if (this.timeDropped < 5) {
+    if (this.timeDropped < 15) {
       if (
         !isCollidableBlockAt(
           Math.round(this.pos.x),
@@ -414,6 +413,7 @@ class droppedItem {
         )
       ) {
         let oldPos = this.pos;
+        console.log(oldPos);
         this.pos = this.pos.subtract(vec2(0, 0.04));
         this.animationPosYOffset = 0;
         // update coords
@@ -421,27 +421,23 @@ class droppedItem {
           if (drops[`${this.pos.x},${this.pos.y}`]) {
             let indexInDrawDrop =
               drops[`${oldPos.x},${oldPos.y}`].indexOf(this);
-            if (indexInDrawDrop) {
-              drops[`${oldPos.x},${oldPos.y}`].splice(indexInDrawDrop, 1);
-            }
+
+            drops[`${oldPos.x},${oldPos.y}`].splice(indexInDrawDrop, 1);
+            console.log(drops[`${oldPos.x},${oldPos.y}`].length);
+
             drops[`${this.pos.x},${this.pos.y}`].push(this);
             if (drops[`${oldPos.x},${oldPos.y}`].length <= 0) {
               delete drops[`${oldPos.x},${oldPos.y}`];
             }
           } else {
-            Object.defineProperty(
-              drops,
-              `${this.pos.x},${this.pos.y}`,
-              Object.getOwnPropertyDescriptor(drops, `${oldPos.x},${oldPos.y}`),
-            );
-            if (drops[`${oldPos.x},${oldPos.y}`].length <= 0) {
-              delete drops[`${oldPos.x},${oldPos.y}`];
-            }
+            drops[`${this.pos.x},${this.pos.y}`] =
+              drops[`${oldPos.x},${oldPos.y}`];
+            delete drops[`${oldPos.x},${oldPos.y}`];
           }
         } else {
           console.table(drops);
           console.error(
-            "drops broke while tyring to find old drops what idk, very rare bug. basically you are f####d.",
+            "drops got out of sync while trying to rename possibily while drop was falling, very rare bug. get your computer checked. basically you are f####d.",
           );
         }
       } else if (
@@ -484,9 +480,9 @@ class droppedItem {
   }
   destroy() {
     let index = drops[`${this.pos.x},${this.pos.y}`].indexOf(this);
-    if (index) {
-      drops[`${this.pos.x},${this.pos.y}`].splice(index, 1);
-    }
+
+    drops[`${this.pos.x},${this.pos.y}`].splice(index, 1);
+
     if (drops[`${this.pos.x},${this.pos.y}`].length <= 0) {
       delete drops[`${this.pos.x},${this.pos.y}`];
     }
@@ -1165,9 +1161,10 @@ async function gameRender() {
   };
   let dropCoords;
   const renderDrops = () => {
-    if (dropsAt.length > 0) {
+    if (Object.keys(drops).length > 0) {
       for (const i of Object.values(drops)) {
         dropCoords = Object.keys(drops)[0].split(",");
+
         let dropCoordsX = dropCoords[0];
         let dropCoordsY = dropCoords[1];
 
@@ -1177,7 +1174,7 @@ async function gameRender() {
           dropCoordsY > startY &&
           dropCoordsY < endY
         ) {
-          for (let e = 1; e <= i.highestDropIndex; e++) {
+          for (let e = 0; e < i.length; e++) {
             i[e].draw();
           }
         }

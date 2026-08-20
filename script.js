@@ -392,7 +392,7 @@ function drawRickAstleyAt(x, y) {
 }
 class droppedItem {
   constructor(item, posX, posY) {
-    this.pos = vec2(posX, posY - 0.2);
+    this.pos = vec2(posX, posY + 0.2);
     this.animationPosYOffset = 0;
     this.item = item;
     this.timeDropped = 0;
@@ -403,17 +403,16 @@ class droppedItem {
     drops[`${this.pos.x},${this.pos.y}`].push(this);
   }
   draw() {
-    console.table(drops);
     this.timeDropped += 0.02;
-    if (this.timeDropped < 15) {
+    if (this.timeDropped < 310) {
       if (
         !isCollidableBlockAt(
           Math.round(this.pos.x),
-          Math.floor(this.pos.y + 0.22),
+          Math.floor(this.pos.y + 0.21),
         )
       ) {
         let oldPos = this.pos;
-        console.log(oldPos);
+
         this.pos = this.pos.subtract(vec2(0, 0.04));
         this.animationPosYOffset = 0;
         // update coords
@@ -423,7 +422,6 @@ class droppedItem {
               drops[`${oldPos.x},${oldPos.y}`].indexOf(this);
 
             drops[`${oldPos.x},${oldPos.y}`].splice(indexInDrawDrop, 1);
-            console.log(drops[`${oldPos.x},${oldPos.y}`].length);
 
             drops[`${this.pos.x},${this.pos.y}`].push(this);
             if (drops[`${oldPos.x},${oldPos.y}`].length <= 0) {
@@ -437,7 +435,7 @@ class droppedItem {
         } else {
           console.table(drops);
           console.error(
-            "drops got out of sync while trying to rename possibily while drop was falling, very rare bug. get your computer checked. basically you are f####d.",
+            "drops got out of sync while trying to rename possibily while drop was falling, very rare bug. get your computer checked. basically you are f####d. it may be because you are lagging, tho. if not get your computer fixed ASAP, im not joking",
           );
         }
       } else if (
@@ -446,7 +444,7 @@ class droppedItem {
           Math.floor(this.pos.y + 0.22),
         )
       ) {
-        this.animationPosYOffset = Math.sin(this.timeDropped) * 0.035;
+        this.animationPosYOffset = Math.sin(this.timeDropped) * 0.065;
       }
 
       drawTile(
@@ -579,6 +577,7 @@ async function gameInit() {
     raisedArms: false,
     animationChangeTimer: 0,
     lowerArms: false,
+    inventory: {},
     setSkin: (newSkin) => {
       player.skin = newSkin;
       playerTextureImageSrc = newSkin;
@@ -944,6 +943,30 @@ async function gameInit() {
         Math.round(player.coords.y * 100) / 100,
       );
     },
+    setSlot: (item, amount, slot) => {
+      return (player.inventory[slot] = { item: item, amount: amount });
+    },
+    getSlot: (slot) => {
+      return player.inventory[slot];
+    },
+    isInvenFull: () => {
+      for (let i = 0; i < 39; i++) {
+        if (!player.getSlot(i) || player.getSlot(i).amount === 0) {
+          return false;
+        }
+      }
+      return true;
+    },
+    addItem: (item, amount) => {
+      if (!player.isInvenFull) {
+        for (let i = 0; i < 39; i++) {
+          if (!player.getSlot(i) || player.getSlot(i).amount == 0) {
+            player.setSlot(item, amount, i);
+            break;
+          }
+        }
+      }
+    },
   };
   player.cameraToPlayer();
   window.addEventListener("createWorld", (event) => {
@@ -953,7 +976,6 @@ async function gameInit() {
     backdropUI.click();
     mainMenuAudio.pause();
     document.getElementById("mainMenu").className = "popCloseHide";
-
     console.log(blocks);
     paused = false;
     if (event.detail.worldType == "sandbox") {
@@ -1163,6 +1185,7 @@ async function gameRender() {
   const renderDrops = () => {
     if (Object.keys(drops).length > 0) {
       for (const i of Object.values(drops)) {
+        // the reason [0] exists is because js objects are weird
         dropCoords = Object.keys(drops)[0].split(",");
 
         let dropCoordsX = dropCoords[0];
@@ -1175,7 +1198,20 @@ async function gameRender() {
           dropCoordsY < endY
         ) {
           for (let e = 0; e < i.length; e++) {
-            i[e].draw();
+            console.log(
+              Math.abs(player.coords.x - dropCoordsX) +
+                "      " +
+                Math.abs(player.getFeetCoords().y - 0.1 - dropCoordsY),
+            );
+            if (
+              Math.abs(player.coords.x - dropCoordsX) < 0.6 &&
+              Math.abs(player.getFeetCoords().y - 0.1 - dropCoordsY) < 0.6
+            ) {
+              player.addItem(i[e].item);
+              i[e].destroy();
+            } else {
+              i[e].draw();
+            }
           }
         }
       }

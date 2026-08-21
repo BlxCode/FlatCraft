@@ -318,19 +318,20 @@ label.larger-font {
   border-color: var(--slot-hover) !important;
   transform: scale(1.025);
 }
-.hotbarSlotImg{
-  aspect-ratio:1;
-  position:absolute;
+.hotbarSlotImg {
+  aspect-ratio: 1;
+  position: absolute;
   width: 5.5dvh;
-  height:5.5dvh;
-  transform:translate(-50%,0%);
+  height: 5.5dvh;
+  transform: translate(-50%, 6%);
 }
-.hotbarSlotAmt{
-  position:fixed;
-  top:-2px;
-  right:2px;
-  font-size:1.7dvh;
-  z-index:5;
+.hotbarSlotAmt {
+  position: fixed;
+  top: -2px;
+  right: 2px;
+  font-size: 1.7dvh;
+  z-index: 5;
+  -webkit-text-stroke: black 0.05;
 }
 #popup,
 #credits,
@@ -492,19 +493,18 @@ label.larger-font {
 canvas {
   position: fixed;
   pointer-events: none;
- scale:1.01;
- 
+  scale: 1.01;
 }
 .blxm-bg-dark {
   background-color: #2d2c33 !important;
 }
-#fpsShower{
-  position:fixed;
-  top:5px;
-  left:5px;
-  z-index:5;
-  font-size:3dvh;
-  color:white;
+#fpsShower {
+  position: fixed;
+  top: 5px;
+  left: 5px;
+  z-index: 5;
+  font-size: 3dvh;
+  color: white;
   -webkit-text-stroke: black 1.5px;
-  font-weight:900;
+  font-weight: 900;
 }

@@ -324,7 +324,8 @@ function gameUpdatePost() {
   dgeID("fpsShower").innerText =
     "FPS: " + Math.round((frame / time) * 100) / 100;
   function renderInven() {
-    const invenImg = document.getElementsByClassName("");
+    const invenAmt = document.getElementsByClassName("hotbarSlotAmt");
+      const invenImg = document.getElementsByClassName("hotbarSlotImg");
   }
 }
 /*

@@ -322,7 +322,7 @@ function switchSlots(slot) {
 
 function gameUpdatePost() {
   dgeID("fpsShower").innerText =
-    "FPS: " + Math.round((frame / time) * 100) / 100;
+    "FPS: " +Math.round(averageFPS);
   function renderInven() {
     const invenAmt = document.getElementsByClassName("hotbarSlotAmt");
       const invenImg = document.getElementsByClassName("hotbarSlotImg");

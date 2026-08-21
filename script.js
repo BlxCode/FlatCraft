@@ -319,13 +319,19 @@ function switchSlots(slot) {
                                          ██                                                         
                                          ██                                                         
                                                                                                     */
-
+let fpsWaitForUpdate = 0;
 function gameUpdatePost() {
-  dgeID("fpsShower").innerText =
-    "FPS: " +Math.round(averageFPS);
+  function fps() {
+    fpsWaitForUpdate++;
+    if (fpsWaitForUpdate >= 60) {
+      dgeID("fpsShower").innerText = "FPS: " + Math.round(averageFPS);
+      fpsWaitForUpdate = 0;
+    }
+  }
+  fps();
   function renderInven() {
     const invenAmt = document.getElementsByClassName("hotbarSlotAmt");
-      const invenImg = document.getElementsByClassName("hotbarSlotImg");
+    const invenImg = document.getElementsByClassName("hotbarSlotImg");
   }
 }
 /*
@@ -1007,7 +1013,7 @@ async function gameInit() {
     document.getElementById("mainMenu").className = "popCloseHide";
     console.log(blocks);
     paused = false;
-    displayError("Remember: You can't mine while moving!")
+    displayError("Remember: You can't mine while moving!");
     if (event.detail.worldType == "sandbox") {
       procedurallyGenerateWorld(Number(event.detail.worldSeed));
     } else if (event.detail.worldType == "flat") {

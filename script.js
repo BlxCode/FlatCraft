@@ -52,7 +52,7 @@ function displayError(msg) {
   }
 }
 
-setInterval(() => {
+let loadingTextAnim = setInterval(() => {
   if (dotsInLoadingTitle == 3 && !dotsDirectionMore) {
     loadingTitle.innerText = "Loading..";
     dotsInLoadingTitle = 2;
@@ -101,6 +101,7 @@ var progressBar = setInterval(() => {
 //initialized game
 async function startInit() {
   clearInterval(progressBar);
+  clearInterval(loadingTextAnim);
 
   loadingProgressBar.ariaValueNow = 100;
   loadingProgressBar.style.width = "100%";
@@ -110,20 +111,19 @@ async function startInit() {
   document.getElementById("loadingScreenWrapper").className = "popCloseHide";
   enterGameButtonLoadingScreenWrapper.className = "popAnim";
   loadingScreen.className = "loadingScreenChangeColor";
-}
-window.addEventListener("load", () => {
-  startInit();
   if (
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
       navigator.userAgent,
     )
   ) {
     // true for mobile device
-
-    alert(
+    displayError(
       "FlatCraft is not designed for mobile devices! You WILL encounter rendering issues. Please ONLY play on a desktop or laptop computer with a display aspect ratio of 16:9.",
     );
   }
+}
+window.addEventListener("load", () => {
+  startInit();
 });
 // MAIN MENU
 enterGameButtonLoadingScreenWrapper.addEventListener("click", () => {
@@ -298,6 +298,34 @@ function switchSlots(slot) {
     document.getElementById("slot" + i).className = "slot";
   }
   slotElement.className += "slotHover";
+}
+// ui updates
+/*                                                                                                    
+                                                                                                    
+                                                                                                    
+ ██    ██   ██████             ██    ██                  ██                                         
+ ██    ██   ██████             ██    ██                  ██              ██                         
+ ██    ██     ██               ██    ██                  ██              ██                         
+ ██    ██     ██               ██    ██  ██░███▒    ▒███░██   ▒████▓   ███████    ░████▒    ▒█████░ 
+ ██    ██     ██               ██    ██  ███████▒  ▒███████   ██████▓  ███████   ░██████▒  ████████ 
+ ██    ██     ██               ██    ██  ███  ███  ███  ███   █▒  ▒██    ██      ██▒  ▒██  ██▒  ░▒█ 
+ ██    ██     ██               ██    ██  ██░  ░██  ██░  ░██    ▒█████    ██      ████████  █████▓░  
+ ██    ██     ██               ██    ██  ██    ██  ██    ██  ░███████    ██      ████████  ░██████▒ 
+ ██    ██     ██               ██    ██  ██░  ░██  ██░  ░██  ██▓░  ██    ██      ██           ░▒▓██ 
+ ██▓  ▓██     ██               ██▓  ▓██  ███  ███  ███  ███  ██▒  ███    ██░     ███░  ▒█  █▒░  ▒██ 
+ ▒██████▒   ██████             ▒██████▒  ███████▒  ▒███████  ████████    █████   ░███████  ████████ 
+  ▒████▒    ██████              ▒████▒   ██░███▒    ▒███░██   ▓███░██    ░████    ░█████▒  ░▓████▓  
+                                         ██                                                         
+                                         ██                                                         
+                                         ██                                                         
+                                                                                                    */
+
+function gameUpdatePost() {
+  dgeID("fpsShower").innerText =
+    "FPS: " + Math.round((frame / time) * 100) / 100;
+  function renderInven() {
+    const invenImg = document.getElementsByClassName("");
+  }
 }
 /*
    ___                  ___             _         _           
@@ -978,6 +1006,7 @@ async function gameInit() {
     document.getElementById("mainMenu").className = "popCloseHide";
     console.log(blocks);
     paused = false;
+    displayError("Remember: You can't mine while moving!")
     if (event.detail.worldType == "sandbox") {
       procedurallyGenerateWorld(Number(event.detail.worldSeed));
     } else if (event.detail.worldType == "flat") {
@@ -988,21 +1017,25 @@ async function gameInit() {
   });
   console.log("Game engine initialized.");
 }
-
 function gameUpdate() {}
-function gameUpdatePost() {}
 
-/*   █████████                                        ███████████                           █████                     ███                     
-  ███▒▒▒▒▒███                                      ▒▒███▒▒▒▒▒███                         ▒▒███                     ▒▒▒                      
- ███     ▒▒▒   ██████   █████████████    ██████     ▒███    ▒███   ██████  ████████    ███████   ██████  ████████  ████  ████████    ███████
-▒███          ▒▒▒▒▒███ ▒▒███▒▒███▒▒███  ███▒▒███    ▒██████████   ███▒▒███▒▒███▒▒███  ███▒▒███  ███▒▒███▒▒███▒▒███▒▒███ ▒▒███▒▒███  ███▒▒███
-▒███    █████  ███████  ▒███ ▒███ ▒███ ▒███████     ▒███▒▒▒▒▒███ ▒███████  ▒███ ▒███ ▒███ ▒███ ▒███████  ▒███ ▒▒▒  ▒███  ▒███ ▒███ ▒███ ▒███
-▒▒███  ▒▒███  ███▒▒███  ▒███ ▒███ ▒███ ▒███▒▒▒      ▒███    ▒███ ▒███▒▒▒   ▒███ ▒███ ▒███ ▒███ ▒███▒▒▒   ▒███      ▒███  ▒███ ▒███ ▒███ ▒███
- ▒▒█████████ ▒▒████████ █████▒███ █████▒▒██████     █████   █████▒▒██████  ████ █████▒▒████████▒▒██████  █████     █████ ████ █████▒▒███████
-  ▒▒▒▒▒▒▒▒▒   ▒▒▒▒▒▒▒▒ ▒▒▒▒▒ ▒▒▒ ▒▒▒▒▒  ▒▒▒▒▒▒     ▒▒▒▒▒   ▒▒▒▒▒  ▒▒▒▒▒▒  ▒▒▒▒ ▒▒▒▒▒  ▒▒▒▒▒▒▒▒  ▒▒▒▒▒▒  ▒▒▒▒▒     ▒▒▒▒▒ ▒▒▒▒ ▒▒▒▒▒  ▒▒▒▒▒███
-                                                                                                                                    ███ ▒███
-                                                                                                                                   ▒▒██████ 
-                                                                                                                                    ▒▒▒▒▒▒  */
+//Game rendering and physics
+/*                                                                                                                                                                                                                                                 
+                                                                                                                                                                          
+                                                                                                                                                                        
+                                                             █                  █                                              █                      █                 
+  ▒███▒                             █████                    █                                             ▒███         █████░ █                                        
+ ░█▒ ░█                             █   ▓█                   █                                             █▒           █   ▓█ █                                        
+ █▒     ░███░  ██▓█▓   ███          █    █  ███   █▒██▒   ██▓█   ███    █▒██▒ ███    █▒██▒   ██▓█          █            █    █ █▒██▒  █░  █  ▒███▒  ███     ▓██▒  ▒███▒ 
+ █      █▒ ▒█  █▒█▒█  ▓▓ ▒█         █   ▒█ ▓▓ ▒█  █▓ ▒█  █▓ ▓█  ▓▓ ▒█   ██  █   █    █▓ ▒█  █▓ ▓█          █▓           █   ▓█ █▓ ▒█  ▓▒ ▒▓  █▒ ░█    █    ▓█  ▓  █▒ ░█ 
+ █   ██     █  █ █ █  █   █         █████  █   █  █   █  █   █  █   █   █       █    █   █  █   █         ░██▒          █████░ █   █  ▒█ █▒  █▒░      █    █░     █▒░   
+ █    █ ▒████  █ █ █  █████         █  ░█▒ █████  █   █  █   █  █████   █       █    █   █  █   █         █▒░█ █        █      █   █   █ █   ░███▒    █    █      ░███▒ 
+ █▒   █ █▒  █  █ █ █  █             █   ░█ █      █   █  █   █  █       █       █    █   █  █   █         █  ▓██        █      █   █   █▓▓      ▒█    █    █░        ▒█ 
+ ▒█░ ░█ █░ ▓█  █ █ █  ▓▓  █         █    █ ▓▓  █  █   █  █▓ ▓█  ▓▓  █   █       █    █   █  █▓ ▓█         ██  █▒        █      █   █   ▓█▒   █░ ▒█    █    ▓█  ▓  █░ ▒█ 
+  ▒███▒ ▒██▒█  █ █ █   ███▒         █    ▒  ███▒  █   █   ██▓█   ███▒   █     █████  █   █   ██▒█          ███▓█        █      █   █   ▒█    ▒███▒  █████   ▓██▒  ▒███▒ 
+                                                                                                █                                      ▒█                               
+                                                                                             ▓ ▒█                                      █▒                               
+                                                                                             ▒██░                                     ██                                 */
 let hoveredBlock = vec2(0, 0);
 let blockBreak = 0;
 let blockBreakNoSpam = 0;

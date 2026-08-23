@@ -1,13 +1,16 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <script src="./assets/littlejs.js"></script>
+    
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
       integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
       crossorigin="anonymous"
     ></script>
-
+    <script
+      src="https://cdn.jsdelivr.net/npm/littlejsengine@1.18.29/dist/littlejs.js"
+      crossorigin="anonymous"
+    ></script>
     <link
       href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap"
       rel="stylesheet"
@@ -395,34 +398,43 @@
         class="fa-solid fa-gear clickable"
       ></i>
 
-      <div id="inventory">
+      <div id="hotbar">
+   
         <div class="slot slotHover" id="slot1">
           <img src="" class="hotbarSlotImg" alt="hotbar slots" />
           <span class="hotbarSlotAmt">0</span>
         </div>
         <div class="slot" id="slot2">
           <img class="hotbarSlotImg" src="" alt="hotbar slots" />
+          <span class="hotbarSlotAmt">0</span>
         </div>
         <div class="slot" id="slot3">
           <img class="hotbarSlotImg" src="" alt="hotbar slots" />
+          <span class="hotbarSlotAmt">0</span>
         </div>
         <div class="slot" id="slot4">
           <img class="hotbarSlotImg" src="" alt="hotbar slots" />
+          <span class="hotbarSlotAmt">0</span>
         </div>
         <div class="slot" id="slot5">
           <img class="hotbarSlotImg" src="" alt="hotbar slots" />
+          <span class="hotbarSlotAmt">0</span>
         </div>
         <div class="slot" id="slot6">
           <img class="hotbarSlotImg" src="" alt="hotbar slots" />
+          <span class="hotbarSlotAmt">0</span>
         </div>
         <div class="slot" id="slot7">
           <img class="hotbarSlotImg" src="" alt="hotbar slots" />
+          <span class="hotbarSlotAmt">0</span>
         </div>
         <div class="slot" id="slot8">
           <img class="hotbarSlotImg" src="" alt="hotbar slots" />
+          <span class="hotbarSlotAmt">0</span>
         </div>
         <div class="slot" id="slot9">
           <img class="hotbarSlotImg" src="" alt="hotbar slots" />
+          <span class="hotbarSlotAmt">0</span>
         </div>
       </div>
       <div id="popup" class="visually-hidden">
@@ -441,7 +453,7 @@
         "
         id="fpsCounter"
       ></span>
-      <p id="fpsShower">FPS: </p>
+      <p id="fpsShower">FPS:</p>
     </div>
 
     <script type="module" src="./script.js"></script>

@@ -233,7 +233,7 @@ submitNewWorldForm.addEventListener("click", () => {
       detail: createWorldInfo,
     });
 
-    window.dispatchEvent(eventCreateWorld);
+    document.dispatchEvent(eventCreateWorld);
     console.log("Dispatched createWorld event with data:", createWorldInfo);
   }
 });
@@ -292,13 +292,6 @@ document.getElementById("popupClose").addEventListener("click", () => {
   errorBackdrop.hidden = true;
 });
 
-function switchSlots(slot) {
-  let slotElement = document.getElementById("slot" + slot);
-  for (let i = 1; i < 9; i++) {
-    document.getElementById("slot" + i).className = "slot";
-  }
-  slotElement.className += "slotHover";
-}
 // ui updates
 /*                                                                                                    
                                                                                                     
@@ -319,7 +312,28 @@ function switchSlots(slot) {
                                          ██                                                         
                                          ██                                                         
                                                                                                     */
+let invenEvent = new Event("invenEvent");
 let fpsWaitForUpdate = 0;
+function renderInven() {
+  const invenAmt = document.getElementsByClassName("hotbarSlotAmt");
+  const invenImg = document.getElementsByClassName("hotbarSlotImg");
+
+  for (let i = 0; i <= 8; i++) {
+    if (player.inventory[i]) {
+      if (player.inventory[i].amount == 0) {
+        invenAmt[i].textContent = "";
+        invenImg[i].src =
+          "./assets/textures/" + player.inventory[i].item + ".png";
+      } else {
+        invenAmt[i].textContent = player.inventory[i].amount;
+        invenImg[i].src =
+          "./assets/textures/" + player.inventory[i].item + ".png";
+      }
+    }
+  }
+}
+document.addEventListener("invenEvent", renderInven);
+
 function gameUpdatePost() {
   function fps() {
     fpsWaitForUpdate++;
@@ -329,10 +343,6 @@ function gameUpdatePost() {
     }
   }
   fps();
-  function renderInven() {
-    const invenAmt = document.getElementsByClassName("hotbarSlotAmt");
-    const invenImg = document.getElementsByClassName("hotbarSlotImg");
-  }
 }
 /*
    ___                  ___             _         _           
@@ -394,6 +404,7 @@ const textureNames = [
   "rickRoll",
   "hoverFar",
   "hoverClose",
+  "air",
 ];
 async function loadAllImages() {
   for (const name of textureNames) {
@@ -470,7 +481,7 @@ class droppedItem {
         } else {
           console.table(drops);
           console.error(
-            "drops got out of sync while trying to rename possibily while drop was falling, very rare bug. get your computer checked. basically you are f####d. it may be because you are lagging, tho. if not get your computer fixed ASAP, im not joking",
+            "drops got out of sync while trying to rename possibily while drop was falling, rare bug. happens because either, your computer is broken, or that you were dropping lots of things",
           );
         }
       } else if (
@@ -612,7 +623,56 @@ async function gameInit() {
     raisedArms: false,
     animationChangeTimer: 0,
     lowerArms: false,
-    inventory: {},
+    hotbarSlotHovered: 0,
+    handItemAnimIndex: {
+      idle: vec2(0.4, 0.4),
+      fall: vec2(0.45, 0.9),
+      raise: vec2(0.85, -0.3),
+      break2: vec2(0.75, 0.6),
+      break1: vec2(0.8, 0.6),
+    },
+    inventory: {
+      0: { item: "air", amount: 0 },
+      1: { item: "air", amount: 0 },
+      2: { item: "air", amount: 0 },
+      3: { item: "air", amount: 0 },
+      4: { item: "air", amount: 0 },
+      5: { item: "air", amount: 0 },
+      6: { item: "air", amount: 0 },
+      7: { item: "air", amount: 0 },
+      8: { item: "air", amount: 0 },
+      9: { item: "air", amount: 0 },
+      10: { item: "air", amount: 0 },
+      11: { item: "air", amount: 0 },
+      12: { item: "air", amount: 0 },
+      13: { item: "air", amount: 0 },
+      14: { item: "air", amount: 0 },
+      15: { item: "air", amount: 0 },
+      16: { item: "air", amount: 0 },
+      17: { item: "air", amount: 0 },
+      18: { item: "air", amount: 0 },
+      19: { item: "air", amount: 0 },
+      20: { item: "air", amount: 0 },
+      21: { item: "air", amount: 0 },
+      22: { item: "air", amount: 0 },
+      23: { item: "air", amount: 0 },
+      24: { item: "air", amount: 0 },
+      25: { item: "air", amount: 0 },
+      26: { item: "air", amount: 0 },
+      27: { item: "air", amount: 0 },
+      28: { item: "air", amount: 0 },
+      29: { item: "air", amount: 0 },
+      30: { item: "air", amount: 0 },
+      31: { item: "air", amount: 0 },
+      32: { item: "air", amount: 0 },
+      33: { item: "air", amount: 0 },
+      34: { item: "air", amount: 0 },
+      35: { item: "air", amount: 0 },
+      36: { item: "air", amount: 0 },
+      37: { item: "air", amount: 0 },
+      38: { item: "air", amount: 0 },
+      39: { item: "air", amount: 0 },
+    },
     setSkin: (newSkin) => {
       player.skin = newSkin;
       playerTextureImageSrc = newSkin;
@@ -767,7 +827,6 @@ async function gameInit() {
         !player.isFalling &&
         player.isWalking &&
         !player.crouching &&
-        !player.isBreakingBlock &&
         player.animationChangeTimer > 3
       ) {
         player.animation = "walk" + player.animationWalkingFrame;
@@ -778,8 +837,7 @@ async function gameInit() {
         !player.isFalling &&
         player.isWalking &&
         player.crouching &&
-        !player.isBreakingBlock &&
-        player.animationChangeTimer > 17
+        player.animationChangeTimer > 16
       ) {
         if (player.animation == "crouchWalk") {
           player.animation = "crouch";
@@ -789,7 +847,11 @@ async function gameInit() {
 
         player.animationChangeTimer = 0;
       }
-      if (player.isBreakingBlock && player.animationChangeTimer > 6) {
+      if (
+        player.isBreakingBlock &&
+        player.animationChangeTimer > 6 &&
+        !player.isWalking
+      ) {
         player.animationChangeTimer = 0;
 
         if (!player.raisedArms) {
@@ -802,16 +864,29 @@ async function gameInit() {
         } else {
           player.animation = "break1";
         }
-      } else if (!player.isBreakingBlock && !player.lowerArms) {
-        if (!player.lowerArms) {
-          player.animation = "raise2";
-          if (player.animationChangeTimer > 7) {
-            player.lowerArms = true;
-            player.animationChangeTimer = 0;
-          }
-        }
+      } else if (!player.isBreakingBlock && player.lowerArms && !player.isWalking) {
+        player.animation = "raise2";
+        setTimeout(() => {
+          player.lowerArms = false;
+        }, 40);
       }
-
+      /*    if (
+        player.isBreakingBlock &&
+        player.isWalking &&
+        !player.crouching &&
+        !player.isFalling &&
+        !player.jumping &&
+        player.animationChangeTimer > 3
+      ) {
+        player.animation = "walk" + player.animationWalkingFrame;
+        player.animationWalkingFrame = (player.animationWalkingFrame % 6) + 1;
+        player.animationChangeTimer = 0;
+      } */
+      console.log(player.animation);
+      console.log(player.isFalling);
+      console.log(player.jumping);
+      console.log(player.crouching);
+      console.log(player.animationChangeTimer);
       drawTile(
         vec2(
           Math.round(player.coords.x * 100) / 100,
@@ -927,7 +1002,8 @@ async function gameInit() {
         !player.isWalking &&
         !player.isFalling &&
         !player.crouching &&
-        !player.isBreakingBlock
+        !player.isBreakingBlock &&
+        !player.lowerArms
       ) {
         player.animation = "idle";
       }
@@ -979,13 +1055,14 @@ async function gameInit() {
       );
     },
     setSlot: (item, amount, slot) => {
-      return (player.inventory[slot] = { item: item, amount: amount });
+      player.inventory[slot] = { item: item, amount: amount };
+      document.dispatchEvent(invenEvent);
     },
     getSlot: (slot) => {
       return player.inventory[slot];
     },
     isInvenFull: () => {
-      for (let i = 0; i < 39; i++) {
+      for (let i = 0; i <= 39; i++) {
         if (!player.getSlot(i) || player.getSlot(i).amount === 0) {
           return false;
         }
@@ -993,18 +1070,29 @@ async function gameInit() {
       return true;
     },
     addItem: (item, amount) => {
-      if (!player.isInvenFull) {
-        for (let i = 0; i < 39; i++) {
-          if (!player.getSlot(i) || player.getSlot(i).amount == 0) {
+      if (!player.isInvenFull()) {
+        for (let i = 0; i <= 39; i++) {
+          if (
+            player.getSlot(i).item == item &&
+            player.getSlot(i).amount + amount <= 64
+          ) {
+            player.setSlot(item, amount + player.getSlot(i).amount, i);
+
+            break;
+          } else if (!player.getSlot(i) || player.getSlot(i).amount == 0) {
             player.setSlot(item, amount, i);
+
             break;
           }
         }
       }
     },
+    changeHotbarSlot: (newHotbarSlot) => {
+      // ui side
+    },
   };
   player.cameraToPlayer();
-  window.addEventListener("createWorld", (event) => {
+  document.addEventListener("createWorld", (event) => {
     console.log("Event received:", event.detail);
     const data = event.detail;
 
@@ -1013,7 +1101,7 @@ async function gameInit() {
     document.getElementById("mainMenu").className = "popCloseHide";
     console.log(blocks);
     paused = false;
-    displayError("Remember: You can't mine while moving!");
+
     if (event.detail.worldType == "sandbox") {
       procedurallyGenerateWorld(Number(event.detail.worldSeed));
     } else if (event.detail.worldType == "flat") {
@@ -1023,6 +1111,7 @@ async function gameInit() {
     }
   });
   console.log("Game engine initialized.");
+  renderInven();
 }
 function gameUpdate() {}
 
@@ -1083,15 +1172,12 @@ async function gameRender() {
     drawRectGradient(
       cameraPos,
       vec2(
-        Math.floor(window.innerWidth / 75),
-        Math.floor(window.innerHeight / 80),
+        Math.ceil(window.innerWidth / 75),
+        Math.ceil(window.innerHeight / 80),
       ),
       new Color().setHex("#5DB8FF"),
       new Color().setHex("#CFF4FF"),
       0,
-      false, // <-- force Canvas2D instead of WebGL
-      false,
-      ctx,
     );
   };
   const mouseThings = () => {
@@ -1131,7 +1217,7 @@ async function gameRender() {
         blockType = "Air";
       }
 
-      if (mouseIsDown(0) && blockType != "Air" && !player.isWalking) {
+      if (mouseIsDown(0) && blockType != "Air") {
         if (blockBreakNoSpam > 12 * blockMetaData[blockType]["breakTime"]) {
           blockBreak += 1;
           blockBreakNoSpam = 0;
@@ -1182,18 +1268,9 @@ async function gameRender() {
           );
         }
       }
-      if (mouseIsDown(0) && blockType == "Air" && player.isBreakingBlock) {
-        blockBreakNoSpam = 0;
-        blockBreak = 0;
-        player.isBreakingBlock = false;
-        player.raisedArms = false;
-        player.lowerArms = true;
+      if (mouseIsDown(0) && blockType != "Air" && player.isWalking) {
       }
-      if (
-        mouseIsDown(0) &&
-        player.isBreakingBlock &&
-        (player.isWalking || player.isFalling || player.jumping)
-      ) {
+      if (mouseIsDown(0) && blockType == "Air" && player.isBreakingBlock) {
         blockBreakNoSpam = 0;
         blockBreak = 0;
         player.isBreakingBlock = false;
@@ -1208,17 +1285,6 @@ async function gameRender() {
       player.raisedArms = false;
       player.lowerArms = true;
       player.animationChangeTimer = 0;
-    }
-    if (player.isWalking || player.isFalling || player.jumping) {
-      if (player.isBreakingBlock) {
-        blockBreak = 0;
-        blockBreakNoSpam = 0;
-        blockBreak = 0;
-        player.isBreakingBlock = false;
-        player.raisedArms = false;
-        player.lowerArms = true;
-        player.animationChangeTimer = 0;
-      }
     }
   };
   let dropCoords;
@@ -1238,16 +1304,12 @@ async function gameRender() {
           dropCoordsY < endY
         ) {
           for (let e = 0; e < i.length; e++) {
-            console.log(
-              Math.abs(player.coords.x - dropCoordsX) +
-                "      " +
-                Math.abs(player.getFeetCoords().y - 0.1 - dropCoordsY),
-            );
             if (
-              Math.abs(player.coords.x - dropCoordsX) < 0.6 &&
+              Math.abs(player.coords.x - dropCoordsX) < 0.9 &&
               Math.abs(player.getFeetCoords().y - 0.1 - dropCoordsY) < 0.6
             ) {
-              player.addItem(i[e].item);
+              console.log(i[e].item);
+              player.addItem(i[e].item, 1);
               i[e].destroy();
             } else {
               i[e].draw();
@@ -1264,6 +1326,7 @@ async function gameRender() {
   player.calculatePlayerPhysics();
 
   player.drawPlayer();
+
   renderDrops();
 
   player.cameraToPlayer();
@@ -1334,8 +1397,8 @@ async function gameRender() {
         }
       } else {
         direction == "r"
-          ? (player.coords = player.coords.add(vec2(0.06, 0)))
-          : (player.coords = player.coords.add(vec2(-0.06, 0)));
+          ? (player.coords = player.coords.add(vec2(0.08, 0)))
+          : (player.coords = player.coords.add(vec2(-0.08, 0)));
       }
     }
   }

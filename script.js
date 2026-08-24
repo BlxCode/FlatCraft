@@ -314,10 +314,10 @@ document.getElementById("popupClose").addEventListener("click", () => {
                                                                                                     */
 let invenEvent = new Event("invenEvent");
 let fpsWaitForUpdate = 0;
+const invenAmt = document.getElementsByClassName("hotbarSlotAmt");
+const invenImg = document.getElementsByClassName("hotbarSlotImg");
+const hotbarSlot = document.getElementsByClassName("slot");
 function renderInven() {
-  const invenAmt = document.getElementsByClassName("hotbarSlotAmt");
-  const invenImg = document.getElementsByClassName("hotbarSlotImg");
-
   for (let i = 0; i <= 8; i++) {
     if (player.inventory[i]) {
       if (player.inventory[i].amount == 0) {
@@ -433,8 +433,8 @@ function getCollidableBlockTypeAt(x, y) {
 function isCollidableBlockAt(x, y) {
   return !!getCollidableBlockTypeAt(x, y);
 }
-function drawRickAstleyAt(x, y) {
-  drawTile(vec2(x, y), vec2(0.25), texture["rickRoll"]);
+function drawRickAstleyAt(x, y, rot  = 0) {
+  drawTile(vec2(x, y), vec2(0.25), texture["rickRoll"], WHITE, rot);
 }
 class droppedItem {
   constructor(item, posX, posY) {
@@ -542,7 +542,7 @@ async function gameInit() {
   console.log("Game engine initializing...");
 
   console.log(mainCanvas);
-  mainCanvas.style.zIndex = -1;
+
   await loadAllImages();
   console.log(texture["grass"]);
 
@@ -625,11 +625,22 @@ async function gameInit() {
     lowerArms: false,
     hotbarSlotHovered: 0,
     handItemAnimIndex: {
-      idle: vec2(0.4, 0.4),
-      fall: vec2(0.45, 0.9),
-      raise: vec2(0.85, -0.3),
-      break2: vec2(0.75, 0.6),
-      break1: vec2(0.8, 0.6),
+      idle: vec2(0.4, 0.05),
+      walk: vec2(0.4, 0.2),
+      fall: vec2(0.45, 1.55),
+      raise: vec2(0.85, 0.25),
+      break2: vec2(0.75, 1.25),
+      break1: vec2(0.95, 1.25),
+      crouch: vec2(0.4, 0.04),
+    },
+    handItemAnimRotateIndex: {
+       idle: 0,
+      walk: 0,
+      fall: 0,
+      raise: -1,
+      break2: 0.2,
+      break1: 0.85,
+      crouch: 0,
     },
     inventory: {
       0: { item: "air", amount: 0 },
@@ -864,29 +875,17 @@ async function gameInit() {
         } else {
           player.animation = "break1";
         }
-      } else if (!player.isBreakingBlock && player.lowerArms && !player.isWalking) {
+      } else if (
+        !player.isBreakingBlock &&
+        player.lowerArms &&
+        !player.isWalking
+      ) {
         player.animation = "raise2";
         setTimeout(() => {
           player.lowerArms = false;
         }, 40);
       }
-      /*    if (
-        player.isBreakingBlock &&
-        player.isWalking &&
-        !player.crouching &&
-        !player.isFalling &&
-        !player.jumping &&
-        player.animationChangeTimer > 3
-      ) {
-        player.animation = "walk" + player.animationWalkingFrame;
-        player.animationWalkingFrame = (player.animationWalkingFrame % 6) + 1;
-        player.animationChangeTimer = 0;
-      } */
-      console.log(player.animation);
-      console.log(player.isFalling);
-      console.log(player.jumping);
-      console.log(player.crouching);
-      console.log(player.animationChangeTimer);
+
       drawTile(
         vec2(
           Math.round(player.coords.x * 100) / 100,
@@ -947,6 +946,67 @@ async function gameInit() {
           setTimeout(() => {
             particleWalk.destroy(true);
           }, 200);
+        }
+      }
+
+      // show hotbar hand item
+      let handPos = vec2(0, 0);
+      let handRot = 0;
+      if (player.inventory[player.hotbarSlotHovered].item != "air") {
+        let handAnim = "idle";
+        switch (player.animation) {
+          case "idle":
+          case "walk6":
+            handAnim = "idle";
+            break;
+          case "walk1":
+          case "walk2":
+          case "walk3":
+          case "walk4":
+          case "walk5":
+            handAnim = "walk";
+            break;
+          case "fall":
+            handAnim = "fall";
+            break;
+          case "raise1":
+          case "raise2":
+            handAnim = "raise";
+            break;
+          case "break1":
+            handAnim = "break1";
+            break;
+          case "break2":
+            handAnim = "break2";
+            break;
+          case "crouch":
+          case "crouchWalk":
+            handAnim = "crouch";
+            break;
+          default:
+            handAnim = "idle";
+            break;
+        }
+
+        handPos = player.handItemAnimIndex[handAnim];
+        handRot = player.handItemAnimRotateIndex[handAnim];
+
+        if (player.directionPositive) {
+          drawTile(
+            vec2(player.coords.x+handPos.x, player.getFeetCoords().y + handPos.y),
+            vec2(0.35),
+            texture[player.inventory[player.hotbarSlotHovered].item],
+            WHITE,
+            handRot,
+          );
+        } else {
+          drawTile(
+           vec2(player.coords.x-handPos.x,player.getFeetCoords().y + handPos.y ),
+            vec2(0.35),
+            texture[player.inventory[player.hotbarSlotHovered].item],
+            WHITE,
+            -handRot,
+          );
         }
       }
     },
@@ -1088,7 +1148,12 @@ async function gameInit() {
       }
     },
     changeHotbarSlot: (newHotbarSlot) => {
-      // ui side
+      if (hotbarSlot[newHotbarSlot]) {
+        hotbarSlot[player.hotbarSlotHovered].className = "slot";
+        hotbarSlot[newHotbarSlot].className = "slot slotHover";
+
+        player.hotbarSlotHovered = newHotbarSlot;
+      }
     },
   };
   player.cameraToPlayer();
@@ -1416,6 +1481,25 @@ async function gameRender() {
   if (keyIsDown("ArrowRight") && !keyIsDown("ArrowLeft")) {
     moveSideways("r");
     player.directionPositive = true;
+  }
+  if (keyIsDown("Digit1")) {
+    player.changeHotbarSlot(0);
+  } else if (keyIsDown("Digit2")) {
+    player.changeHotbarSlot(1);
+  } else if (keyIsDown("Digit3")) {
+    player.changeHotbarSlot(2);
+  } else if (keyIsDown("Digit4")) {
+    player.changeHotbarSlot(3);
+  } else if (keyIsDown("Digit5")) {
+    player.changeHotbarSlot(4);
+  } else if (keyIsDown("Digit6")) {
+    player.changeHotbarSlot(5);
+  } else if (keyIsDown("Digit7")) {
+    player.changeHotbarSlot(6);
+  } else if (keyIsDown("Digit8")) {
+    player.changeHotbarSlot(7);
+  } else if (keyIsDown("Digit9")) {
+    player.changeHotbarSlot(8);
   }
 }
 

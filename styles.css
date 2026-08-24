@@ -312,7 +312,7 @@ label.larger-font {
   border: 0.5vh solid var(--slot-border);
   box-sizing: border-box;
   transform: scale(1);
-  transition: transform 0.5s;
+  transition: transform 0.15s;
 }
 .slotHover {
   border-color: var(--slot-hover) !important;

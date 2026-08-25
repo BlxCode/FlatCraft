@@ -342,7 +342,39 @@ function gameUpdatePost() {
       fpsWaitForUpdate = 0;
     }
   }
+  function numkeysHotbarChange() {
+    if (keyIsDown("Digit1")) {
+      player.changeHotbarSlot(0);
+    } else if (keyIsDown("Digit2")) {
+      player.changeHotbarSlot(1);
+    } else if (keyIsDown("Digit3")) {
+      player.changeHotbarSlot(2);
+    } else if (keyIsDown("Digit4")) {
+      player.changeHotbarSlot(3);
+    } else if (keyIsDown("Digit5")) {
+      player.changeHotbarSlot(4);
+    } else if (keyIsDown("Digit6")) {
+      player.changeHotbarSlot(5);
+    } else if (keyIsDown("Digit7")) {
+      player.changeHotbarSlot(6);
+    } else if (keyIsDown("Digit8")) {
+      player.changeHotbarSlot(7);
+    } else if (keyIsDown("Digit9")) {
+      player.changeHotbarSlot(8);
+    }
+  }
+  function mouseWheelHotbarScroll() {
+    const currentHotbarSlot = player.hotbarSlotHovered;
+    let newHotbarSlot = mouseWheel + currentHotbarSlot;
+
+    newHotbarSlot > 8 ? (newHotbarSlot = 0) : "why more";
+    newHotbarSlot < 0 ? (newHotbarSlot = 8) : "why less";
+    player.changeHotbarSlot(newHotbarSlot);
+  }
   fps();
+  numkeysHotbarChange();
+
+  mouseWheelHotbarScroll();
 }
 /*
    ___                  ___             _         _           
@@ -433,7 +465,7 @@ function getCollidableBlockTypeAt(x, y) {
 function isCollidableBlockAt(x, y) {
   return !!getCollidableBlockTypeAt(x, y);
 }
-function drawRickAstleyAt(x, y, rot  = 0) {
+function drawRickAstleyAt(x, y, rot = 0) {
   drawTile(vec2(x, y), vec2(0.25), texture["rickRoll"], WHITE, rot);
 }
 class droppedItem {
@@ -634,7 +666,7 @@ async function gameInit() {
       crouch: vec2(0.4, 0.04),
     },
     handItemAnimRotateIndex: {
-       idle: 0,
+      idle: 0,
       walk: 0,
       fall: 0,
       raise: -1,
@@ -993,16 +1025,22 @@ async function gameInit() {
 
         if (player.directionPositive) {
           drawTile(
-            vec2(player.coords.x+handPos.x, player.getFeetCoords().y + handPos.y),
-            vec2(0.35),
+            vec2(
+              player.coords.x + handPos.x,
+              player.getFeetCoords().y + handPos.y,
+            ),
+            vec2(0.3),
             texture[player.inventory[player.hotbarSlotHovered].item],
             WHITE,
             handRot,
           );
         } else {
           drawTile(
-           vec2(player.coords.x-handPos.x,player.getFeetCoords().y + handPos.y ),
-            vec2(0.35),
+            vec2(
+              player.coords.x - handPos.x,
+              player.getFeetCoords().y + handPos.y,
+            ),
+            vec2(0.3),
             texture[player.inventory[player.hotbarSlotHovered].item],
             WHITE,
             -handRot,
@@ -1481,25 +1519,6 @@ async function gameRender() {
   if (keyIsDown("ArrowRight") && !keyIsDown("ArrowLeft")) {
     moveSideways("r");
     player.directionPositive = true;
-  }
-  if (keyIsDown("Digit1")) {
-    player.changeHotbarSlot(0);
-  } else if (keyIsDown("Digit2")) {
-    player.changeHotbarSlot(1);
-  } else if (keyIsDown("Digit3")) {
-    player.changeHotbarSlot(2);
-  } else if (keyIsDown("Digit4")) {
-    player.changeHotbarSlot(3);
-  } else if (keyIsDown("Digit5")) {
-    player.changeHotbarSlot(4);
-  } else if (keyIsDown("Digit6")) {
-    player.changeHotbarSlot(5);
-  } else if (keyIsDown("Digit7")) {
-    player.changeHotbarSlot(6);
-  } else if (keyIsDown("Digit8")) {
-    player.changeHotbarSlot(7);
-  } else if (keyIsDown("Digit9")) {
-    player.changeHotbarSlot(8);
   }
 }
 

@@ -102,7 +102,7 @@ ul {
   text-align: center;
   width: 100.1%;
   height: 100.1%;
-  z-index: 90;
+  z-index: 4;
   background: RGB(171, 171, 255);
   background: radial-gradient(
     circle,
@@ -126,6 +126,26 @@ ul {
   box-sizing: border-box;
 
   overflow-y: auto !important;
+}
+#inventory {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transform-origin: center center;
+  z-index: 6;
+  width: 75%;
+  height: 75%;
+  background-color: var(--primary-bg-color);
+  color: var(--primary-color);
+  padding: 1dvh;
+}
+.inventoryBody {
+  background-color: #25293a;
+  margin: 0.1dvh;
+}
+#inventoryCenter {
+  margin-right: 0.3dvh;
 }
 
 #settings {
@@ -300,11 +320,10 @@ label.larger-font {
 }
 
 .slot {
-  aspect-ratio: 1/1;
+  aspect-ratio: 1 / 1;
   width: 7dvh;
-  margin: 0.1vh;
   height: 7dvh;
-
+  margin: 0.1vh;
   color: white;
   text-align: center;
   vertical-align: middle;
@@ -312,8 +331,23 @@ label.larger-font {
   border: 0.5vh solid var(--slot-border);
   box-sizing: border-box;
   transform: scale(1);
-  transition: transform 0.15s;
+  transition: transform 0.075s;
 }
+
+.invenSlot {
+  width: 7dvh;
+  height: 7dvh;
+  margin: 0;
+  color: white;
+  text-align: center;
+  vertical-align: middle;
+  background: var(--slot);
+  border: 0.5vh solid var(--slot-border);
+  box-sizing: border-box;
+  transform: scale(1);
+  transition: transform 0.075s;
+}
+
 .slotHover {
   border-color: var(--slot-hover) !important;
   transform: scale(1.025);
@@ -337,6 +371,7 @@ label.larger-font {
   font-weight: 900;
   z-index: 5;
   -webkit-text-stroke: black 0.07dvh;
+  color: var(--primary-color);
 }
 #popup,
 #credits,
@@ -380,7 +415,7 @@ label.larger-font {
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 91;
+  z-index: 5;
 }
 #errorBackdrop {
   position: fixed;
@@ -505,7 +540,7 @@ canvas {
   position: fixed;
   top: 5px;
   left: 5px;
-  z-index: 5;
+  z-index: 2;
   font-size: 3dvh;
   color: white;
   -webkit-text-stroke: black 1.5px;

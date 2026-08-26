@@ -1,7 +1,6 @@
 <!doctype html>
 <html lang="en">
   <head>
-    
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
       integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
@@ -397,15 +396,13 @@
         "
         class="fa-solid fa-gear clickable"
       ></i>
-      <div id="inventory">
-        <div>
-          
-        </div>
-      </div>
       <div id="hotbar">
-   
-        <div class="slot slotHover" id="slot1">
+        <div class="slot slotHover" id="slot0">
           <img src="" class="hotbarSlotImg" alt="hotbar slots" />
+          <span class="hotbarSlotAmt">0</span>
+        </div>
+        <div class="slot" id="slot1">
+          <img class="hotbarSlotImg" src="" alt="hotbar slots" />
           <span class="hotbarSlotAmt">0</span>
         </div>
         <div class="slot" id="slot2">
@@ -436,11 +433,81 @@
           <img class="hotbarSlotImg" src="" alt="hotbar slots" />
           <span class="hotbarSlotAmt">0</span>
         </div>
-        <div class="slot" id="slot9">
-          <img class="hotbarSlotImg" src="" alt="hotbar slots" />
-          <span class="hotbarSlotAmt">0</span>
-        </div>
       </div>
+      <div id="inventory" class="visually-hidden">
+        <div id="inventoryCenter" class="inventoryBody col">
+          <div
+            class="row p-1 justify-content-center position-relative start-50 translate-middle-x"
+            style="flex-wrap: nowrap !important; width: 580px !important"
+          >
+            <div class="col" style="margin: 0.1vh;">
+              <div class="invenSlot" id="invenSlot35">
+                <img class="invenSlotImg" src="" alt="inven slots" />
+                <span class="invenSlotAmt">0</span>
+              </div>
+            </div>
+            <div class="col" style="margin: 0.1vh;">
+              <div class="invenSlot" id="invenSlot34">
+                <img class="invenSlotImg" src="" alt="inven slots" />
+                <span class="invenSlotAmt">0</span>
+              </div>
+            </div>
+            <div class="col" style="margin: 0.1vh;">
+              <div class="invenSlot" id="invenSlot33">
+                <img class="invenSlotImg" src="" alt="inven slots" />
+                <span class="invenSlotAmt">0</span>
+              </div>
+            </div>
+            <div class="col" style="margin: 0.1vh;">
+              <div class="invenSlot" id="invenSlot32">
+                <img class="invenSlotImg" src="" alt="inven slots" />
+                <span class="invenSlotAmt">0</span>
+              </div>
+            </div>
+            <div class="col" style="margin: 0.1vh;">
+              <div class="invenSlot" id="invenSlot31">
+                <img class="invenSlotImg" src="" alt="inven slots" />
+                <span class="invenSlotAmt">0</span>
+              </div>
+            </div>
+            <div class="col" style="margin: 0.1vh;">
+              <div class="invenSlot" id="invenSlot30">
+                <img class="invenSlotImg" src="" alt="inven slots" />
+                <span class="invenSlotAmt">0</span>
+              </div>
+            </div>
+            <div class="col" style="margin: 0.1vh;">
+              <div class="invenSlot" id="invenSlot29">
+                <img class="invenSlotImg" src="" alt="inven slots" />
+                <span class="invenSlotAmt">0</span>
+              </div>
+            </div>
+            <div class="col" style="margin: 0.1vh;">
+              <div class="invenSlot" id="invenSlot28">
+                <img class="invenSlotImg" src="" alt="inven slots" />
+                <span class="invenSlotAmt">0</span>
+              </div>
+            </div>
+            <div class="col" style="margin: 0.1vh;">
+              <div class="invenSlot" id="invenSlot27">
+                <img class="invenSlotImg" src="" alt="inven slots" />
+                <span class="invenSlotAmt">0</span>
+              </div>
+            </div>
+          </div>
+          <div class="row"></div>
+          <div class="row"></div>
+          <br />
+          <br />
+          <div class="row"></div>
+        </div>
+
+        <div
+          id="inventoryRight"
+          class="inventoryBody col-3 col-md-4 col-sm-6"
+        ></div>
+      </div>
+
       <div id="popup" class="visually-hidden">
         <button id="popupClose" class="btn btn-danger closeButton">x</button>
         <h2 id="popupTitle">Warning:</h2>

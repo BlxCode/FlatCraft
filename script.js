@@ -3,6 +3,7 @@
 // this is also the first time i've ever used littleJS
 "use strict";
 // import { createNoise2D } from "https://cdn.jsdelivr.net/npm/simplex-noise/+esm";
+let isInGame = false;
 const loadingScreen = document.getElementById("loadingScreen");
 const loadingTitle = document.getElementById("loadingTitle");
 const loadingProgressBar = document.getElementById("loadingProgress");
@@ -17,7 +18,7 @@ var currentPopup = null;
 const errorBackdrop = document.getElementById("errorBackdrop");
 const worldMenu = document.getElementById("worldSelect");
 const worldCreateMenu = document.getElementById("worldCreate");
-let paused = true;
+
 mainMenuAudio.loop = true;
 const events = {};
 var dotsInLoadingTitle = 3;
@@ -152,7 +153,7 @@ buttonCloseCredits.addEventListener("click", () => {
 const buttonOpenSettings = document.getElementById("mainMenuButtonSettings");
 buttonOpenSettings.addEventListener("click", () => {
   document.getElementById("settings").className = "popAnim";
-  paused = true;
+  setPaused(true);
   backdropUI.hidden = false;
   currentPopup = document.getElementById("settings");
 });
@@ -161,7 +162,7 @@ const buttonCloseSettings = document.getElementById("buttonCloseSettings");
 buttonCloseSettings.addEventListener("click", () => {
   document.getElementById("settings").className = "popCloseHide";
 
-  paused = false;
+  setPaused(false);
   backdropUI.hidden = true;
   currentPopup = null;
 });
@@ -242,6 +243,7 @@ backdropUI.addEventListener("click", () => {
   currentPopup.className = "popCloseHide";
   currentPopup = null;
   backdropUI.hidden = true;
+  setPaused(false)
 });
 
 // SETTINGS UI
@@ -312,21 +314,23 @@ document.getElementById("popupClose").addEventListener("click", () => {
                                          ██                                                         
                                          ██                                                         
                                                                                                     */
+
+const invenDiv = dgeID("inventory");
 let invenEvent = new Event("invenEvent");
 let fpsWaitForUpdate = 0;
-const invenAmt = document.getElementsByClassName("hotbarSlotAmt");
-const invenImg = document.getElementsByClassName("hotbarSlotImg");
+const hotbarAmt = document.getElementsByClassName("hotbarSlotAmt");
+const hotbarImg = document.getElementsByClassName("hotbarSlotImg");
 const hotbarSlot = document.getElementsByClassName("slot");
 function renderInven() {
   for (let i = 0; i <= 8; i++) {
     if (player.inventory[i]) {
       if (player.inventory[i].amount == 0) {
-        invenAmt[i].textContent = "";
-        invenImg[i].src =
+        hotbarAmt[i].textContent = "";
+        hotbarImg[i].src =
           "./assets/textures/" + player.inventory[i].item + ".png";
       } else {
-        invenAmt[i].textContent = player.inventory[i].amount;
-        invenImg[i].src =
+        hotbarAmt[i].textContent = player.inventory[i].amount;
+        hotbarImg[i].src =
           "./assets/textures/" + player.inventory[i].item + ".png";
       }
     }
@@ -371,7 +375,26 @@ function gameUpdatePost() {
     newHotbarSlot < 0 ? (newHotbarSlot = 8) : "why less";
     player.changeHotbarSlot(newHotbarSlot);
   }
+  function inventoryToggle() {
+    if (keyWasPressed("KeyE") && isInGame) {
+      if (
+        invenDiv.className == "popCloseHide" ||
+        invenDiv.className == "visually-hidden"
+      ) {
+        invenDiv.className = "popAnim row";
+        setPaused(true);
+        backdropUI.hidden = false;
+        currentPopup = invenDiv;
+      } else if (invenDiv.className == "popAnim row") {
+        invenDiv.className = "popCloseHide";
+        setPaused(false);
+        backdropUI.hidden = true;
+        currentPopup = invenDiv;
+      }
+    }
+  }
   fps();
+  inventoryToggle();
   numkeysHotbarChange();
 
   mouseWheelHotbarScroll();
@@ -658,12 +681,12 @@ async function gameInit() {
     hotbarSlotHovered: 0,
     handItemAnimIndex: {
       idle: vec2(0.4, 0.05),
-      walk: vec2(0.4, 0.2),
+      walk: vec2(0.4, 0.1),
       fall: vec2(0.45, 1.55),
       raise: vec2(0.85, 0.25),
-      break2: vec2(0.75, 1.25),
-      break1: vec2(0.95, 1.25),
-      crouch: vec2(0.4, 0.04),
+      break2: vec2(0.75, 1.4),
+      break1: vec2(0.95, 1.4),
+      crouch: vec2(0.4, -0.02),
     },
     handItemAnimRotateIndex: {
       idle: 0,
@@ -711,10 +734,6 @@ async function gameInit() {
       33: { item: "air", amount: 0 },
       34: { item: "air", amount: 0 },
       35: { item: "air", amount: 0 },
-      36: { item: "air", amount: 0 },
-      37: { item: "air", amount: 0 },
-      38: { item: "air", amount: 0 },
-      39: { item: "air", amount: 0 },
     },
     setSkin: (newSkin) => {
       player.skin = newSkin;
@@ -1203,8 +1222,10 @@ async function gameInit() {
     mainMenuAudio.pause();
     document.getElementById("mainMenu").className = "popCloseHide";
     console.log(blocks);
-    paused = false;
 
+    invenDiv.className == "visually-hidden";
+    setPaused(false);
+    isInGame = true;
     if (event.detail.worldType == "sandbox") {
       procedurallyGenerateWorld(Number(event.detail.worldSeed));
     } else if (event.detail.worldType == "flat") {
@@ -1284,27 +1305,108 @@ async function gameRender() {
     );
   };
   const mouseThings = () => {
-    const blockMousePos = vec2(Math.round(mousePos.x), Math.round(mousePos.y));
-    const diff = blockMousePos.subtract(player.coords);
+    if (!getPaused()) {
+      const blockMousePos = vec2(
+        Math.round(mousePos.x),
+        Math.round(mousePos.y),
+      );
+      const diff = blockMousePos.subtract(player.coords);
 
-    const diffAbs = diff.abs();
+      const diffAbs = diff.abs();
 
-    if (
-      hoveredBlock.x != blockMousePos.x ||
-      hoveredBlock.y != blockMousePos.y
-    ) {
-      blockBreak = 0;
-
-      blockBreakNoSpam = 0;
-      blockBreak = 0;
-      player.isBreakingBlock = false;
-    }
-    hoveredBlock = blockMousePos;
-
-    if (diffAbs.x > 5 || diffAbs.y > 5) {
-      drawTile(blockMousePos, vec2(1), texture["hoverFar"]);
-      if (player.isBreakingBlock) {
+      if (
+        hoveredBlock.x != blockMousePos.x ||
+        hoveredBlock.y != blockMousePos.y
+      ) {
         blockBreak = 0;
+
+        blockBreakNoSpam = 0;
+        blockBreak = 0;
+        player.isBreakingBlock = false;
+      }
+      hoveredBlock = blockMousePos;
+
+      if (diffAbs.x > 5 || diffAbs.y > 5) {
+        drawTile(blockMousePos, vec2(1), texture["hoverFar"]);
+        if (player.isBreakingBlock) {
+          blockBreak = 0;
+          blockBreakNoSpam = 0;
+          blockBreak = 0;
+          player.isBreakingBlock = false;
+          player.raisedArms = false;
+          player.lowerArms = true;
+          player.animationChangeTimer = 0;
+        }
+      } else {
+        drawTile(blockMousePos, vec2(1), texture["hoverClose"]);
+
+        let blockType = blocks[`${blockMousePos.x},${blockMousePos.y}`];
+        if (blockType == undefined) {
+          blockType = "Air";
+        }
+
+        if (mouseIsDown(0) && blockType != "Air") {
+          if (blockBreakNoSpam > 12 * blockMetaData[blockType]["breakTime"]) {
+            blockBreak += 1;
+            blockBreakNoSpam = 0;
+          } else {
+            blockBreakNoSpam += 1;
+          }
+
+          player.isBreakingBlock = true;
+
+          if (blockBreak > 6) {
+            let breakParticle = new ParticleEmitter(
+              blockMousePos,
+              0,
+              vec2(0.5, 0.5),
+              0.05,
+              1902,
+              180,
+              undefined,
+              blockMetaData[blockType || "Air"].color1Class,
+              blockMetaData[blockType || "Air"].color2Class,
+              CLEAR_WHITE,
+              CLEAR_WHITE,
+              0.1,
+              0.1,
+              0.1,
+            );
+            const drop = new droppedItem(
+              blockType,
+              blockMousePos.x,
+              blockMousePos.y,
+            );
+
+            setTimeout(() => {
+              breakParticle.destroy(true);
+            }, 200);
+            destroyBlock(blockMousePos.x, blockMousePos.y);
+            blockBreak = 0;
+            blockBreakNoSpam = 0;
+            player.isBreakingBlock = false;
+            player.raisedArms = false;
+            player.lowerArms = true;
+            player.animationChangeTimer = 0;
+          } else {
+            drawTile(
+              vec2(blockMousePos.x, blockMousePos.y),
+              vec2(0.75),
+              blockBreakingTexture["frame" + blockBreak],
+            );
+          }
+        }
+        if (mouseIsDown(0) && blockType != "Air" && player.isWalking) {
+        }
+        if (mouseIsDown(0) && blockType == "Air" && player.isBreakingBlock) {
+          blockBreakNoSpam = 0;
+          blockBreak = 0;
+          player.isBreakingBlock = false;
+          player.raisedArms = false;
+          player.lowerArms = true;
+        }
+      }
+      if (!mouseIsDown(0) && player.isBreakingBlock) {
         blockBreakNoSpam = 0;
         blockBreak = 0;
         player.isBreakingBlock = false;
@@ -1312,82 +1414,6 @@ async function gameRender() {
         player.lowerArms = true;
         player.animationChangeTimer = 0;
       }
-    } else {
-      drawTile(blockMousePos, vec2(1), texture["hoverClose"]);
-
-      let blockType = blocks[`${blockMousePos.x},${blockMousePos.y}`];
-      if (blockType == undefined) {
-        blockType = "Air";
-      }
-
-      if (mouseIsDown(0) && blockType != "Air") {
-        if (blockBreakNoSpam > 12 * blockMetaData[blockType]["breakTime"]) {
-          blockBreak += 1;
-          blockBreakNoSpam = 0;
-        } else {
-          blockBreakNoSpam += 1;
-        }
-
-        player.isBreakingBlock = true;
-
-        if (blockBreak > 6) {
-          let breakParticle = new ParticleEmitter(
-            blockMousePos,
-            0,
-            vec2(0.5, 0.5),
-            0.05,
-            1902,
-            180,
-            undefined,
-            blockMetaData[blockType || "Air"].color1Class,
-            blockMetaData[blockType || "Air"].color2Class,
-            CLEAR_WHITE,
-            CLEAR_WHITE,
-            0.1,
-            0.1,
-            0.1,
-          );
-          const drop = new droppedItem(
-            blockType,
-            blockMousePos.x,
-            blockMousePos.y,
-          );
-
-          setTimeout(() => {
-            breakParticle.destroy(true);
-          }, 200);
-          destroyBlock(blockMousePos.x, blockMousePos.y);
-          blockBreak = 0;
-          blockBreakNoSpam = 0;
-          player.isBreakingBlock = false;
-          player.raisedArms = false;
-          player.lowerArms = true;
-          player.animationChangeTimer = 0;
-        } else {
-          drawTile(
-            vec2(blockMousePos.x, blockMousePos.y),
-            vec2(0.75),
-            blockBreakingTexture["frame" + blockBreak],
-          );
-        }
-      }
-      if (mouseIsDown(0) && blockType != "Air" && player.isWalking) {
-      }
-      if (mouseIsDown(0) && blockType == "Air" && player.isBreakingBlock) {
-        blockBreakNoSpam = 0;
-        blockBreak = 0;
-        player.isBreakingBlock = false;
-        player.raisedArms = false;
-        player.lowerArms = true;
-      }
-    }
-    if (!mouseIsDown(0) && player.isBreakingBlock) {
-      blockBreakNoSpam = 0;
-      blockBreak = 0;
-      player.isBreakingBlock = false;
-      player.raisedArms = false;
-      player.lowerArms = true;
-      player.animationChangeTimer = 0;
     }
   };
   let dropCoords;
@@ -1422,7 +1448,6 @@ async function gameRender() {
       }
     }
   };
-
   renderSky();
   renderBlocks();
   mouseThings();
@@ -1466,29 +1491,41 @@ async function gameRender() {
 
         if (direction == "r") {
           if (
-            isCollidableBlockAt(
-              Math.floor(player.getFeetCoords().x + 0.5),
+            !isCollidableBlockAt(
+              Math.ceil(player.getCoordsAt("bl").x - 0.4),
               Math.floor(player.getFeetCoords().y - 0.2),
             )
           ) {
-            if (!player.isFalling) {
+            if (
+              !isCollidableBlockAt(
+                Math.ceil(player.getCoordsAt("br").x),
+                Math.floor(player.getFeetCoords().y - 0.2),
+              )
+            ) {
+              player.isWalking = false;
+            }
+            if (player.isFalling) {
               player.isWalking = true;
             }
-          } else {
-            player.isWalking = false;
           }
         } else if (direction == "l") {
           if (
-            isCollidableBlockAt(
-              Math.floor(player.getFeetCoords().x + 0.5),
+            !isCollidableBlockAt(
+              Math.floor(player.getCoordsAt("br").x + 0.4),
               Math.floor(player.getFeetCoords().y - 0.2),
             )
           ) {
-            if (!player.isFalling) {
+            if (
+              !isCollidableBlockAt(
+                Math.floor(player.getCoordsAt("bl").x),
+                Math.floor(player.getFeetCoords().y - 0.2),
+              )
+            ) {
+              player.isWalking = false;
+            }
+            if (player.isFalling) {
               player.isWalking = true;
             }
-          } else {
-            player.isWalking = false;
           }
         }
         if (player.isWalking) {
@@ -1505,20 +1542,21 @@ async function gameRender() {
       }
     }
   }
-
-  if (keyIsDown("ArrowUp") && !player.isFalling) {
-    player.jumping = true;
-  }
-  if (keyIsDown("ArrowDown")) {
-    player.crouching = true;
-  }
-  if (keyIsDown("ArrowLeft") && !keyIsDown("ArrowRight")) {
-    moveSideways("l");
-    player.directionPositive = false;
-  }
-  if (keyIsDown("ArrowRight") && !keyIsDown("ArrowLeft")) {
-    moveSideways("r");
-    player.directionPositive = true;
+  if (!getPaused()) {
+    if (keyIsDown("ArrowUp") && !player.isFalling) {
+      player.jumping = true;
+    }
+    if (keyIsDown("ArrowDown")) {
+      player.crouching = true;
+    }
+    if (keyIsDown("ArrowLeft") && !keyIsDown("ArrowRight")) {
+      moveSideways("l");
+      player.directionPositive = false;
+    }
+    if (keyIsDown("ArrowRight") && !keyIsDown("ArrowLeft")) {
+      moveSideways("r");
+      player.directionPositive = true;
+    }
   }
 }
 

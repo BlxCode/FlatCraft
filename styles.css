@@ -139,13 +139,16 @@ ul {
   background-color: var(--primary-bg-color);
   color: var(--primary-color);
   padding: 1dvh;
+  overflow: hidden;
 }
 .inventoryBody {
   background-color: #25293a;
   margin: 0.1dvh;
 }
 #inventoryCenter {
-  margin-right: 0.3dvh;
+  margin-right: 0.7dvh;
+
+  transform-origin: center center;
 }
 
 #settings {
@@ -331,8 +334,14 @@ label.larger-font {
   border: 0.5vh solid var(--slot-border);
   box-sizing: border-box;
   transform: scale(1);
-  transition: transform 0.075s;
+  transition:
+    transform 0.075s,
+    background-color 0.05s;
 }
+.slot:hover {
+  background-color: #717878;
+}
+
 
 .invenSlot {
   width: 7dvh;
@@ -345,9 +354,34 @@ label.larger-font {
   border: 0.5vh solid var(--slot-border);
   box-sizing: border-box;
   transform: scale(1);
-  transition: transform 0.075s;
+  transition:
+    transform 0.075s,
+    background-color 0.05s;
 }
-
+.invenSlot:hover {
+  background-color: #717878;
+}
+.invenSlotImg {
+  aspect-ratio: 1;
+  position: relative;
+  width: 4.5dvh;
+  height: 4.5dvh;
+  image-rendering: pixelated;
+  z-index: 4;
+  top: 50%;
+  left: 37%;
+  transform: translate(-50%, -50%);
+}
+.invenSlotAmt {
+  position: absolute;
+  top: -0.7dvh;
+  right: 0.4dvh;
+  font-size: 2.7dvh;
+  font-weight: 900;
+  z-index: 5;
+  -webkit-text-stroke: black 0.07dvh;
+  color: var(--primary-color);
+}
 .slotHover {
   border-color: var(--slot-hover) !important;
   transform: scale(1.025);
@@ -387,7 +421,7 @@ label.larger-font {
   transform: translate(-50%, -50%);
   background-color: var(--primary-bg-color);
   width: fit-content;
-  min-width: 50%;
+  min-width: 30%;
   min-height: 30dvh;
   height: fit-content;
   text-align: center;

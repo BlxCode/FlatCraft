@@ -240,10 +240,14 @@ submitNewWorldForm.addEventListener("click", () => {
 });
 
 backdropUI.addEventListener("click", () => {
-  currentPopup.className = "popCloseHide";
+  if (currentPopup.id == "inventory") {
+    currentPopup.className = "popCloseHide row";
+  } else {
+    currentPopup.className = "popCloseHide";
+  }
   currentPopup = null;
   backdropUI.hidden = true;
-  setPaused(false)
+  setPaused(false);
 });
 
 // SETTINGS UI
@@ -321,7 +325,14 @@ let fpsWaitForUpdate = 0;
 const hotbarAmt = document.getElementsByClassName("hotbarSlotAmt");
 const hotbarImg = document.getElementsByClassName("hotbarSlotImg");
 const hotbarSlot = document.getElementsByClassName("slot");
+function getInvenElement(slot) {
+  const invenDivSlot = dgeID("invenSlot" + slot);
+  const invenImgSlot = dgeID("invenSlotImg" + slot);
+  const invenAmtSlot = dgeID("invenSlotAmt" + slot);
+  return { div: invenDivSlot, img: invenImgSlot, amt: invenAmtSlot };
+}
 function renderInven() {
+  //hotbar
   for (let i = 0; i <= 8; i++) {
     if (player.inventory[i]) {
       if (player.inventory[i].amount == 0) {
@@ -331,6 +342,20 @@ function renderInven() {
       } else {
         hotbarAmt[i].textContent = player.inventory[i].amount;
         hotbarImg[i].src =
+          "./assets/textures/" + player.inventory[i].item + ".png";
+      }
+    }
+  }
+  //inven
+  for (let i = 0; i <= 35; i++) {
+    if (player.inventory[i]) {
+      if (player.inventory[i].amount == 0) {
+        getInvenElement(i).amt.textContent = "";
+        getInvenElement(i).img.src =
+          "./assets/textures/" + player.inventory[i].item + ".png";
+      } else {
+        getInvenElement(i).amt.textContent = player.inventory[i].amount;
+        getInvenElement(i).img.src =
           "./assets/textures/" + player.inventory[i].item + ".png";
       }
     }
@@ -378,7 +403,7 @@ function gameUpdatePost() {
   function inventoryToggle() {
     if (keyWasPressed("KeyE") && isInGame) {
       if (
-        invenDiv.className == "popCloseHide" ||
+        invenDiv.className == "popCloseHide row" ||
         invenDiv.className == "visually-hidden"
       ) {
         invenDiv.className = "popAnim row";
@@ -386,7 +411,7 @@ function gameUpdatePost() {
         backdropUI.hidden = false;
         currentPopup = invenDiv;
       } else if (invenDiv.className == "popAnim row") {
-        invenDiv.className = "popCloseHide";
+        invenDiv.className = "popCloseHide row";
         setPaused(false);
         backdropUI.hidden = true;
         currentPopup = invenDiv;
@@ -535,8 +560,8 @@ class droppedItem {
           }
         } else {
           console.table(drops);
-          console.error(
-            "drops got out of sync while trying to rename possibily while drop was falling, rare bug. happens because either, your computer is broken, or that you were dropping lots of things",
+          console.info(
+            "Dropped a lot of things at the same place. Be warned some drops might disappear due to some glitches.",
           );
         }
       } else if (
@@ -1206,9 +1231,10 @@ async function gameInit() {
     },
     changeHotbarSlot: (newHotbarSlot) => {
       if (hotbarSlot[newHotbarSlot]) {
+        getInvenElement(player.hotbarSlotHovered).div.className = "invenSlot";
         hotbarSlot[player.hotbarSlotHovered].className = "slot";
         hotbarSlot[newHotbarSlot].className = "slot slotHover";
-
+        getInvenElement(newHotbarSlot).div.className = "invenSlot slotHover";
         player.hotbarSlotHovered = newHotbarSlot;
       }
     },

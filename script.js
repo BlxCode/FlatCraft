@@ -1263,6 +1263,11 @@ async function gameInit() {
   console.log("Game engine initialized.");
   renderInven();
 }
+for (let i = 0; i <= 8; i++) {
+  hotbarSlot[i].addEventListener("click", () => {
+    player.changeHotbarSlot(i);
+  });
+}
 function gameUpdate() {}
 
 //Game rendering and physics
@@ -1331,7 +1336,11 @@ async function gameRender() {
     );
   };
   const mouseThings = () => {
-    if (!getPaused()) {
+    if (
+      !getPaused() &&
+      document.elementFromPoint(mousePosScreen.x, mousePosScreen.y) ===
+        document.getElementById("ui")
+    ) {
       const blockMousePos = vec2(
         Math.round(mousePos.x),
         Math.round(mousePos.y),

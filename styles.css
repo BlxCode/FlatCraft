@@ -342,7 +342,6 @@ label.larger-font {
   background-color: #717878;
 }
 
-
 .invenSlot {
   width: 7dvh;
   height: 7dvh;
@@ -361,6 +360,7 @@ label.larger-font {
 .invenSlot:hover {
   background-color: #717878;
 }
+
 .invenSlotImg {
   aspect-ratio: 1;
   position: relative;
@@ -375,6 +375,39 @@ label.larger-font {
 .invenSlotAmt {
   position: absolute;
   top: -0.7dvh;
+  right: 0.4dvh;
+  font-size: 2.7dvh;
+  font-weight: 900;
+  z-index: 5;
+  -webkit-text-stroke: black 0.07dvh;
+  color: var(--primary-color);
+}
+#inventoryHeldInCursorItem {
+  width: 7dvh;
+  height: 7dvh;
+  margin: 0;
+  color: white;
+  text-align: center;
+  vertical-align: middle;
+
+  box-sizing: border-box;
+  z-index: 94;
+  position: fixed;
+}
+#inventoryHeldInCursorItemImg {
+  aspect-ratio: 1;
+  position: relative;
+  width: 4.5dvh;
+  height: 4.5dvh;
+  image-rendering: pixelated;
+  z-index: 4;
+  top: 50%;
+  left: 37%;
+  transform: translate(-50%, -50%);
+}
+#inventoryHeldInCursorItemAmt {
+  position: absolute;
+  top: -0.4dvh;
   right: 0.4dvh;
   font-size: 2.7dvh;
   font-weight: 900;

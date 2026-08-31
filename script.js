@@ -138,9 +138,9 @@ async function startInit() {
     });
     ws.addEventListener(
       "error",
-      () => {
+      (e) => {
         displayError("Could not get the Skins server.");
-        reject();
+        reject(e);
       },
       { once: true },
     );

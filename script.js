@@ -9,7 +9,7 @@ const loadingTitle = document.getElementById("loadingTitle");
 const loadingProgressBar = document.getElementById("loadingProgress");
 const mainMenuAudio = new Audio("./assets/music/menu.wav");
 const errorDiv = document.getElementById("popup");
-
+let ws;
 const enterGameButtonLoadingScreenWrapper = document.getElementById(
   "enterGameButtonLoadingScreenWrapper",
 );
@@ -34,9 +34,11 @@ var dotsDirectionMore = true;
 let errorTimeout = true;
 function displayError(msg) {
   if (errorTimeout) {
+    let lastPopup = currentPopup;
     errorBackdrop.hidden = false;
     errorBackdrop.className = "";
     errorTimeout = false;
+
     currentPopup = errorDiv;
     document.getElementById("popupContent").innerText = msg;
 
@@ -46,8 +48,9 @@ function displayError(msg) {
         errorBackdrop.className = "hidden";
         errorDiv.className = "popCloseHide";
         errorBackdrop.hidden = true;
+        currentPopup = lastPopup;
       },
-      document.getElementById("popupContent").innerText.length * 0.07 * 1000,
+      document.getElementById("popupContent").innerText.length * 0.1 * 1000,
     );
     errorDiv.className = "popAnim";
   }
@@ -98,17 +101,58 @@ var progressBar = setInterval(() => {
   loadingProgressBar.ariaValueNow = progress;
   loadingProgressBar.style.width = progress + "%";
 }, 1000);
-
+let skins;
+let skinsObj;
+let skinSrc;
+skinSrc =
+  localStorage.getItem("skinsSrc") ||
+  "data:image/png;base64,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";
 //initialized game
 async function startInit() {
+  await new Promise((resolve, reject) => {
+    ws = new WebSocket("wss://test-api.blxm.me/");
+
+    ws.addEventListener("open", () => {
+      console.log("Connected to skins server");
+
+      // SKIN STUFF
+      let secureAhhPassword;
+
+      ws.onmessage = (e) => {
+        if (e.data.includes("S|p*r#e%c^r/e*a-s~wd")) {
+          secureAhhPassword = e.data.replace("S|p*r#e%c^r/e*a-s~wd", "");
+        }
+        if (e.data.includes("S|c'[]s")) {
+          skins = e.data.replace("S|c'[]s", "");
+          skinsObj = JSON.parse(JSON.parse(skins));
+          console.log(typeof skinsObj);
+        }
+      };
+      if (localStorage.getItem("skins")) {
+        dgeID("skinId").value = localStorage.getItem("skins");
+      } else {
+        dgeID("skinId").value = "";
+      }
+
+      resolve();
+    });
+    ws.addEventListener(
+      "error",
+      () => {
+        displayError("Could not get the Skins server.");
+        reject();
+      },
+      { once: true },
+    );
+  });
+
+  await new Promise((r) => setTimeout(r, 1000));
   clearInterval(progressBar);
   clearInterval(loadingTextAnim);
 
   loadingProgressBar.ariaValueNow = 100;
   loadingProgressBar.style.width = "100%";
-
-  await new Promise((r) => setTimeout(r, 3400));
-
+  await new Promise((r) => setTimeout(r, 1000));
   document.getElementById("loadingScreenWrapper").className = "popCloseHide";
   enterGameButtonLoadingScreenWrapper.className = "popAnim";
   loadingScreen.className = "loadingScreenChangeColor";
@@ -240,6 +284,7 @@ submitNewWorldForm.addEventListener("click", () => {
 });
 
 backdropUI.addEventListener("click", () => {
+  if (!currentPopup) return;
   if (currentPopup.id == "inventory") {
     currentPopup.className = "popCloseHide row";
   } else {
@@ -296,6 +341,27 @@ settingsNavItemSkin.addEventListener("click", () => {
 document.getElementById("popupClose").addEventListener("click", () => {
   errorDiv.className = "popCloseHide";
   errorBackdrop.hidden = true;
+});
+dgeID("skinId").addEventListener("keyup", (e) => {
+  if (e.key == "Return" || e.key == "Enter") {
+    let found;
+
+    if (skinsObj) {
+      skinsObj.forEach((skin) => {
+        if (skin.id == dgeID("skinId").value) {
+          localStorage.setItem("skins", skin.id);
+          skinSrc = skin.file;
+          localStorage.setItem("skinsSrc", skin.file);
+          found = true;
+        }
+      });
+    }
+    if (!found) {
+      displayError("Invalid Id");
+    } else if (found) {
+      displayError("Valid Id!");
+    }
+  }
 });
 
 // ui updates
@@ -685,13 +751,13 @@ const textureNames = [
   "hoverClose",
   "air",
 ];
-dgeID("getEverything").addEventListener("click",()=>{
- for (const i of textureNames) {
-  for(let e = 1; e <= 64; e++){
-    new droppedItem(i,5,5);
+dgeID("getEverything").addEventListener("click", () => {
+  for (const i of textureNames) {
+    for (let e = 1; e <= 64; e++) {
+      new droppedItem(i, 5, 5);
+    }
   }
-}
-})
+});
 async function loadAllImages() {
   for (const name of textureNames) {
     await loadImage(name);
@@ -835,9 +901,7 @@ async function gameInit() {
   await new Promise((resolve) => {
     playerImage.onload = resolve;
 
-    playerImage.src =
-      localStorage.getItem("skinData") ||
-      "data:image/png;base64,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";
+    playerImage.src = skinSrc;
   });
   await new Promise((resolve) => {
     blockBreakTexture.onload = resolve;
@@ -967,13 +1031,7 @@ async function gameInit() {
       35: { item: "air", amount: 0 },
     },
     itemHoldingInCursor: undefined,
-    setSkin: (newSkin) => {
-      player.skin = newSkin;
-      playerTextureImageSrc = newSkin;
-      localStorage.setItem("skinData", newSkin);
-      playerImage.src = playerTextureImageSrc;
-      playerTexture = new TextureInfo(playerImage);
-    },
+
     getFeetCoords: () => {
       return vec2(player.coords.x, player.coords.y - 0.6);
     },
@@ -1462,7 +1520,7 @@ async function gameInit() {
     document.getElementById("mainMenu").className = "popCloseHide";
     console.log(blocks);
 
-    invenDiv.className == "visually-hidden";
+    invenDiv.className = "visually-hidden";
     setPaused(false);
     isInGame = true;
     if (event.detail.worldType == "sandbox") {

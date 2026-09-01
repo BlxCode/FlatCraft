@@ -109,8 +109,12 @@ skinSrc =
   "data:image/png;base64,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";
 //initialized game
 async function startInit() {
+  //wss thingy server thing
   await new Promise((resolve, reject) => {
-    ws = new WebSocket("wss://test-api.blxm.me/");
+    ws =
+      location.origin != "http://127.0.0.1:5500"
+        ? new WebSocket("wss://test-api.blxm.me/")
+        : new WebSocket("ws://192.168.0.200:8080/");
 
     ws.addEventListener("open", () => {
       console.log("Connected to skins server");
@@ -884,6 +888,7 @@ class droppedItem {
     }
   }
 }
+
 async function gameInit() {
   combineCanvases();
   gamepadsEnable = false;
@@ -974,6 +979,7 @@ async function gameInit() {
     animationChangeTimer: 0,
     lowerArms: false,
     hotbarSlotHovered: 0,
+    attackAnim: false,
     handItemAnimIndex: {
       idle: vec2(0.4, 0.05),
       walk: vec2(0.4, 0.1),
@@ -1199,6 +1205,31 @@ async function gameInit() {
 
         player.animationChangeTimer = 0;
       }
+      console.log(player.attackAnim, player.animationChangeTimer);
+
+      if (player.attackAnim && player.animationChangeTimer > 5) {
+        player.animationChangeTimer = 0;
+        switch (player.animation) {
+          case "raise2":
+            player.animation = "break2";
+            break;
+         
+          case "break2":
+            player.animation = "raise1";
+
+            break;
+          case "raise1":
+            player.animation = "idle";
+            console.log("resetting attackAnim");
+            player.attackAnim = false;
+            console.log(player.attackAnim);
+            break;
+          default:
+            player.animation = "raise2";
+            break;
+        }
+      }
+      console.log(player.animation, " PLGYIER ANMATION WIWIEEEEE");
       if (
         player.isBreakingBlock &&
         player.animationChangeTimer > 6 &&
@@ -1410,7 +1441,8 @@ async function gameInit() {
         !player.isFalling &&
         !player.crouching &&
         !player.isBreakingBlock &&
-        !player.lowerArms
+        !player.lowerArms &&
+        !player.attackAnim
       ) {
         player.animation = "idle";
       }
@@ -1533,6 +1565,7 @@ async function gameInit() {
   });
   console.log("Game engine initialized.");
   renderInven();
+  window.player = player;
 }
 for (let i = 0; i <= 8; i++) {
   hotbarSlot[i].addEventListener("click", () => {
@@ -1542,6 +1575,7 @@ for (let i = 0; i <= 8; i++) {
 function gameUpdate() {}
 
 //Game rendering and physics
+
 /*                                                                                                                                                                                                                                                 
                                                                                                                                                                           
                                                                                                                                                                         
@@ -1595,6 +1629,7 @@ async function gameRender() {
   };
 
   const renderSky = () => {
+    // sky
     drawRectGradient(
       cameraPos,
       vec2(
@@ -1712,16 +1747,26 @@ async function gameRender() {
           player.lowerArms = true;
         }
 
+
+        if(mouseWasReleased(0)){
+          player.attackAnim=true;
+        }
         // place blocks
 
         if (
           mouseIsDown(2) &&
           !blocks[`${blockMousePos.x},${blockMousePos.y}`] &&
           player.getSlot(player.hotbarSlotHovered).item != "air" &&
+          (blocks[`${blockMousePos.x},${blockMousePos.y + 1}`] ||
+            blocks[`${blockMousePos.x},${blockMousePos.y - 1}`] ||
+            blocks[`${blockMousePos.x + 1},${blockMousePos.y}`] ||
+            blocks[`${blockMousePos.x - 1},${blockMousePos.y}`]) &&
           (Math.abs(Math.round(player.coords.x) - blockMousePos.x) != 0 ||
             (Math.round(player.coords.y) - blockMousePos.y != 0 &&
               Math.round(player.coords.y) - blockMousePos.y != 1))
         ) {
+          console.log("placing block", player.attackAnim);
+          player.attackAnim = true;
           createBlock(
             blockMousePos.x,
             blockMousePos.y,

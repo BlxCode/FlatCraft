@@ -405,7 +405,10 @@ function renderInven() {
   //hotbar
   for (let i = 0; i <= 8; i++) {
     if (player.inventory[i]) {
-      if (player.inventory[i].amount == 0) {
+      if (
+        player.inventory[i].amount == 0 ||
+        player.inventory[i].item == "air"
+      ) {
         hotbarAmt[i].textContent = "";
         hotbarImg[i].src =
           "./assets/textures/" + player.inventory[i].item + ".png";
@@ -419,7 +422,10 @@ function renderInven() {
   //inven
   for (let i = 0; i <= 35; i++) {
     if (player.inventory[i]) {
-      if (player.inventory[i].amount == 0) {
+      if (
+        player.inventory[i].amount == 0 ||
+        player.inventory[i].item == "air"
+      ) {
         getInvenElement(i).amt.textContent = "";
         getInvenElement(i).img.src =
           "./assets/textures/" + player.inventory[i].item + ".png";
@@ -1213,7 +1219,7 @@ async function gameInit() {
           case "raise2":
             player.animation = "break2";
             break;
-         
+
           case "break2":
             player.animation = "raise1";
 
@@ -1508,14 +1514,27 @@ async function gameInit() {
       return true;
     },
     playerCanPickUpItem: (item, amount) => {
-for (let i = 0; i <= 35; i++) {
+      let found = false;
+      for (let i = 0; i <= 35; i++) {
         if (
           player.getSlot(i).item == item &&
           player.getSlot(i).amount + amount <= 64
         ) {
+          found = true;
           return true;
         }
       }
+      if (!found) {
+        for (let i = 0; i <= 35; i++) {
+          if (
+            player.getSlot(i).item == "air" ||
+            player.getSlot(i).amount == 0
+          ) {
+            return true;
+          }
+        }
+      }
+      return false;
     },
     addItem: (item, amount) => {
       let found = false;
@@ -1559,7 +1578,6 @@ for (let i = 0; i <= 35; i++) {
     backdropUI.click();
     mainMenuAudio.pause();
     document.getElementById("mainMenu").className = "popCloseHide";
-   
 
     invenDiv.className = "visually-hidden";
     setPaused(false);
@@ -1581,7 +1599,75 @@ for (let i = 0; i <= 8; i++) {
     player.changeHotbarSlot(i);
   });
 }
-function gameUpdate() {}
+let randomTickEvent = 0;
+function blockRayCast(startX, startY, dir) {
+  if (dir == "up") {
+    for (let i = startY; i < startY + 30; i++) {
+      if (isCollidableBlockAt(startX, i)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  if (dir == "down") {
+    for (let i = startY; i > startY - 30; i--) {
+      if (isCollidableBlockAt(startX, i)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  if (dir == "left") {
+    for (let i = startX; i > startX - 40; i--) {
+      if (isCollidableBlockAt(i, startY)) {
+        return false;
+      }
+    }
+    return true;
+  }
+  if (dir == "right") {
+    for (let i = startX; i < startX + 40; i++) {
+      if (isCollidableBlockAt(i, startY)) {
+        return false;
+      }
+    }
+    return true;
+  }
+}
+function gameUpdate() {
+  randomTickEvent += 1;
+  const xRangeLow = player.coords.x - 40;
+  const yRangeLow = player.coords.y - 30;
+  const xRangeHigh = player.coords.x + 40;
+  const yRangeHigh = player.coords.y + 30;
+  // randomTickEvents
+  if (randomTickEvent > Math.floor(Math.random() * 2000) + 1500) {
+    for (let x = Math.floor(xRangeLow); x <= Math.ceil(xRangeHigh); x++) {
+      for (let y = Math.floor(yRangeLow); y <= Math.ceil(yRangeHigh); y++) {
+        // change grass if it's dirt and change dirt to grass if grass next to it and sun
+        let block = blocks[`${x},${y}`];
+        if (block == "Dirt") {
+          if (
+            blockRayCast(x, y, "up") &&
+            (blocks[`${x - 1},${y}`] == "Grass" ||
+              blocks[`${x + 1},${y}`] == "Grass")
+          ) {
+            blocks[`${x},${y}`] = "Grass";
+          }
+        }
+
+        if (block == "Grass") {
+          if (!blockRayCast(x, y, "up")) {
+            blocks[`${x},${y}`] = "Dirt";
+          }
+        }
+      }
+      randomTickEvent = 0;
+    }
+  }
+}
 
 //Game rendering and physics
 
@@ -1604,6 +1690,7 @@ function gameUpdate() {}
 let hoveredBlock = vec2(0, 0);
 let blockBreak = 0;
 let blockBreakNoSpam = 0;
+let mouseWasDown = false;
 async function gameRender() {
   let halfWidth = mainCanvas.width / cameraScale / 2;
   let halfHeight = mainCanvas.height / cameraScale / 2;
@@ -1651,6 +1738,9 @@ async function gameRender() {
     );
   };
   const mouseThings = () => {
+    if (mouseIsDown(0)) {
+      mouseWasDown = true;
+    }
     if (
       !getPaused() &&
       document.elementFromPoint(mousePosScreen.x, mousePosScreen.y) ===
@@ -1696,6 +1786,7 @@ async function gameRender() {
         }
 
         if (mouseIsDown(0) && blockType != "Air") {
+          mouseWasDown = false;
           if (blockBreakNoSpam > 12 * blockMetaData[blockType]["breakTime"]) {
             blockBreak += 1;
             blockBreakNoSpam = 0;
@@ -1731,6 +1822,7 @@ async function gameRender() {
             setTimeout(() => {
               breakParticle.destroy(true);
             }, 200);
+            mouseWasDown = false;
             destroyBlock(blockMousePos.x, blockMousePos.y);
             blockBreak = 0;
             blockBreakNoSpam = 0;
@@ -1754,11 +1846,12 @@ async function gameRender() {
           player.isBreakingBlock = false;
           player.raisedArms = false;
           player.lowerArms = true;
+          mouseWasDown = false;
         }
 
-
-        if(mouseWasReleased(0)){
-          player.attackAnim=true;
+        if (mouseWasDown && !mouseIsDown(0) && !player.isBreakingBlock) {
+          mouseWasDown = false;
+          player.attackAnim = true;
         }
         // place blocks
 
@@ -1824,9 +1917,9 @@ async function gameRender() {
               (Math.abs(player.getFeetCoords().y - 0.1 - dropCoordsY) < 0.6 ||
                 Math.abs(player.coords.y + 0.3 - dropCoordsY) < 1)
             ) {
-              if(player.playerCanPickUpItem(i[e].item, 1)){
-              player.addItem(i[e].item, 1);
-              i[e].destroy();
+              if (player.playerCanPickUpItem(i[e].item, 1)) {
+                player.addItem(i[e].item, 1);
+                i[e].destroy();
               }
             } else {
               i[e].draw();
@@ -1963,7 +2056,6 @@ function createBlock(x, y, blockType) {
 }
 
 // Store current world block placement by grid coordinate string.
-      
 
 // Biome metadata used for world generation and environment rules.
 

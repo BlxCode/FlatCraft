@@ -995,6 +995,7 @@ async function gameInit() {
       break1: vec2(0.95, 1.4),
       crouch: vec2(0.4, -0.02),
     },
+
     handItemAnimRotateIndex: {
       idle: 0,
       walk: 0,
@@ -1043,7 +1044,7 @@ async function gameInit() {
       35: { item: "air", amount: 0 },
     },
     itemHoldingInCursor: undefined,
-
+    playerHaloGlow: undefined,
     getFeetCoords: () => {
       return vec2(player.coords.x, player.coords.y - 0.6);
     },
@@ -1211,7 +1212,6 @@ async function gameInit() {
 
         player.animationChangeTimer = 0;
       }
-      console.log(player.attackAnim, player.animationChangeTimer);
 
       if (player.attackAnim && player.animationChangeTimer > 5) {
         player.animationChangeTimer = 0;
@@ -1262,7 +1262,14 @@ async function gameInit() {
           player.lowerArms = false;
         }, 40);
       }
-
+      player.playerHaloGlow?.destroy();
+      player.playerHaloGlow = new Light(
+        vec2(player.coords.x, player.coords.y + 0.2),
+        2,
+        new Color(0.85,0.85,0.75,0.5),
+        3,
+      );
+      player.playerHaloGlow.render();
       drawTile(
         vec2(
           Math.round(player.coords.x * 100) / 100,
@@ -1570,6 +1577,8 @@ async function gameInit() {
       }
     },
   };
+  new LightSystemPlugin(mainCanvasSize, rgb(0.95,0.95,0.9));
+ 
   player.cameraToPlayer();
   document.addEventListener("createWorld", (event) => {
     console.log("Event received:", event.detail);
@@ -1593,6 +1602,12 @@ async function gameInit() {
   console.log("Game engine initialized.");
   renderInven();
   window.player = player;
+
+
+
+
+  // "sun"
+   
 }
 for (let i = 0; i <= 8; i++) {
   hotbarSlot[i].addEventListener("click", () => {
@@ -1602,69 +1617,72 @@ for (let i = 0; i <= 8; i++) {
 let randomTickEvent = 0;
 function blockRayCast(startX, startY, dir) {
   if (dir == "up") {
-    for (let i = startY; i < startY + 30; i++) {
+    for (let i = startY+1; i < startY + 30; i++) {
       if (isCollidableBlockAt(startX, i)) {
-        return false;
+        return true;
       }
     }
-    return true;
+    return false;
   }
 
   if (dir == "down") {
-    for (let i = startY; i > startY - 30; i--) {
+    for (let i = startY-1; i > startY - 30; i--) {
       if (isCollidableBlockAt(startX, i)) {
-        return false;
+        return true;
       }
     }
-    return true;
+    return false;
   }
 
   if (dir == "left") {
-    for (let i = startX; i > startX - 40; i--) {
+    for (let i = startX-1; i > startX - 40; i--) {
       if (isCollidableBlockAt(i, startY)) {
-        return false;
+        return true;
       }
     }
-    return true;
+    return false;
   }
   if (dir == "right") {
-    for (let i = startX; i < startX + 40; i++) {
+    for (let i = startX+1; i < startX + 40; i++) {
       if (isCollidableBlockAt(i, startY)) {
-        return false;
+        return true;
       }
     }
-    return true;
+    return false;
   }
 }
+let threshHold = Math.floor(Math.random() * 2000) + 1500;
+
 function gameUpdate() {
   randomTickEvent += 1;
-  const xRangeLow = player.coords.x - 40;
-  const yRangeLow = player.coords.y - 30;
-  const xRangeHigh = player.coords.x + 40;
-  const yRangeHigh = player.coords.y + 30;
+  const xRangeLow = Math.floor(player.coords.x - 40);
+  const yRangeLow = Math.floor(player.coords.y - 30);
+  const xRangeHigh = Math.ceil(player.coords.x + 40);
+  const yRangeHigh = Math.ceil(player.coords.y + 30);
+  
   // randomTickEvents
-  if (randomTickEvent > Math.floor(Math.random() * 2000) + 1500) {
-    for (let x = Math.floor(xRangeLow); x <= Math.ceil(xRangeHigh); x++) {
-      for (let y = Math.floor(yRangeLow); y <= Math.ceil(yRangeHigh); y++) {
+  console.log(randomTickEvent, "/", threshHold);
+  if (randomTickEvent > threshHold) {
+    for (let x = xRangeLow; x <= xRangeHigh; x++) {
+      for (let y = yRangeLow; y <= yRangeHigh; y++) {
         // change grass if it's dirt and change dirt to grass if grass next to it and sun
         let block = blocks[`${x},${y}`];
-        if (block == "Dirt") {
+        if (block == "dirt") {
           if (
-            blockRayCast(x, y, "up") &&
-            (blocks[`${x - 1},${y}`] == "Grass" ||
-              blocks[`${x + 1},${y}`] == "Grass")
+            !blockRayCast(x, y, "up") &&
+            (blocks[`${x - 1},${y}`] == "grass" ||
+              blocks[`${x + 1},${y}`] == "grass")
           ) {
-            blocks[`${x},${y}`] = "Grass";
+            blocks[`${x},${y}`] = "grass";
           }
-        }
-
-        if (block == "Grass") {
-          if (!blockRayCast(x, y, "up")) {
-            blocks[`${x},${y}`] = "Dirt";
+        } else if (block == "grass") {
+          if (blockRayCast(x, y, "up")) {
+            blocks[`${x},${y}`] = "dirt";
           }
         }
       }
       randomTickEvent = 0;
+      threshHold = Math.floor(Math.random() * 2000) + 1500;
     }
   }
 }
@@ -2189,7 +2207,7 @@ function getBiome(number) {
   }
   return "desert";
 }
-const worldWidth = 2000;
+const worldWidth = 1500;
 const chunkSize = 16;
 const seaLevel = 0;
 const maxHeight = 90;
@@ -2214,7 +2232,7 @@ function procedurallyGenerateWorld(seed) {
 }
 
 function createFlatWorld(seed) {
-  for (let i = -2000; i < worldWidth; i++) {
+  for (let i = -1500; i < worldWidth; i++) {
     createBlock(i, 0, "grass");
     createBlock(i, -1, "dirt");
     createBlock(i, -2, "dirt");

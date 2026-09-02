@@ -1229,7 +1229,6 @@ async function gameInit() {
             break;
         }
       }
-      console.log(player.animation, " PLGYIER ANMATION WIWIEEEEE");
       if (
         player.isBreakingBlock &&
         player.animationChangeTimer > 6 &&
@@ -1508,6 +1507,16 @@ async function gameInit() {
       }
       return true;
     },
+    playerCanPickUpItem: (item, amount) => {
+for (let i = 0; i <= 35; i++) {
+        if (
+          player.getSlot(i).item == item &&
+          player.getSlot(i).amount + amount <= 64
+        ) {
+          return true;
+        }
+      }
+    },
     addItem: (item, amount) => {
       let found = false;
       if (!player.isInvenFull()) {
@@ -1550,7 +1559,7 @@ async function gameInit() {
     backdropUI.click();
     mainMenuAudio.pause();
     document.getElementById("mainMenu").className = "popCloseHide";
-    console.log(blocks);
+   
 
     invenDiv.className = "visually-hidden";
     setPaused(false);
@@ -1815,9 +1824,10 @@ async function gameRender() {
               (Math.abs(player.getFeetCoords().y - 0.1 - dropCoordsY) < 0.6 ||
                 Math.abs(player.coords.y + 0.3 - dropCoordsY) < 1)
             ) {
-              console.log(i[e].item);
+              if(player.playerCanPickUpItem(i[e].item, 1)){
               player.addItem(i[e].item, 1);
               i[e].destroy();
+              }
             } else {
               i[e].draw();
             }
@@ -1946,15 +1956,6 @@ function destroyBlock(x, y) {
 function createBlock(x, y, blockType) {
   // check if block already exist
   if (isCollidableBlockAt(x, y)) {
-    console.log(
-      "Tried to create a " +
-        blockType +
-        " that already existed at engine coords: vec2(" +
-        String(x) +
-        "," +
-        String(y) +
-        ")",
-    );
     return;
   } else {
     return (blocks[`${x},${y}`] = blockType);
@@ -1962,6 +1963,7 @@ function createBlock(x, y, blockType) {
 }
 
 // Store current world block placement by grid coordinate string.
+      
 
 // Biome metadata used for world generation and environment rules.
 

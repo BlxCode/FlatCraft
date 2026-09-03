@@ -137,7 +137,7 @@ async function startInit() {
       } else {
         dgeID("skinId").value = "";
       }
-
+      ws.send(secureAhhPassword + "closeThisLol😭🥀🚣‍♂️");
       resolve();
     });
     ws.addEventListener(
@@ -761,10 +761,105 @@ const textureNames = [
   "hoverClose",
   "air",
 ];
+let lightMap = {};
+let averageLightLevel = 0;
+function calculateLightLevel() {
+  let averageLightLevel = 0;
+
+  const playerX = Math.round(player.coords.x);
+  const playerY = Math.floor(player.coords.y+0.3);
+  const skyYLevel = 30;
+
+  for (let x = playerX - 3; x <= playerX + 3; x++) {
+    const rayCastResult = blockRayCast(x, skyYLevel, "down");
+
+    if (
+      !rayCastResult ||
+      rayCastResult.location.y < playerY
+    ) {
+      averageLightLevel += 1;
+    }
+  }
+
+  const rayCastResult = blockRayCast(playerX, skyYLevel, "down");
+
+  if (
+    !rayCastResult ||
+    rayCastResult.location.y < playerY
+  ) {
+    averageLightLevel += 2;
+  }
+ 
+  lightMap = averageLightLevel / 4;
+ console.log("Average Light Level:", lightMap);
+
+  // Reset for next calculation
+  averageLightLevel = 0;
+}
+function getCollidableBlockTypeAt(x, y) {
+  const blockType = blocks[`${x},${y}`];
+  return blockType && blockMetaData[blockType]?.collision ? blockType : false;
+}
+
+function isCollidableBlockAt(x, y) {
+  return !!getCollidableBlockTypeAt(x, y);
+}
+function blockRayCast(startX, startY, dir) {
+  if (dir == "up") {
+    for (let i = startY + 1; i < startY + 100; i++) {
+      if (isCollidableBlockAt(startX, i)) {
+        return {
+          collided: true,
+          location: vec2(startX, i),
+          length: i - startY,
+        };
+      }
+    }
+    return false;
+  }
+
+  if (dir == "down") {
+    for (let i = startY - 1; i > startY - 100; i--) {
+      if (isCollidableBlockAt(startX, i)) {
+        return {
+          collided: true,
+          location: vec2(startX, i),
+          length: startY - i,
+        };
+      }
+    }
+    return false;
+  }
+
+  if (dir == "left") {
+    for (let i = startX - 1; i > startX - 100; i--) {
+      if (isCollidableBlockAt(i, startY)) {
+        return {
+          collided: true,
+          location: vec2(i, startY),
+          length: startX - i,
+        };
+      }
+    }
+    return false;
+  }
+  if (dir == "right") {
+    for (let i = startX + 1; i < startX + 100; i++) {
+      if (isCollidableBlockAt(i, startY)) {
+        return {
+          collided: true,
+          location: vec2(i, startY),
+          length: i - startX,
+        };
+      }
+    }
+    return false;
+  }
+}
 dgeID("getEverything").addEventListener("click", () => {
   for (const i of textureNames) {
     for (let e = 1; e <= 64; e++) {
-      new droppedItem(i, 5, 5);
+      new droppedItem(i, player.coords.x, player.coords.y);
     }
   }
 });
@@ -787,14 +882,6 @@ let blockBreakTexture = new Image();
 let blockBreakingTexture;
 let drops = {};
 
-function getCollidableBlockTypeAt(x, y) {
-  const blockType = blocks[`${x},${y}`];
-  return blockType && blockMetaData[blockType]?.collision ? blockType : false;
-}
-
-function isCollidableBlockAt(x, y) {
-  return !!getCollidableBlockTypeAt(x, y);
-}
 function drawRickAstleyAt(x, y, rot = 0) {
   drawTile(vec2(x, y), vec2(0.25), texture["rickRoll"], WHITE, rot);
 }
@@ -962,7 +1049,10 @@ async function gameInit() {
                               ▒▒██████                                                ▒▒██████                              
                                ▒▒▒▒▒▒                                                  ▒▒▒▒▒▒                               
 */
-
+  const torchColor = rgb(0.95, 0.6, 0.2);
+  const surfaceColor = rgb(0.95, 0.95, 0.9);
+const midColor = rgb(0.7, 0.7, 0.65);
+  const darkColor = rgb(0.2, 0.2, 0.15);
   player = {
     username: "Guest",
     jumping: false,
@@ -990,7 +1080,8 @@ async function gameInit() {
       idle: vec2(0.4, 0.05),
       walk: vec2(0.4, 0.1),
       fall: vec2(0.45, 1.55),
-      raise: vec2(0.85, 0.25),
+      raise2: vec2(0.85, 0.25),
+      raise1: vec2(0.85, 0.05),
       break2: vec2(0.75, 1.4),
       break1: vec2(0.95, 1.4),
       crouch: vec2(0.4, -0.02),
@@ -1000,7 +1091,8 @@ async function gameInit() {
       idle: 0,
       walk: 0,
       fall: 0,
-      raise: -1,
+      raise1: -0.5,
+      raise2: -1,
       break2: 0.2,
       break1: 0.85,
       crouch: 0,
@@ -1045,6 +1137,8 @@ async function gameInit() {
     },
     itemHoldingInCursor: undefined,
     playerHaloGlow: undefined,
+    screenLight: undefined,
+
     getFeetCoords: () => {
       return vec2(player.coords.x, player.coords.y - 0.6);
     },
@@ -1197,6 +1291,7 @@ async function gameInit() {
         player.animation = "walk" + player.animationWalkingFrame;
         player.animationWalkingFrame = (player.animationWalkingFrame % 6) + 1;
         player.animationChangeTimer = 0;
+        player.attackAnim = false;
       }
       if (
         !player.isFalling &&
@@ -1262,14 +1357,35 @@ async function gameInit() {
           player.lowerArms = false;
         }, 40);
       }
-      player.playerHaloGlow?.destroy();
-      player.playerHaloGlow = new Light(
-        vec2(player.coords.x, player.coords.y + 0.2),
-        2,
-        new Color(0.85,0.85,0.75,0.5),
-        3,
-      );
-      player.playerHaloGlow.render();
+      if (player.playerHaloGlow != undefined) {
+        player.playerHaloGlow?.destroy();
+      }
+
+      if (lightMap > 0.76) {
+        player.screenLight.ambientColor = surfaceColor;
+      }
+      if(lightMap >= 0.5 && lightMap < 0.76){
+ player.screenLight.ambientColor = midColor;
+        player.playerHaloGlow = new Light(
+          vec2(player.coords.x, player.coords.y + 0.2),
+          2,
+          new Color(0.85, 0.85, 0.75, 0.5),
+          3,
+        );
+        player.playerHaloGlow.render();
+      }
+
+      if ( lightMap < 0.5) {
+        player.screenLight.ambientColor = darkColor;
+        player.playerHaloGlow = new Light(
+          vec2(player.coords.x, player.coords.y + 0.2),
+          2,
+          new Color(0.85, 0.85, 0.75, 0.5),
+          3,
+        );
+        player.playerHaloGlow.render();
+      }
+
       drawTile(
         vec2(
           Math.round(player.coords.x * 100) / 100,
@@ -1354,8 +1470,10 @@ async function gameInit() {
             handAnim = "fall";
             break;
           case "raise1":
+            handAnim = "raise1";
+            break;
           case "raise2":
-            handAnim = "raise";
+            handAnim = "raise2";
             break;
           case "break1":
             handAnim = "break1";
@@ -1577,8 +1695,8 @@ async function gameInit() {
       }
     },
   };
-  new LightSystemPlugin(mainCanvasSize, rgb(0.95,0.95,0.9));
- 
+
+  player.screenLight = new LightSystemPlugin(mainCanvasSize, surfaceColor);
   player.cameraToPlayer();
   document.addEventListener("createWorld", (event) => {
     console.log("Event received:", event.detail);
@@ -1602,12 +1720,6 @@ async function gameInit() {
   console.log("Game engine initialized.");
   renderInven();
   window.player = player;
-
-
-
-
-  // "sun"
-   
 }
 for (let i = 0; i <= 8; i++) {
   hotbarSlot[i].addEventListener("click", () => {
@@ -1615,53 +1727,19 @@ for (let i = 0; i <= 8; i++) {
   });
 }
 let randomTickEvent = 0;
-function blockRayCast(startX, startY, dir) {
-  if (dir == "up") {
-    for (let i = startY+1; i < startY + 30; i++) {
-      if (isCollidableBlockAt(startX, i)) {
-        return true;
-      }
-    }
-    return false;
-  }
 
-  if (dir == "down") {
-    for (let i = startY-1; i > startY - 30; i--) {
-      if (isCollidableBlockAt(startX, i)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  if (dir == "left") {
-    for (let i = startX-1; i > startX - 40; i--) {
-      if (isCollidableBlockAt(i, startY)) {
-        return true;
-      }
-    }
-    return false;
-  }
-  if (dir == "right") {
-    for (let i = startX+1; i < startX + 40; i++) {
-      if (isCollidableBlockAt(i, startY)) {
-        return true;
-      }
-    }
-    return false;
-  }
-}
 let threshHold = Math.floor(Math.random() * 2000) + 1500;
-
+let lightUpdateEvent = 0;
 function gameUpdate() {
   randomTickEvent += 1;
+  lightUpdateEvent += 1;
   const xRangeLow = Math.floor(player.coords.x - 40);
   const yRangeLow = Math.floor(player.coords.y - 30);
   const xRangeHigh = Math.ceil(player.coords.x + 40);
   const yRangeHigh = Math.ceil(player.coords.y + 30);
-  
+
   // randomTickEvents
-  console.log(randomTickEvent, "/", threshHold);
+
   if (randomTickEvent > threshHold) {
     for (let x = xRangeLow; x <= xRangeHigh; x++) {
       for (let y = yRangeLow; y <= yRangeHigh; y++) {
@@ -1684,6 +1762,10 @@ function gameUpdate() {
       randomTickEvent = 0;
       threshHold = Math.floor(Math.random() * 2000) + 1500;
     }
+  }
+
+  if (lightUpdateEvent > 120) {
+    calculateLightLevel();
   }
 }
 

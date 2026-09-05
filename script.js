@@ -112,7 +112,7 @@ async function startInit() {
   //wss thingy server thing
   await new Promise((resolve, reject) => {
     ws =
-      location.origin != "http://127.0.0.1:5500"
+      location.origin != "http://192.168.0.14:5500"
         ? new WebSocket("wss://test-api.blxm.me/")
         : new WebSocket("ws://192.168.0.200:8080/");
 
@@ -630,69 +630,103 @@ for (let i = 0; i <= 35; i++) {
       }
     }
   });
+  getInvenElement(i).div.addEventListener("mouseover", (e) => {
+    player.hotbarSlotHoveredMouse = i;
+  });
+  getInvenElement(i).div.addEventListener("mouseleave", (e) => {
+    player.hotbarSlotHoveredMouse = undefined;
+  });
+}
+function fps() {
+  fpsWaitForUpdate++;
+  if (fpsWaitForUpdate >= 60) {
+    dgeID("fpsShower").innerText = "FPS: " + Math.round(averageFPS);
+    fpsWaitForUpdate = 0;
+  }
+}
+function numkeysHotbarChange() {
+  if (keyWasPressed("Digit1")) {
+    player.switchInventoryItemToHotbarSlot(0);
+  }
+  if (keyWasPressed("Digit2")) {
+    player.switchInventoryItemToHotbarSlot(1);
+  }
+  if (keyWasPressed("Digit3")) {
+    player.switchInventoryItemToHotbarSlot(2);
+  }
+  if (keyWasPressed("Digit4")) {
+    player.switchInventoryItemToHotbarSlot(3);
+  }
+  if (keyWasPressed("Digit5")) {
+    player.switchInventoryItemToHotbarSlot(4);
+  }
+  if (keyWasPressed("Digit6")) {
+    player.switchInventoryItemToHotbarSlot(5);
+  }
+  if (keyWasPressed("Digit7")) {
+    player.switchInventoryItemToHotbarSlot(6);
+  }
+  if (keyWasPressed("Digit8")) {
+    player.switchInventoryItemToHotbarSlot(7);
+  }
+  if (keyWasPressed("Digit9")) {
+    player.switchInventoryItemToHotbarSlot(8);
+  }
+  if (keyIsDown("Digit1")) {
+    player.changeHotbarSlot(0);
+  } else if (keyIsDown("Digit2")) {
+    player.changeHotbarSlot(1);
+  } else if (keyIsDown("Digit3")) {
+    player.changeHotbarSlot(2);
+  } else if (keyIsDown("Digit4")) {
+    player.changeHotbarSlot(3);
+  } else if (keyIsDown("Digit5")) {
+    player.changeHotbarSlot(4);
+  } else if (keyIsDown("Digit6")) {
+    player.changeHotbarSlot(5);
+  } else if (keyIsDown("Digit7")) {
+    player.changeHotbarSlot(6);
+  } else if (keyIsDown("Digit8")) {
+    player.changeHotbarSlot(7);
+  } else if (keyIsDown("Digit9")) {
+    player.changeHotbarSlot(8);
+  }
+}
+function mouseWheelHotbarScroll() {
+  const currentHotbarSlot = player.hotbarSlotHovered;
+  let newHotbarSlot = mouseWheel + currentHotbarSlot;
+
+  newHotbarSlot > 8 ? (newHotbarSlot = 0) : "why more";
+  newHotbarSlot < 0 ? (newHotbarSlot = 8) : "why less";
+  player.changeHotbarSlot(newHotbarSlot);
+}
+function inventoryToggle() {
+  if (keyWasPressed("KeyE") && isInGame) {
+    if (
+      invenDiv.className == "popCloseHide row" ||
+      invenDiv.className == "visually-hidden"
+    ) {
+      invenDiv.className = "popAnim row";
+      setPaused(true);
+      backdropUI.hidden = false;
+      currentPopup = invenDiv;
+      player.hotbarSlotHoveredMouse = undefined;
+    } else if (invenDiv.className == "popAnim row") {
+      invenDiv.className = "popCloseHide row";
+      setPaused(false);
+      backdropUI.hidden = true;
+      currentPopup = null;
+    }
+  }
+}
+function mouseMoveWhileHoldingItem() {
+  if (player.itemHoldingInCursor) {
+    dgeID("inventoryHeldInCursorItem").style.top = mousePosScreen.y + "px";
+    dgeID("inventoryHeldInCursorItem").style.left = mousePosScreen.x + "px";
+  }
 }
 
 function gameUpdatePost() {
-  function fps() {
-    fpsWaitForUpdate++;
-    if (fpsWaitForUpdate >= 60) {
-      dgeID("fpsShower").innerText = "FPS: " + Math.round(averageFPS);
-      fpsWaitForUpdate = 0;
-    }
-  }
-  function numkeysHotbarChange() {
-    if (keyIsDown("Digit1")) {
-      player.changeHotbarSlot(0);
-    } else if (keyIsDown("Digit2")) {
-      player.changeHotbarSlot(1);
-    } else if (keyIsDown("Digit3")) {
-      player.changeHotbarSlot(2);
-    } else if (keyIsDown("Digit4")) {
-      player.changeHotbarSlot(3);
-    } else if (keyIsDown("Digit5")) {
-      player.changeHotbarSlot(4);
-    } else if (keyIsDown("Digit6")) {
-      player.changeHotbarSlot(5);
-    } else if (keyIsDown("Digit7")) {
-      player.changeHotbarSlot(6);
-    } else if (keyIsDown("Digit8")) {
-      player.changeHotbarSlot(7);
-    } else if (keyIsDown("Digit9")) {
-      player.changeHotbarSlot(8);
-    }
-  }
-  function mouseWheelHotbarScroll() {
-    const currentHotbarSlot = player.hotbarSlotHovered;
-    let newHotbarSlot = mouseWheel + currentHotbarSlot;
-
-    newHotbarSlot > 8 ? (newHotbarSlot = 0) : "why more";
-    newHotbarSlot < 0 ? (newHotbarSlot = 8) : "why less";
-    player.changeHotbarSlot(newHotbarSlot);
-  }
-  function inventoryToggle() {
-    if (keyWasPressed("KeyE") && isInGame) {
-      if (
-        invenDiv.className == "popCloseHide row" ||
-        invenDiv.className == "visually-hidden"
-      ) {
-        invenDiv.className = "popAnim row";
-        setPaused(true);
-        backdropUI.hidden = false;
-        currentPopup = invenDiv;
-      } else if (invenDiv.className == "popAnim row") {
-        invenDiv.className = "popCloseHide row";
-        setPaused(false);
-        backdropUI.hidden = true;
-        currentPopup = invenDiv;
-      }
-    }
-  }
-  function mouseMoveWhileHoldingItem() {
-    if (player.itemHoldingInCursor) {
-      dgeID("inventoryHeldInCursorItem").style.top = mousePosScreen.y + "px";
-      dgeID("inventoryHeldInCursorItem").style.left = mousePosScreen.x + "px";
-    }
-  }
   fps();
   inventoryToggle();
   numkeysHotbarChange();
@@ -767,31 +801,25 @@ function calculateLightLevel() {
   let averageLightLevel = 0;
 
   const playerX = Math.round(player.coords.x);
-  const playerY = Math.floor(player.coords.y+0.3);
+  const playerY = Math.floor(player.coords.y + 0.3);
   const skyYLevel = 30;
 
   for (let x = playerX - 3; x <= playerX + 3; x++) {
     const rayCastResult = blockRayCast(x, skyYLevel, "down");
 
-    if (
-      !rayCastResult ||
-      rayCastResult.location.y < playerY
-    ) {
+    if (!rayCastResult || rayCastResult.location.y < playerY) {
       averageLightLevel += 1;
     }
   }
 
   const rayCastResult = blockRayCast(playerX, skyYLevel, "down");
 
-  if (
-    !rayCastResult ||
-    rayCastResult.location.y < playerY
-  ) {
+  if (!rayCastResult || rayCastResult.location.y < playerY) {
     averageLightLevel += 2;
   }
- 
+
   lightMap = averageLightLevel / 4;
- console.log("Average Light Level:", lightMap);
+  console.log("Average Light Level:", lightMap);
 
   // Reset for next calculation
   averageLightLevel = 0;
@@ -1051,8 +1079,10 @@ async function gameInit() {
 */
   const torchColor = rgb(0.95, 0.6, 0.2);
   const surfaceColor = rgb(0.95, 0.95, 0.9);
-const midColor = rgb(0.7, 0.7, 0.65);
-  const darkColor = rgb(0.2, 0.2, 0.15);
+  const lightColor = rgb(0.85, 0.85, 0.82);
+  const midColor = rgb(0.7, 0.7, 0.65);
+  const midDarkColor = rgb(0.4, 0.4, 0.37);
+  const darkColor = rgb(0.15, 0.15, 0.15);
   player = {
     username: "Guest",
     jumping: false,
@@ -1076,12 +1106,13 @@ const midColor = rgb(0.7, 0.7, 0.65);
     lowerArms: false,
     hotbarSlotHovered: 0,
     attackAnim: false,
+    hotbarSlotHoveredMouse: undefined,
     handItemAnimIndex: {
       idle: vec2(0.4, 0.05),
       walk: vec2(0.4, 0.1),
       fall: vec2(0.45, 1.55),
       raise2: vec2(0.85, 0.25),
-      raise1: vec2(0.85, 0.05),
+      raise1: vec2(0.6, 0.05),
       break2: vec2(0.75, 1.4),
       break1: vec2(0.95, 1.4),
       crouch: vec2(0.4, -0.02),
@@ -1321,9 +1352,7 @@ const midColor = rgb(0.7, 0.7, 0.65);
             break;
           case "raise1":
             player.animation = "idle";
-            console.log("resetting attackAnim");
             player.attackAnim = false;
-            console.log(player.attackAnim);
             break;
           default:
             player.animation = "raise2";
@@ -1360,12 +1389,14 @@ const midColor = rgb(0.7, 0.7, 0.65);
       if (player.playerHaloGlow != undefined) {
         player.playerHaloGlow?.destroy();
       }
-
-      if (lightMap > 0.76) {
+      if (lightMap > 1.5) {
         player.screenLight.ambientColor = surfaceColor;
       }
-      if(lightMap >= 0.5 && lightMap < 0.76){
- player.screenLight.ambientColor = midColor;
+      if (lightMap > 0.76 && lightMap <= 1.5) {
+        player.screenLight.ambientColor = lightColor;
+      }
+      if (lightMap >= 0.5 && lightMap < 0.76) {
+        player.screenLight.ambientColor = midColor;
         player.playerHaloGlow = new Light(
           vec2(player.coords.x, player.coords.y + 0.2),
           2,
@@ -1375,7 +1406,17 @@ const midColor = rgb(0.7, 0.7, 0.65);
         player.playerHaloGlow.render();
       }
 
-      if ( lightMap < 0.5) {
+      if (lightMap < 0.5 && lightMap > 0) {
+        player.screenLight.ambientColor = midDarkColor;
+        player.playerHaloGlow = new Light(
+          vec2(player.coords.x, player.coords.y + 0.2),
+          2,
+          new Color(0.85, 0.85, 0.75, 0.5),
+          3,
+        );
+        player.playerHaloGlow.render();
+      }
+      if (lightMap === 0) {
         player.screenLight.ambientColor = darkColor;
         player.playerHaloGlow = new Light(
           vec2(player.coords.x, player.coords.y + 0.2),
@@ -1692,6 +1733,19 @@ const midColor = rgb(0.7, 0.7, 0.65);
         hotbarSlot[newHotbarSlot].className = "slot slotHover";
         getInvenElement(newHotbarSlot).div.className = "invenSlot slotHover";
         player.hotbarSlotHovered = newHotbarSlot;
+      }
+    },
+    switchInventoryItemToHotbarSlot: (hotbarSlot) => {
+      if (currentPopup == invenDiv) {
+        if (player.hotbarSlotHoveredMouse) {
+          const invenSlotStuff = {
+            ...player.inventory[player.hotbarSlotHoveredMouse],
+          };
+          player.inventory[player.hotbarSlotHoveredMouse] =
+            player.inventory[hotbarSlot];
+          player.inventory[hotbarSlot] = invenSlotStuff;
+          document.dispatchEvent(invenEvent);
+        }
       }
     },
   };

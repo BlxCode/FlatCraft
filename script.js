@@ -2,7 +2,6 @@
 // still too lazy to import and export variables and stuff like that
 // this is also the first time i've ever used littleJS
 "use strict";
-// import { createNoise2D } from "https://cdn.jsdelivr.net/npm/simplex-noise/+esm";
 let isInGame = false;
 const loadingScreen = document.getElementById("loadingScreen");
 const loadingTitle = document.getElementById("loadingTitle");
@@ -110,7 +109,11 @@ skinSrc =
 //initialized game
 async function startInit() {
   //wss thingy server thing
-  await new Promise((resolve, reject) => {
+  await new Promise((resolve) => {
+    let noPingTimeout = setTimeout(() => {
+      displayError("Coudn't ping to the Skins server. Skipping...");
+      resolve();
+    }, 12500);
     ws =
       location.origin != "http://192.168.0.14:5500"
         ? new WebSocket("wss://test-api.blxm.me/")
@@ -138,13 +141,15 @@ async function startInit() {
         dgeID("skinId").value = "";
       }
       ws.send(secureAhhPassword + "closeThisLol😭🥀🚣‍♂️");
+      clearTimeout(noPingTimeout);
       resolve();
     });
     ws.addEventListener(
       "error",
       (e) => {
         displayError("Could not get the Skins server.");
-        reject(e);
+        clearTimeout(noPingTimeout);
+        resolve(e);
       },
       { once: true },
     );
@@ -250,6 +255,7 @@ createNewWorld.addEventListener("click", () => {
   currentPopup = worldCreateMenu;
 });
 var createWorldInfo = {};
+
 submitNewWorldForm.addEventListener("click", () => {
   const allInputs = document.getElementsByClassName("worldCreateForm");
   const worldNameInput = document.getElementById("createWorld-WorldName");
@@ -281,16 +287,26 @@ submitNewWorldForm.addEventListener("click", () => {
     const eventCreateWorld = new CustomEvent("createWorld", {
       detail: createWorldInfo,
     });
-
     document.dispatchEvent(eventCreateWorld);
     console.log("Dispatched createWorld event with data:", createWorldInfo);
   }
 });
 
 backdropUI.addEventListener("click", () => {
-  if (!currentPopup) return;
+  if (!currentPopup) {
+    return;
+  }
   if (currentPopup.id == "inventory") {
     currentPopup.className = "popCloseHide row";
+    if (player.itemHoldingInCursor) {
+      new droppedItem(
+        player.itemHoldingInCursor.item,
+        player.coords.x,
+        player.coords.y,
+        player.itemHoldingInCursor.amount,
+      );
+      document.dispatchEvent(invenEvent);
+    }
   } else {
     currentPopup.className = "popCloseHide";
   }
@@ -672,6 +688,55 @@ function numkeysHotbarChange() {
   if (keyWasPressed("Digit9")) {
     player.switchInventoryItemToHotbarSlot(8);
   }
+  if (keyWasPressed("KeyQ")) {
+    if (keyIsDown("ControlLeft")) {
+      if (player.directionPositive) {
+        new droppedItem(
+          player.inventory[player.hotbarSlotHovered].item,
+          player.coords.x + 1.5,
+          player.coords.y,
+          player.inventory[player.hotbarSlotHovered].amount,
+        );
+        player.inventory[player.hotbarSlotHovered].item = "air";
+        player.inventory[player.hotbarSlotHovered].amount = 0;
+      } else if (!player.directionPositive) {
+        new droppedItem(
+          player.inventory[player.hotbarSlotHovered].item,
+          player.coords.x - 1.5,
+          player.coords.y,
+          player.inventory[player.hotbarSlotHovered].amount,
+        );
+        player.inventory[player.hotbarSlotHovered].item = "air";
+        player.inventory[player.hotbarSlotHovered].amount = 0;
+      }
+    } else {
+      if (player.directionPositive) {
+        new droppedItem(
+          player.inventory[player.hotbarSlotHovered].item,
+          player.coords.x + 1.5,
+          player.coords.y,
+        );
+
+        player.inventory[player.hotbarSlotHovered].amount -= 1;
+        if (player.inventory[player.hotbarSlotHovered].amount <= 0) {
+          player.inventory[player.hotbarSlotHovered].item = "air";
+          player.inventory[player.hotbarSlotHovered].amount = 0;
+        }
+      } else if (!player.directionPositive) {
+        new droppedItem(
+          player.inventory[player.hotbarSlotHovered].item,
+          player.coords.x - 1.5,
+          player.coords.y,
+        );
+        player.inventory[player.hotbarSlotHovered].amount -= 1;
+        if (player.inventory[player.hotbarSlotHovered].amount <= 0) {
+          player.inventory[player.hotbarSlotHovered].item = "air";
+          player.inventory[player.hotbarSlotHovered].amount = 0;
+        }
+      }
+    }
+    document.dispatchEvent(invenEvent);
+  }
   if (keyIsDown("Digit1")) {
     player.changeHotbarSlot(0);
   } else if (keyIsDown("Digit2")) {
@@ -716,6 +781,15 @@ function inventoryToggle() {
       setPaused(false);
       backdropUI.hidden = true;
       currentPopup = null;
+      if (player.itemHoldingInCursor) {
+        new droppedItem(
+          player.itemHoldingInCursor.item,
+          player.coords.x,
+          player.coords.y,
+          player.itemHoldingInCursor.amount,
+        );
+        document.dispatchEvent(invenEvent);
+      }
     }
   }
 }
@@ -744,6 +818,7 @@ function gameUpdatePost() {
 
 // Remember that ALL vec2 coords should have BOTH parameters multiplied by 85
 var blocks = {};
+window.blocks = blocks;
 let texture = {};
 function loadImage(name) {
   return new Promise((resolve, reject) => {
@@ -797,11 +872,17 @@ const textureNames = [
 ];
 let lightMap = {};
 let averageLightLevel = 0;
+const torchColor = rgb(0.95, 0.6, 0.2);
+const surfaceColor = rgb(0.95, 0.95, 0.9);
+const lightColor = rgb(0.85, 0.85, 0.82);
+const midColor = rgb(0.7, 0.7, 0.65);
+const midDarkColor = rgb(0.4, 0.4, 0.37);
+const darkColor = rgb(0.1, 0.15, 0.15);
 function calculateLightLevel() {
   let averageLightLevel = 0;
 
   const playerX = Math.round(player.coords.x);
-  const playerY = Math.floor(player.coords.y + 0.3);
+  const playerY = Math.floor(player.coords.y + 0.5);
   const skyYLevel = 30;
 
   for (let x = playerX - 3; x <= playerX + 3; x++) {
@@ -819,10 +900,49 @@ function calculateLightLevel() {
   }
 
   lightMap = averageLightLevel / 4;
-  console.log("Average Light Level:", lightMap);
 
   // Reset for next calculation
   averageLightLevel = 0;
+  if (player.playerHaloGlow != undefined) {
+    player.playerHaloGlow?.destroy();
+  }
+  if (lightMap > 1.5) {
+    player.screenLight.ambientColor = surfaceColor;
+  }
+  if (lightMap > 0.61 && lightMap <= 1.5) {
+    player.screenLight.ambientColor = lightColor;
+  }
+  if (lightMap >= 0.5 && lightMap <= 0.61) {
+    player.screenLight.ambientColor = midColor;
+    player.playerHaloGlow = new Light(
+      vec2(player.coords.x, player.coords.y + 0.2),
+      2,
+      new Color(0.85, 0.85, 0.75, 0.5),
+      3,
+    );
+    player.playerHaloGlow.render();
+  }
+
+  if (lightMap < 0.5 && lightMap > 0) {
+    player.screenLight.ambientColor = midDarkColor;
+    player.playerHaloGlow = new Light(
+      vec2(player.coords.x, player.coords.y + 0.2),
+      2,
+      new Color(0.85, 0.85, 0.75, 0.5),
+      3,
+    );
+    player.playerHaloGlow.render();
+  }
+  if (lightMap === 0) {
+    player.screenLight.ambientColor = darkColor;
+    player.playerHaloGlow = new Light(
+      vec2(player.coords.x, player.coords.y + 0.2),
+      2,
+      new Color(0.85, 0.85, 0.75, 0.5),
+      3,
+    );
+    player.playerHaloGlow.render();
+  }
 }
 function getCollidableBlockTypeAt(x, y) {
   const blockType = blocks[`${x},${y}`];
@@ -886,9 +1006,7 @@ function blockRayCast(startX, startY, dir) {
 }
 dgeID("getEverything").addEventListener("click", () => {
   for (const i of textureNames) {
-    for (let e = 1; e <= 64; e++) {
-      new droppedItem(i, player.coords.x, player.coords.y);
-    }
+    new droppedItem(i, player.coords.x, player.coords.y, 64);
   }
 });
 async function loadAllImages() {
@@ -914,12 +1032,13 @@ function drawRickAstleyAt(x, y, rot = 0) {
   drawTile(vec2(x, y), vec2(0.25), texture["rickRoll"], WHITE, rot);
 }
 class droppedItem {
-  constructor(item, posX, posY) {
+  constructor(item, posX, posY, amount = 1) {
     this.pos = vec2(posX, posY + 0.2);
     this.animationPosYOffset = 0;
     this.item = item;
     this.timeDropped = 0;
     this.dropIndex;
+    this.amount = amount;
     if (!drops[`${this.pos.x},${this.pos.y}`]) {
       drops[`${this.pos.x},${this.pos.y}`] = [];
     }
@@ -1001,11 +1120,12 @@ class droppedItem {
   }
   destroy() {
     let index = drops[`${this.pos.x},${this.pos.y}`].indexOf(this);
+    if (index != -1) {
+      drops[`${this.pos.x},${this.pos.y}`].splice(index, 1);
 
-    drops[`${this.pos.x},${this.pos.y}`].splice(index, 1);
-
-    if (drops[`${this.pos.x},${this.pos.y}`].length <= 0) {
-      delete drops[`${this.pos.x},${this.pos.y}`];
+      if (drops[`${this.pos.x},${this.pos.y}`].length <= 0) {
+        delete drops[`${this.pos.x},${this.pos.y}`];
+      }
     }
   }
 }
@@ -1077,12 +1197,7 @@ async function gameInit() {
                               ▒▒██████                                                ▒▒██████                              
                                ▒▒▒▒▒▒                                                  ▒▒▒▒▒▒                               
 */
-  const torchColor = rgb(0.95, 0.6, 0.2);
-  const surfaceColor = rgb(0.95, 0.95, 0.9);
-  const lightColor = rgb(0.85, 0.85, 0.82);
-  const midColor = rgb(0.7, 0.7, 0.65);
-  const midDarkColor = rgb(0.4, 0.4, 0.37);
-  const darkColor = rgb(0.15, 0.15, 0.15);
+
   player = {
     username: "Guest",
     jumping: false,
@@ -1328,6 +1443,7 @@ async function gameInit() {
         !player.isFalling &&
         player.isWalking &&
         player.crouching &&
+        !player.attackAnim &&
         player.animationChangeTimer > 16
       ) {
         if (player.animation == "crouchWalk") {
@@ -1385,46 +1501,6 @@ async function gameInit() {
         setTimeout(() => {
           player.lowerArms = false;
         }, 40);
-      }
-      if (player.playerHaloGlow != undefined) {
-        player.playerHaloGlow?.destroy();
-      }
-      if (lightMap > 1.5) {
-        player.screenLight.ambientColor = surfaceColor;
-      }
-      if (lightMap > 0.76 && lightMap <= 1.5) {
-        player.screenLight.ambientColor = lightColor;
-      }
-      if (lightMap >= 0.5 && lightMap < 0.76) {
-        player.screenLight.ambientColor = midColor;
-        player.playerHaloGlow = new Light(
-          vec2(player.coords.x, player.coords.y + 0.2),
-          2,
-          new Color(0.85, 0.85, 0.75, 0.5),
-          3,
-        );
-        player.playerHaloGlow.render();
-      }
-
-      if (lightMap < 0.5 && lightMap > 0) {
-        player.screenLight.ambientColor = midDarkColor;
-        player.playerHaloGlow = new Light(
-          vec2(player.coords.x, player.coords.y + 0.2),
-          2,
-          new Color(0.85, 0.85, 0.75, 0.5),
-          3,
-        );
-        player.playerHaloGlow.render();
-      }
-      if (lightMap === 0) {
-        player.screenLight.ambientColor = darkColor;
-        player.playerHaloGlow = new Light(
-          vec2(player.coords.x, player.coords.y + 0.2),
-          2,
-          new Color(0.85, 0.85, 0.75, 0.5),
-          3,
-        );
-        player.playerHaloGlow.render();
       }
 
       drawTile(
@@ -1693,8 +1769,8 @@ async function gameInit() {
       if (!found) {
         for (let i = 0; i <= 35; i++) {
           if (
-            player.getSlot(i).item == "air" ||
-            player.getSlot(i).amount == 0
+            player.getSlot(i).item == "air" &&
+            player.getSlot(i).amount + amount <= 64
           ) {
             return true;
           }
@@ -1704,7 +1780,7 @@ async function gameInit() {
     },
     addItem: (item, amount) => {
       let found = false;
-      if (!player.isInvenFull()) {
+      if (player.playerCanPickUpItem(item, amount)) {
         for (let i = 0; i <= 35; i++) {
           if (
             player.getSlot(i).item == item &&
@@ -1775,6 +1851,7 @@ async function gameInit() {
   renderInven();
   window.player = player;
 }
+window.drops = drops;
 for (let i = 0; i <= 8; i++) {
   hotbarSlot[i].addEventListener("click", () => {
     player.changeHotbarSlot(i);
@@ -1818,7 +1895,7 @@ function gameUpdate() {
     }
   }
 
-  if (lightUpdateEvent > 120) {
+  if (lightUpdateEvent > 30) {
     calculateLightLevel();
   }
 }
@@ -1845,338 +1922,334 @@ let hoveredBlock = vec2(0, 0);
 let blockBreak = 0;
 let blockBreakNoSpam = 0;
 let mouseWasDown = false;
-async function gameRender() {
-  let halfWidth = mainCanvas.width / cameraScale / 2;
-  let halfHeight = mainCanvas.height / cameraScale / 2;
+let halfWidth;
+let halfHeight;
 
-  let startX = Math.floor(cameraPos.x - halfWidth) - 1;
-  let endX = Math.ceil(cameraPos.x + halfWidth) + 1;
+let startX;
+let endX;
 
-  let startY = Math.floor(cameraPos.y - halfHeight) - 1;
-  let endY = Math.ceil(cameraPos.y + halfHeight) + 1;
-  /*  if(time < 50){
-    let randomButtcheak = Math.floor(Math.random()*textureNames.length);
-    new droppedItem(textureNames[randomButtcheak],player.coords.x,player.coords.y)
-        randomButtcheak = Math.floor(Math.random()*textureNames.length);
-    new droppedItem(textureNames[randomButtcheak],player.coords.x,player.coords.y)
-   
-        randomButtcheak = Math.floor(Math.random()*textureNames.length);
-    new droppedItem(textureNames[randomButtcheak],player.coords.x,player.coords.y)
-   
+let startY;
+let endY;
 
-   
-  } */
-  const renderBlocks = () => {
-    for (let x = startX; x <= endX; x++) {
-      for (let y = startY; y <= endY; y++) {
-        let block = blocks[`${x},${y}`];
+const renderBlocks = () => {
+  for (let x = startX; x <= endX; x++) {
+    for (let y = startY; y <= endY; y++) {
+      let block = blocks[`${x},${y}`];
 
-        if (block) {
-          drawTile(vec2(x, y), vec2(1, 1), texture[block]);
-        }
+      if (block) {
+        drawTile(vec2(x, y), vec2(1, 1), texture[block]);
       }
     }
-  };
+  }
+};
 
-  const renderSky = () => {
-    // sky
-    drawRectGradient(
-      cameraPos,
-      vec2(
-        Math.ceil(window.innerWidth / 75),
-        Math.ceil(window.innerHeight / 80),
-      ),
-      new Color().setHex("#5DB8FF"),
-      new Color().setHex("#CFF4FF"),
-      0,
-    );
-  };
-  const mouseThings = () => {
-    if (mouseIsDown(0)) {
-      mouseWasDown = true;
-    }
+const renderSky = () => {
+  // sky
+  drawRectGradient(
+    cameraPos,
+    vec2(Math.ceil(window.innerWidth / 75), Math.ceil(window.innerHeight / 80)),
+    new Color().setHex("#5DB8FF"),
+    new Color().setHex("#CFF4FF"),
+    0,
+  );
+};
+const mouseThings = () => {
+  if (mouseIsDown(0)) {
+    mouseWasDown = true;
+  }
+  if (
+    !getPaused() &&
+    document.elementFromPoint(mousePosScreen.x, mousePosScreen.y) ===
+      document.getElementById("ui")
+  ) {
+    const blockMousePos = vec2(Math.round(mousePos.x), Math.round(mousePos.y));
+    const diff = blockMousePos.subtract(player.coords);
+
+    const diffAbs = diff.abs();
+    // break blocks
     if (
-      !getPaused() &&
-      document.elementFromPoint(mousePosScreen.x, mousePosScreen.y) ===
-        document.getElementById("ui")
+      hoveredBlock.x != blockMousePos.x ||
+      hoveredBlock.y != blockMousePos.y
     ) {
-      const blockMousePos = vec2(
-        Math.round(mousePos.x),
-        Math.round(mousePos.y),
-      );
-      const diff = blockMousePos.subtract(player.coords);
+      blockBreak = 0;
 
-      const diffAbs = diff.abs();
-      // break blocks
-      if (
-        hoveredBlock.x != blockMousePos.x ||
-        hoveredBlock.y != blockMousePos.y
-      ) {
+      blockBreakNoSpam = 0;
+      blockBreak = 0;
+      player.isBreakingBlock = false;
+    }
+    hoveredBlock = blockMousePos;
+
+    if (diffAbs.x > 5 || diffAbs.y > 5) {
+      drawTile(blockMousePos, vec2(1), texture["hoverFar"]);
+      if (player.isBreakingBlock) {
         blockBreak = 0;
-
         blockBreakNoSpam = 0;
         blockBreak = 0;
         player.isBreakingBlock = false;
+        player.raisedArms = false;
+        player.lowerArms = true;
+        player.animationChangeTimer = 0;
       }
-      hoveredBlock = blockMousePos;
+    } else {
+      drawTile(blockMousePos, vec2(1), texture["hoverClose"]);
 
-      if (diffAbs.x > 5 || diffAbs.y > 5) {
-        drawTile(blockMousePos, vec2(1), texture["hoverFar"]);
-        if (player.isBreakingBlock) {
+      let blockType = blocks[`${blockMousePos.x},${blockMousePos.y}`];
+      if (blockType == undefined) {
+        blockType = "Air";
+      }
+
+      if (mouseIsDown(0) && blockType != "Air") {
+        mouseWasDown = false;
+        if (blockBreakNoSpam > 12 * blockMetaData[blockType]["breakTime"]) {
+          blockBreak += 1;
+          blockBreakNoSpam = 0;
+        } else {
+          blockBreakNoSpam += 1;
+        }
+
+        player.isBreakingBlock = true;
+
+        if (blockBreak > 6) {
+          let breakParticle = new ParticleEmitter(
+            blockMousePos,
+            0,
+            vec2(0.5, 0.5),
+            0.05,
+            1902,
+            180,
+            undefined,
+            blockMetaData[blockType || "Air"].color1Class,
+            blockMetaData[blockType || "Air"].color2Class,
+            CLEAR_WHITE,
+            CLEAR_WHITE,
+            0.1,
+            0.1,
+            0.1,
+          );
+          const drop = new droppedItem(
+            blockType,
+            blockMousePos.x,
+            blockMousePos.y,
+          );
+
+          setTimeout(() => {
+            breakParticle.destroy(true);
+          }, 200);
+          mouseWasDown = false;
+          destroyBlock(blockMousePos.x, blockMousePos.y);
           blockBreak = 0;
           blockBreakNoSpam = 0;
-          blockBreak = 0;
           player.isBreakingBlock = false;
           player.raisedArms = false;
           player.lowerArms = true;
           player.animationChangeTimer = 0;
-        }
-      } else {
-        drawTile(blockMousePos, vec2(1), texture["hoverClose"]);
-
-        let blockType = blocks[`${blockMousePos.x},${blockMousePos.y}`];
-        if (blockType == undefined) {
-          blockType = "Air";
-        }
-
-        if (mouseIsDown(0) && blockType != "Air") {
-          mouseWasDown = false;
-          if (blockBreakNoSpam > 12 * blockMetaData[blockType]["breakTime"]) {
-            blockBreak += 1;
-            blockBreakNoSpam = 0;
-          } else {
-            blockBreakNoSpam += 1;
-          }
-
-          player.isBreakingBlock = true;
-
-          if (blockBreak > 6) {
-            let breakParticle = new ParticleEmitter(
-              blockMousePos,
-              0,
-              vec2(0.5, 0.5),
-              0.05,
-              1902,
-              180,
-              undefined,
-              blockMetaData[blockType || "Air"].color1Class,
-              blockMetaData[blockType || "Air"].color2Class,
-              CLEAR_WHITE,
-              CLEAR_WHITE,
-              0.1,
-              0.1,
-              0.1,
-            );
-            const drop = new droppedItem(
-              blockType,
-              blockMousePos.x,
-              blockMousePos.y,
-            );
-
-            setTimeout(() => {
-              breakParticle.destroy(true);
-            }, 200);
-            mouseWasDown = false;
-            destroyBlock(blockMousePos.x, blockMousePos.y);
-            blockBreak = 0;
-            blockBreakNoSpam = 0;
-            player.isBreakingBlock = false;
-            player.raisedArms = false;
-            player.lowerArms = true;
-            player.animationChangeTimer = 0;
-          } else {
-            drawTile(
-              vec2(blockMousePos.x, blockMousePos.y),
-              vec2(0.75),
-              blockBreakingTexture["frame" + blockBreak],
-            );
-          }
-        }
-        if (mouseIsDown(0) && blockType != "Air" && player.isWalking) {
-        }
-        if (mouseIsDown(0) && blockType == "Air" && player.isBreakingBlock) {
-          blockBreakNoSpam = 0;
-          blockBreak = 0;
-          player.isBreakingBlock = false;
-          player.raisedArms = false;
-          player.lowerArms = true;
-          mouseWasDown = false;
-        }
-
-        if (mouseWasDown && !mouseIsDown(0) && !player.isBreakingBlock) {
-          mouseWasDown = false;
-          player.attackAnim = true;
-        }
-        // place blocks
-
-        if (
-          mouseIsDown(2) &&
-          !blocks[`${blockMousePos.x},${blockMousePos.y}`] &&
-          player.getSlot(player.hotbarSlotHovered).item != "air" &&
-          (blocks[`${blockMousePos.x},${blockMousePos.y + 1}`] ||
-            blocks[`${blockMousePos.x},${blockMousePos.y - 1}`] ||
-            blocks[`${blockMousePos.x + 1},${blockMousePos.y}`] ||
-            blocks[`${blockMousePos.x - 1},${blockMousePos.y}`]) &&
-          (Math.abs(Math.round(player.coords.x) - blockMousePos.x) != 0 ||
-            (Math.round(player.coords.y) - blockMousePos.y != 0 &&
-              Math.round(player.coords.y) - blockMousePos.y != 1))
-        ) {
-          console.log("placing block", player.attackAnim);
-          player.attackAnim = true;
-          createBlock(
-            blockMousePos.x,
-            blockMousePos.y,
-            player.getSlot(player.hotbarSlotHovered).item,
+        } else {
+          drawTile(
+            vec2(blockMousePos.x, blockMousePos.y),
+            vec2(0.75),
+            blockBreakingTexture["frame" + blockBreak],
           );
-          if (player.getSlot(player.hotbarSlotHovered).amount - 1 != 0) {
-            player.setSlot(
-              player.getSlot(player.hotbarSlotHovered).item,
-              player.getSlot(player.hotbarSlotHovered).amount - 1,
-              player.hotbarSlotHovered,
-            );
-          } else {
-            player.setSlot("air", 0, player.hotbarSlotHovered);
-          }
+        }
+      }
+      if (mouseIsDown(0) && blockType != "Air" && player.isWalking) {
+      }
+      if (mouseIsDown(0) && blockType == "Air" && player.isBreakingBlock) {
+        blockBreakNoSpam = 0;
+        blockBreak = 0;
+        player.isBreakingBlock = false;
+        player.raisedArms = false;
+        player.lowerArms = true;
+        mouseWasDown = false;
+      }
+
+      if (mouseWasDown && !mouseIsDown(0) && !player.isBreakingBlock) {
+        mouseWasDown = false;
+        player.attackAnim = true;
+      }
+      // place blocks
+
+      if (
+        mouseIsDown(2) &&
+        !blocks[`${blockMousePos.x},${blockMousePos.y}`] &&
+        player.getSlot(player.hotbarSlotHovered).item != "air" &&
+        (blocks[`${blockMousePos.x},${blockMousePos.y + 1}`] ||
+          blocks[`${blockMousePos.x},${blockMousePos.y - 1}`] ||
+          blocks[`${blockMousePos.x + 1},${blockMousePos.y}`] ||
+          blocks[`${blockMousePos.x - 1},${blockMousePos.y}`]) &&
+        ((Math.abs(Math.round(player.getCoordsAt("br").x) - blockMousePos.x) !=
+          0 &&
+          Math.abs(Math.round(player.getCoordsAt("bl").x) - blockMousePos.x) !=
+            0) ||
+          (Math.round(player.coords.y) - blockMousePos.y != 0 &&
+            Math.round(player.coords.y) - blockMousePos.y != 1))
+      ) {
+        console.log("placing block", player.attackAnim);
+        player.attackAnim = true;
+        createBlock(
+          blockMousePos.x,
+          blockMousePos.y,
+          player.getSlot(player.hotbarSlotHovered).item,
+        );
+        if (player.getSlot(player.hotbarSlotHovered).amount - 1 != 0) {
+          player.setSlot(
+            player.getSlot(player.hotbarSlotHovered).item,
+            player.getSlot(player.hotbarSlotHovered).amount - 1,
+            player.hotbarSlotHovered,
+          );
+        } else {
+          player.setSlot("air", 0, player.hotbarSlotHovered);
         }
       }
     }
-    if (!mouseIsDown(0) && player.isBreakingBlock) {
-      blockBreakNoSpam = 0;
-      blockBreak = 0;
-      player.isBreakingBlock = false;
-      player.raisedArms = false;
-      player.lowerArms = true;
-      player.animationChangeTimer = 0;
-    }
-  };
-  let dropCoords;
-  const renderDrops = () => {
-    if (Object.keys(drops).length > 0) {
-      for (const i of Object.values(drops)) {
-        // the reason [0] exists is because js objects are weird
-        dropCoords = Object.keys(drops)[0].split(",");
+  }
+  if (!mouseIsDown(0) && player.isBreakingBlock) {
+    blockBreakNoSpam = 0;
+    blockBreak = 0;
+    player.isBreakingBlock = false;
+    player.raisedArms = false;
+    player.lowerArms = true;
+    player.animationChangeTimer = 0;
+  }
+};
+let dropCoords;
+const renderDrops = () => {
+  if (Object.keys(drops).length > 0) {
+    for (const i of Object.values(drops)) {
+      // the reason [0] exists is because js objects are weird
 
-        let dropCoordsX = dropCoords[0];
-        let dropCoordsY = dropCoords[1];
+      dropCoords = Object.keys(drops)
+        .find((key) => drops[key] === i)
+        .split(",");
 
-        if (
-          dropCoordsX > startX &&
-          dropCoordsX < endX &&
-          dropCoordsY > startY &&
-          dropCoordsY < endY
-        ) {
-          for (let e = 0; e < i.length; e++) {
-            if (
-              Math.abs(player.coords.x - dropCoordsX) < 0.9 &&
-              (Math.abs(player.getFeetCoords().y - 0.1 - dropCoordsY) < 0.6 ||
-                Math.abs(player.coords.y + 0.3 - dropCoordsY) < 1)
-            ) {
-              if (player.playerCanPickUpItem(i[e].item, 1)) {
-                player.addItem(i[e].item, 1);
-                i[e].destroy();
-              }
+      let dropCoordsX = dropCoords[0];
+      let dropCoordsY = dropCoords[1];
+
+      if (
+        dropCoordsX > startX &&
+        dropCoordsX < endX &&
+        dropCoordsY > startY &&
+        dropCoordsY < endY
+      ) {
+        for (let e = 0; e < i.length; e++) {
+          if (
+            Math.abs(player.coords.x - dropCoordsX) < 0.9 &&
+            (Math.abs(player.getFeetCoords().y - 0.1 - dropCoordsY) < 0.6 ||
+              Math.abs(player.coords.y + 0.3 - dropCoordsY) < 1)
+          ) {
+            if (player.playerCanPickUpItem(i[e].item, i[e].amount)) {
+              player.addItem(i[e].item, i[e].amount);
+              i[e].destroy();
             } else {
               i[e].draw();
             }
+          } else {
+            i[e].draw();
           }
         }
       }
     }
-  };
+  }
+};
+function moveSideways(direction) {
+  player.isWalking = true;
+  // collision checks
+  if (direction == "r") {
+    if (
+      player.isThereABlockAtBottomRight() ||
+      player.isThereABlockAtTopRight()
+    ) {
+      player.isWalking = false;
+    } else {
+      player.isWalking = true;
+    }
+  } else if (direction == "l") {
+    if (player.isThereABlockAtBottomLeft() || player.isThereABlockAtTopLeft()) {
+      player.isWalking = false;
+    } else {
+      player.isWalking = true;
+    }
+  }
+
+  if (player.isWalking) {
+    if (player.crouching) {
+      //check if on edge of block
+
+      if (direction == "r") {
+        if (
+          !isCollidableBlockAt(
+            Math.ceil(player.getCoordsAt("bl").x - 0.4),
+            Math.floor(player.getFeetCoords().y - 0.2),
+          )
+        ) {
+          if (
+            !isCollidableBlockAt(
+              Math.ceil(player.getCoordsAt("br").x),
+              Math.floor(player.getFeetCoords().y - 0.2),
+            )
+          ) {
+            player.isWalking = false;
+          }
+          if (player.isFalling) {
+            player.isWalking = true;
+          }
+        }
+      } else if (direction == "l") {
+        if (
+          !isCollidableBlockAt(
+            Math.floor(player.getCoordsAt("br").x + 0.4),
+            Math.floor(player.getFeetCoords().y - 0.2),
+          )
+        ) {
+          if (
+            !isCollidableBlockAt(
+              Math.floor(player.getCoordsAt("bl").x),
+              Math.floor(player.getFeetCoords().y - 0.2),
+            )
+          ) {
+            player.isWalking = false;
+          }
+          if (player.isFalling) {
+            player.isWalking = true;
+          }
+        }
+      }
+      if (player.isWalking) {
+        if (direction == "r") {
+          player.coords = player.coords.add(vec2(0.01, 0));
+        } else if (direction == "l") {
+          player.coords = player.coords.add(vec2(-0.01, 0));
+        }
+      }
+    } else {
+      direction == "r"
+        ? (player.coords = player.coords.add(vec2(0.08, 0)))
+        : (player.coords = player.coords.add(vec2(-0.08, 0)));
+    }
+  }
+}
+async function gameRender() {
+  halfWidth = mainCanvas.width / cameraScale / 2;
+  halfHeight = mainCanvas.height / cameraScale / 2;
+
+  startX = Math.floor(cameraPos.x - halfWidth) - 1;
+  endX = Math.ceil(cameraPos.x + halfWidth) + 1;
+
+  startY = Math.floor(cameraPos.y - halfHeight) - 1;
+  endY = Math.ceil(cameraPos.y + halfHeight) + 1;
+
   renderSky();
+  renderDrops();
   renderBlocks();
   mouseThings();
   player.calculatePlayerPhysics();
 
   player.drawPlayer();
 
-  renderDrops();
-
   player.cameraToPlayer();
 
   player.isWalking = false;
   player.crouching = false;
 
-  function moveSideways(direction) {
-    player.isWalking = true;
-    // collision checks
-    if (direction == "r") {
-      if (
-        player.isThereABlockAtBottomRight() ||
-        player.isThereABlockAtTopRight()
-      ) {
-        player.isWalking = false;
-      } else {
-        player.isWalking = true;
-      }
-    } else if (direction == "l") {
-      if (
-        player.isThereABlockAtBottomLeft() ||
-        player.isThereABlockAtTopLeft()
-      ) {
-        player.isWalking = false;
-      } else {
-        player.isWalking = true;
-      }
-    }
-
-    if (player.isWalking) {
-      if (player.crouching) {
-        //check if on edge of block
-
-        if (direction == "r") {
-          if (
-            !isCollidableBlockAt(
-              Math.ceil(player.getCoordsAt("bl").x - 0.4),
-              Math.floor(player.getFeetCoords().y - 0.2),
-            )
-          ) {
-            if (
-              !isCollidableBlockAt(
-                Math.ceil(player.getCoordsAt("br").x),
-                Math.floor(player.getFeetCoords().y - 0.2),
-              )
-            ) {
-              player.isWalking = false;
-            }
-            if (player.isFalling) {
-              player.isWalking = true;
-            }
-          }
-        } else if (direction == "l") {
-          if (
-            !isCollidableBlockAt(
-              Math.floor(player.getCoordsAt("br").x + 0.4),
-              Math.floor(player.getFeetCoords().y - 0.2),
-            )
-          ) {
-            if (
-              !isCollidableBlockAt(
-                Math.floor(player.getCoordsAt("bl").x),
-                Math.floor(player.getFeetCoords().y - 0.2),
-              )
-            ) {
-              player.isWalking = false;
-            }
-            if (player.isFalling) {
-              player.isWalking = true;
-            }
-          }
-        }
-        if (player.isWalking) {
-          if (direction == "r") {
-            player.coords = player.coords.add(vec2(0.01, 0));
-          } else if (direction == "l") {
-            player.coords = player.coords.add(vec2(-0.01, 0));
-          }
-        }
-      } else {
-        direction == "r"
-          ? (player.coords = player.coords.add(vec2(0.08, 0)))
-          : (player.coords = player.coords.add(vec2(-0.08, 0)));
-      }
-    }
-  }
   if (!getPaused()) {
     if (keyIsDown("ArrowUp") && !player.isFalling) {
       player.jumping = true;
@@ -2358,13 +2431,6 @@ function procedurallyGenerateWorld(seed) {
   }
 
   // Create chunks and populate the world here in the future.
-  const rng = new alea(seed);
-  const noise2D = createNoise2D(rng);
-
-  // Set 5 biomes
-
-  const biome1 = getBiome(noise2D(0, 0));
-  console.log(biome1);
 }
 
 function createFlatWorld(seed) {

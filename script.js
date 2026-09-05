@@ -305,6 +305,8 @@ backdropUI.addEventListener("click", () => {
         player.coords.y,
         player.itemHoldingInCursor.amount,
       );
+      player.itemHoldingInCursor = undefined;
+
       document.dispatchEvent(invenEvent);
     }
   } else {
@@ -689,49 +691,98 @@ function numkeysHotbarChange() {
     player.switchInventoryItemToHotbarSlot(8);
   }
   if (keyWasPressed("KeyQ")) {
-    if (keyIsDown("ControlLeft")) {
-      if (player.directionPositive) {
-        new droppedItem(
-          player.inventory[player.hotbarSlotHovered].item,
-          player.coords.x + 1.5,
-          player.coords.y,
-          player.inventory[player.hotbarSlotHovered].amount,
-        );
-        player.inventory[player.hotbarSlotHovered].item = "air";
-        player.inventory[player.hotbarSlotHovered].amount = 0;
-      } else if (!player.directionPositive) {
-        new droppedItem(
-          player.inventory[player.hotbarSlotHovered].item,
-          player.coords.x - 1.5,
-          player.coords.y,
-          player.inventory[player.hotbarSlotHovered].amount,
-        );
-        player.inventory[player.hotbarSlotHovered].item = "air";
-        player.inventory[player.hotbarSlotHovered].amount = 0;
+    if (player.hotbarSlotHoveredMouse != undefined) {
+      if (keyIsDown("ControlLeft")) {
+        if (player.directionPositive) {
+          new droppedItem(
+            player.inventory[player.hotbarSlotHoveredMouse].item,
+            player.coords.x + 1.5,
+            player.coords.y,
+            player.inventory[player.hotbarSlotHoveredMouse].amount,
+          );
+          player.inventory[player.hotbarSlotHoveredMouse].item = "air";
+          player.inventory[player.hotbarSlotHoveredMouse].amount = 0;
+        } else if (!player.directionPositive) {
+          new droppedItem(
+            player.inventory[player.hotbarSlotHoveredMouse].item,
+            player.coords.x - 1.5,
+            player.coords.y,
+            player.inventory[player.hotbarSlotHoveredMouse].amount,
+          );
+          player.inventory[player.hotbarSlotHoveredMouse].item = "air";
+          player.inventory[player.hotbarSlotHoveredMouse].amount = 0;
+        }
+      } else {
+        if (player.directionPositive) {
+          new droppedItem(
+            player.inventory[player.hotbarSlotHoveredMouse].item,
+            player.coords.x + 1.5,
+            player.coords.y,
+          );
+
+          player.inventory[player.hotbarSlotHoveredMouse].amount -= 1;
+          if (player.inventory[player.hotbarSlotHoveredMouse].amount <= 0) {
+            player.inventory[player.hotbarSlotHoveredMouse].item = "air";
+            player.inventory[player.hotbarSlotHoveredMouse].amount = 0;
+          }
+        } else if (!player.directionPositive) {
+          new droppedItem(
+            player.inventory[player.hotbarSlotHoveredMouse].item,
+            player.coords.x - 1.5,
+            player.coords.y,
+          );
+          player.inventory[player.hotbarSlotHoveredMouse].amount -= 1;
+          if (player.inventory[player.hotbarSlotHoveredMouse].amount <= 0) {
+            player.inventory[player.hotbarSlotHoveredMouse].item = "air";
+            player.inventory[player.hotbarSlotHoveredMouse].amount = 0;
+          }
+        }
       }
     } else {
-      if (player.directionPositive) {
-        new droppedItem(
-          player.inventory[player.hotbarSlotHovered].item,
-          player.coords.x + 1.5,
-          player.coords.y,
-        );
-
-        player.inventory[player.hotbarSlotHovered].amount -= 1;
-        if (player.inventory[player.hotbarSlotHovered].amount <= 0) {
+      if (keyIsDown("ControlLeft")) {
+        if (player.directionPositive) {
+          new droppedItem(
+            player.inventory[player.hotbarSlotHovered].item,
+            player.coords.x + 1.5,
+            player.coords.y,
+            player.inventory[player.hotbarSlotHovered].amount,
+          );
+          player.inventory[player.hotbarSlotHovered].item = "air";
+          player.inventory[player.hotbarSlotHovered].amount = 0;
+        } else if (!player.directionPositive) {
+          new droppedItem(
+            player.inventory[player.hotbarSlotHovered].item,
+            player.coords.x - 1.5,
+            player.coords.y,
+            player.inventory[player.hotbarSlotHovered].amount,
+          );
           player.inventory[player.hotbarSlotHovered].item = "air";
           player.inventory[player.hotbarSlotHovered].amount = 0;
         }
-      } else if (!player.directionPositive) {
-        new droppedItem(
-          player.inventory[player.hotbarSlotHovered].item,
-          player.coords.x - 1.5,
-          player.coords.y,
-        );
-        player.inventory[player.hotbarSlotHovered].amount -= 1;
-        if (player.inventory[player.hotbarSlotHovered].amount <= 0) {
-          player.inventory[player.hotbarSlotHovered].item = "air";
-          player.inventory[player.hotbarSlotHovered].amount = 0;
+      } else {
+        if (player.directionPositive) {
+          new droppedItem(
+            player.inventory[player.hotbarSlotHovered].item,
+            player.coords.x + 1.5,
+            player.coords.y,
+          );
+
+          player.inventory[player.hotbarSlotHovered].amount -= 1;
+          if (player.inventory[player.hotbarSlotHovered].amount <= 0) {
+            player.inventory[player.hotbarSlotHovered].item = "air";
+            player.inventory[player.hotbarSlotHovered].amount = 0;
+          }
+        } else if (!player.directionPositive) {
+          new droppedItem(
+            player.inventory[player.hotbarSlotHovered].item,
+            player.coords.x - 1.5,
+            player.coords.y,
+          );
+          player.inventory[player.hotbarSlotHovered].amount -= 1;
+          if (player.inventory[player.hotbarSlotHovered].amount <= 0) {
+            player.inventory[player.hotbarSlotHovered].item = "air";
+            player.inventory[player.hotbarSlotHovered].amount = 0;
+          }
         }
       }
     }
@@ -788,6 +839,7 @@ function inventoryToggle() {
           player.coords.y,
           player.itemHoldingInCursor.amount,
         );
+        player.itemHoldingInCursor = undefined;
         document.dispatchEvent(invenEvent);
       }
     }
@@ -1088,12 +1140,15 @@ class droppedItem {
       ) {
         this.animationPosYOffset = Math.sin(this.timeDropped) * 0.065;
       }
-
-      drawTile(
-        vec2(this.pos.x, this.pos.y + this.animationPosYOffset),
-        vec2(0.35),
-        texture[this.item],
-      );
+      if (
+        !isCollidableBlockAt(Math.round(this.pos.x), Math.floor(this.pos.y + 0.22))
+      ) {
+        drawTile(
+          vec2(this.pos.x, this.pos.y + this.animationPosYOffset),
+          vec2(0.35),
+          texture[this.item],
+        );
+      }
 
       let elipsePosY = Math.round(this.pos.y * 100) / 100 - 0.44;
 
@@ -1109,11 +1164,15 @@ class droppedItem {
           break;
         }
       }
-      drawEllipse(
-        vec2(Math.round(this.pos.x * 100) / 100, elipsePosY),
-        vec2(0.34, 0.08),
-        new Color(0.2, 0.2, 0.2, 0.5),
-      );
+      if (
+        !isCollidableBlockAt(Math.round(this.pos.x), Math.floor(this.pos.y+ 0.22))
+      ) {
+        drawEllipse(
+          vec2(Math.round(this.pos.x * 100) / 100, elipsePosY),
+          vec2(0.34, 0.08),
+          new Color(0.2, 0.2, 0.2, 0.5),
+        );
+      }
     } else {
       this.destroy();
     }

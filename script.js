@@ -872,19 +872,18 @@ function gameUpdatePost() {
 var blocks = {};
 window.blocks = blocks;
 let texture = {};
-function loadImage(name) {
+let toolTexture = {};
+function loadImage(name, type = "block") {
   return new Promise((resolve, reject) => {
     const img = new Image();
 
     img.onload = () => {
       const textureInfo = new TextureInfo(img);
-
-      texture[name] = new TileInfo(
-        vec2(0, 0),
-        vec2(8, 8), // or vec2(8, 8) if every block texture is 8×8
-        textureInfo,
-      );
-
+      if (type == "block") {
+        texture[name] = new TileInfo(vec2(0, 0), vec2(8, 8), textureInfo);
+      } else if (type == "tool") {
+        toolTexture[name] = new TileInfo(vec2(0, 0), vec2(8, 8), textureInfo);
+      }
       resolve();
     };
 
@@ -921,7 +920,21 @@ const textureNames = [
   "hoverFar",
   "hoverClose",
   "air",
+  "chest",
+  "furnaceOff",
+  "furnaceOn",
 ];
+
+async function loadAllImages() {
+  for (const name of textureNames) {
+    await loadImage(name, "block");
+  }
+  console.log(
+    "Loaded all textures! Proof: " +
+      texture["grass"] +
+      "(it should return imageObject or something like that)",
+  );
+}
 let lightMap = {};
 let averageLightLevel = 0;
 const torchColor = rgb(0.95, 0.6, 0.2);
@@ -1061,16 +1074,6 @@ dgeID("getEverything").addEventListener("click", () => {
     new droppedItem(i, player.coords.x, player.coords.y, 64);
   }
 });
-async function loadAllImages() {
-  for (const name of textureNames) {
-    await loadImage(name);
-  }
-  console.log(
-    "Loaded all textures! Proof: " +
-      texture["grass"] +
-      "(it should return imageObject or something like that)",
-  );
-}
 let ctx;
 let playerTextureImageSrc;
 let playerTexture;
@@ -1520,7 +1523,11 @@ async function gameInit() {
         player.animationChangeTimer = 0;
       }
 
-      if (player.attackAnim && player.animationChangeTimer > 3 && !player.isFalling) {
+      if (
+        player.attackAnim &&
+        player.animationChangeTimer > 3 &&
+        !player.isFalling
+      ) {
         player.animationChangeTimer = 0;
         switch (player.animation) {
           case "raise2":

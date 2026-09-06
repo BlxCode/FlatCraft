@@ -881,8 +881,6 @@ function loadImage(name, type = "block") {
       const textureInfo = new TextureInfo(img);
       if (type == "block") {
         texture[name] = new TileInfo(vec2(0, 0), vec2(8, 8), textureInfo);
-      } else if (type == "tool") {
-        toolTexture[name] = new TileInfo(vec2(0, 0), vec2(12, 12), textureInfo);
       }
       resolve();
     };
@@ -926,7 +924,7 @@ const textureNames = [
 
   //tools
   "woodAxe",
-  "woodenShovel",
+  "woodShovel",
   "woodPickaxe",
   "woodSword",
   "stoneAxe",
@@ -946,7 +944,6 @@ const textureNames = [
   "diamondAxe",
   "diamondHoe",
   "diamondPickaxe",
-  "diamondPike",
   "diamondShovel",
   "diamondSword",
   "copperAxe",
@@ -962,9 +959,7 @@ async function loadAllImages() {
   for (const name of textureNames) {
     await loadImage(name, "block");
   }
-  for (const name of toolsTextureNames) {
-    await loadImage(name, "tool");
-  }
+
   console.log(
     "Loaded all textures! Proof: " +
       texture["grass"] +
@@ -1047,7 +1042,7 @@ function calculateLightLevel() {
 }
 function getCollidableBlockTypeAt(x, y) {
   const blockType = blocks[`${x},${y}`];
-  return blockType && blockMetaData[blockType]?.collision ? blockType : false;
+  return blockType && thingMetaData[blockType]?.collision ? blockType : false;
 }
 
 function isCollidableBlockAt(x, y) {
@@ -1660,8 +1655,8 @@ async function gameInit() {
             10,
             180,
             undefined,
-            blockMetaData[block].color1Class,
-            blockMetaData[block].color2Class,
+            thingMetaData[block].color1Class,
+            thingMetaData[block].color2Class,
             CLEAR_WHITE,
             CLEAR_WHITE,
             0.1,
@@ -1764,8 +1759,8 @@ async function gameInit() {
             50,
             0,
             undefined,
-            blockMetaData[block].color1Class,
-            blockMetaData[block].color2Class,
+            thingMetaData[block].color1Class,
+            thingMetaData[block].color2Class,
             CLEAR_WHITE,
             CLEAR_WHITE,
             0.1,
@@ -2109,7 +2104,7 @@ const mouseThings = () => {
 
       if (mouseIsDown(0) && blockType != "Air") {
         mouseWasDown = false;
-        if (blockBreakNoSpam > 12 * blockMetaData[blockType]["breakTime"]) {
+        if (blockBreakNoSpam > 12 * thingMetaData[blockType]["breakTime"]) {
           blockBreak += 1;
           blockBreakNoSpam = 0;
         } else {
@@ -2127,8 +2122,8 @@ const mouseThings = () => {
             1902,
             180,
             undefined,
-            blockMetaData[blockType || "Air"].color1Class,
-            blockMetaData[blockType || "Air"].color2Class,
+            thingMetaData[blockType || "Air"].color1Class,
+            thingMetaData[blockType || "Air"].color2Class,
             CLEAR_WHITE,
             CLEAR_WHITE,
             0.1,
@@ -2412,8 +2407,24 @@ var chunks = {
     chunkEdited: false,
   },
 };
+// can also be used for idk.. tools
+var thingMetaData = {
+  air: {
+    breakTime: -1,
+    tool: "hands",
+    collision: false,
+    translucent: true,
+    liquid: false,
+    color1: "#239d2d00",
+    color1Class: new Color(0.137, 0.616, 0.176, 0),
 
-var blockMetaData = {
+    color2: "#1b7f2300",
+    color2Class: new Color(0.106, 0.498, 0.141, 0),
+    utility: false,
+    block: false,
+    tool: false,
+    item: true,
+  },
   Air: {
     breakTime: -1,
     tool: "hands",
@@ -2425,11 +2436,15 @@ var blockMetaData = {
 
     color2: "#1b7f2300",
     color2Class: new Color(0.106, 0.498, 0.141, 0),
+    utility: false,
+    block: false,
+    tool: false,
+    item: true,
   },
 
   grass: {
     breakTime: 1,
-    tool: "shovel",
+    tool: "Shovel",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2439,11 +2454,15 @@ var blockMetaData = {
 
     color2: "#1b7f24",
     color2Class: new Color(0.106, 0.498, 0.141, 1),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
   },
 
   dirt: {
     breakTime: 1,
-    tool: "shovel",
+    tool: "Shovel",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2453,11 +2472,15 @@ var blockMetaData = {
 
     color2: "#493323",
     color2Class: new Color(0.286, 0.2, 0.137, 1),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
   },
 
   stone: {
-    breakTime: 2,
-    tool: "pickaxe",
+    breakTime: 3,
+    tool: "Pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2467,12 +2490,16 @@ var blockMetaData = {
 
     color2: "#464646",
     color2Class: new Color(0.275, 0.275, 0.275, 1),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
   },
 
   mapleLog: {
     breakTime: 1.5,
-    tool: "axe",
-    collision: true,
+    tool: "Axe",
+    collision: false,
     translucent: false,
     liquid: false,
 
@@ -2481,11 +2508,15 @@ var blockMetaData = {
 
     color2: "#503C25",
     color2Class: new Color(0.314, 0.235, 0.145, 1),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
   },
 
   mapleLeaf: {
-    breakTime: 0.5,
-    tool: "axe/hoe/sheers",
+    breakTime: 0.25,
+    tool: "Hoe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -2495,6 +2526,10 @@ var blockMetaData = {
 
     color2: "#396A3D",
     color2Class: new Color(0.224, 0.416, 0.239, 1),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
   },
 
   bedrock: {
@@ -2509,6 +2544,85 @@ var blockMetaData = {
 
     color2: "#4d4a4d",
     color2Class: new Color(0.302, 0.29, 0.302, 1),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+  },
+  acaciaLog: {
+    breakTime: 1.5,
+    tool: "Axe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color2: "#4A3A12",
+    color2Class: new Color(76 / 255, 60 / 255, 25 / 255),
+    color1: "#5D4F1A",
+    color1Class: new Color(93 / 255, 79 / 255, 26 / 255),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+  },
+  acatiaLeaf: {
+    breakTime: 0.25,
+    tool: "Hoe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#3B9813",
+    color1Class: new Color(59 / 255, 152 / 255, 19 / 255),
+    color2: "#357219",
+    color2Class: new Color(53 / 255, 114 / 255, 25 / 255),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+  },
+  chest: {
+    breakTime: 1.5,
+    tool: "Axe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#A07948",
+    color1Class: new Color(160 / 255, 121 / 255, 72 / 255),
+    color2: "#28201A",
+    color2Class: new Color(40 / 255, 32 / 255, 26 / 255),
+    utility: true,
+    block: true,
+    tool: false,
+    item: false,
+  },
+  coalBlock: {
+    breakTime: 3.1,
+    tool: "Pickaxe",
+    collision: true,
+    translucent: false,
+    liquid: false,
+    color1: "#2A2A2A",
+    color1Class: new Color(42 / 255, 42 / 255, 42 / 255),
+    color2: "#0E0E0E",
+    color2Class: new Color(14 / 255, 14 / 255, 14 / 255),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+  },
+   coalItem: {
+    breakTime: undefined,
+    tool: "hands",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#2A2A2A",
+    color1Class: new Color(42 / 255, 42 / 255, 42 / 255),
+    color2: "#0E0E0E",
+    color2Class: new Color(14 / 255, 14 / 255, 14 / 255),
+    utility: false,
+    block: false,
+    tool: false,
+    item: true,
   },
 };
 const biomes = ["plains", "mapleForest", "desert"];

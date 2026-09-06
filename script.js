@@ -882,7 +882,7 @@ function loadImage(name, type = "block") {
       if (type == "block") {
         texture[name] = new TileInfo(vec2(0, 0), vec2(8, 8), textureInfo);
       } else if (type == "tool") {
-        toolTexture[name] = new TileInfo(vec2(0, 0), vec2(8, 8), textureInfo);
+        toolTexture[name] = new TileInfo(vec2(0, 0), vec2(12, 12), textureInfo);
       }
       resolve();
     };
@@ -923,11 +923,47 @@ const textureNames = [
   "chest",
   "furnaceOff",
   "furnaceOn",
-];
 
+  //tools
+  "woodAxe",
+  "woodenShovel",
+  "woodPickaxe",
+  "woodSword",
+  "stoneAxe",
+  "stonePickaxe",
+  "stoneShovel",
+  "stoneSword",
+  "ironAxe",
+  "ironHoe",
+  "ironPickaxe",
+  "ironShovel",
+  "ironSword",
+  "goldAxe",
+  "goldHoe",
+  "goldPickaxe",
+  "goldShovel",
+  "goldSword",
+  "diamondAxe",
+  "diamondHoe",
+  "diamondPickaxe",
+  "diamondPike",
+  "diamondShovel",
+  "diamondSword",
+  "copperAxe",
+  "copperPickaxe",
+  "copperShovel",
+  "copperSword",
+  "sugiliteAxe",
+  "sugilitePickaxe",
+  "sugiliteShovel",
+  "sugiliteSword",
+];
 async function loadAllImages() {
   for (const name of textureNames) {
     await loadImage(name, "block");
+  }
+  for (const name of toolsTextureNames) {
+    await loadImage(name, "tool");
   }
   console.log(
     "Loaded all textures! Proof: " +

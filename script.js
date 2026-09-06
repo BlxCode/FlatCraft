@@ -1141,7 +1141,10 @@ class droppedItem {
         this.animationPosYOffset = Math.sin(this.timeDropped) * 0.065;
       }
       if (
-        !isCollidableBlockAt(Math.round(this.pos.x), Math.floor(this.pos.y + 0.22))
+        !isCollidableBlockAt(
+          Math.round(this.pos.x),
+          Math.floor(this.pos.y + 0.42),
+        )
       ) {
         drawTile(
           vec2(this.pos.x, this.pos.y + this.animationPosYOffset),
@@ -1165,7 +1168,10 @@ class droppedItem {
         }
       }
       if (
-        !isCollidableBlockAt(Math.round(this.pos.x), Math.floor(this.pos.y+ 0.22))
+        !isCollidableBlockAt(
+          Math.round(this.pos.x),
+          Math.floor(this.pos.y + 0.42),
+        )
       ) {
         drawEllipse(
           vec2(Math.round(this.pos.x * 100) / 100, elipsePosY),
@@ -1514,14 +1520,14 @@ async function gameInit() {
         player.animationChangeTimer = 0;
       }
 
-      if (player.attackAnim && player.animationChangeTimer > 5) {
+      if (player.attackAnim && player.animationChangeTimer > 3 && !player.isFalling) {
         player.animationChangeTimer = 0;
         switch (player.animation) {
           case "raise2":
-            player.animation = "break2";
+            player.animation = "break1";
             break;
 
-          case "break2":
+          case "break1":
             player.animation = "raise1";
 
             break;
@@ -1788,6 +1794,7 @@ async function gameInit() {
 
       if (player.isFalling && !player.canFly) {
         player.animation = "fall";
+        player.attackAnim = false;
       }
       if (player.jumping && player.canFly) {
         player.coords = player.coords.add(vec2(0, -0.1 * 85));

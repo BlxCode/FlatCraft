@@ -1,5 +1,5 @@
 // Sorry that everything is in one file lol
-// still too lazy to import and export variables and stuff like that
+// still too lazy to import and export letiables and stuff like that
 // this is also the first time i've ever used littleJS
 "use strict";
 let isInGame = false;
@@ -13,15 +13,15 @@ const enterGameButtonLoadingScreenWrapper = document.getElementById(
   "enterGameButtonLoadingScreenWrapper",
 );
 
-var currentPopup = null;
+let currentPopup = null;
 const errorBackdrop = document.getElementById("errorBackdrop");
 const worldMenu = document.getElementById("worldSelect");
 const worldCreateMenu = document.getElementById("worldCreate");
 
 mainMenuAudio.loop = true;
 const events = {};
-var dotsInLoadingTitle = 3;
-var dotsDirectionMore = true;
+let dotsInLoadingTitle = 3;
+let dotsDirectionMore = true;
 
 /*
   _   _               ___     _            __             
@@ -87,7 +87,7 @@ let loadingTextAnim = setInterval(() => {
   }
 }, 407);
 
-var progressBar = setInterval(() => {
+let progressBar = setInterval(() => {
   let progress = Number(loadingProgressBar.ariaValueNow);
 
   if (progress > 75) {
@@ -254,7 +254,7 @@ createNewWorld.addEventListener("click", () => {
   worldCreateMenu.className = "popAnim";
   currentPopup = worldCreateMenu;
 });
-var createWorldInfo = {};
+let createWorldInfo = {};
 
 submitNewWorldForm.addEventListener("click", () => {
   const allInputs = document.getElementsByClassName("worldCreateForm");
@@ -869,7 +869,7 @@ function gameUpdatePost() {
 */
 
 // Remember that ALL vec2 coords should have BOTH parameters multiplied by 85
-var blocks = {};
+let blocks = {};
 window.blocks = blocks;
 let texture = {};
 let toolTexture = {};
@@ -890,7 +890,7 @@ function loadImage(name, type = "block") {
   });
 }
 const textureNames = [
-  "acaciaLog",
+  "acatiaLog",
   "cedarLog",
   "coalBlock",
   "coalOre",
@@ -1042,11 +1042,16 @@ function calculateLightLevel() {
 }
 function getCollidableBlockTypeAt(x, y) {
   const blockType = blocks[`${x},${y}`];
-  return blockType && thingMetaData[blockType]?.collision ? blockType : false;
+
+  return blockType && thingMetaData[blockType].collision ? blockType : false;
 }
 
 function isCollidableBlockAt(x, y) {
-  return !!getCollidableBlockTypeAt(x, y);
+  const blockType = blocks[`${x},${y}`];
+  if (blockType) {
+    return thingMetaData[blockType].collision || false;
+  }
+  return false;
 }
 function blockRayCast(startX, startY, dir) {
   if (dir == "up") {
@@ -1102,7 +1107,7 @@ function blockRayCast(startX, startY, dir) {
 }
 dgeID("getEverything").addEventListener("click", () => {
   for (const i of textureNames) {
-    new droppedItem(i, player.coords.x, player.coords.y, 64);
+    new droppedItem(i, player.coords.x, player.coords.y, thingMetaData[i].maxStack);
   }
 });
 let ctx;
@@ -1861,21 +1866,21 @@ async function gameInit() {
     },
     playerCanPickUpItem: (item, amount) => {
       let found = false;
+
+      const itemMaxStack = thingMetaData[item].maxStack;
       for (let i = 0; i <= 35; i++) {
-        if (
-          player.getSlot(i).item == item &&
-          player.getSlot(i).amount + amount <= 64
-        ) {
-          found = true;
-          return true;
+        if (player.getSlot(i).item == item) {
+          if (player.getSlot(i).amount + amount <= itemMaxStack) {
+            found = true;
+            return true;
+          } else if (player.getSlot(i).amount + amount >= itemMaxStack) {
+            return 0;
+          }
         }
       }
       if (!found) {
         for (let i = 0; i <= 35; i++) {
-          if (
-            player.getSlot(i).item == "air" &&
-            player.getSlot(i).amount + amount <= 64
-          ) {
+          if (player.getSlot(i).item == "air" && amount <= itemMaxStack) {
             return true;
           }
         }
@@ -1884,7 +1889,7 @@ async function gameInit() {
     },
     addItem: (item, amount) => {
       let found = false;
-      if (player.playerCanPickUpItem(item, amount)) {
+      if (player.playerCanPickUpItem(item, amount) == true) {
         for (let i = 0; i <= 35; i++) {
           if (
             player.getSlot(i).item == item &&
@@ -1902,6 +1907,26 @@ async function gameInit() {
 
               break;
             }
+          }
+        }
+      } else if (player.playerCanPickUpItem(item, amount) == 0) {
+        const slotsWithItem = [];
+        let amountNeededToBeAddedIn = amount;
+        for (let i = 0; i <= 35; i++) {
+          if (player.getSlot(i).item == item) {
+            slotsWithItem.push(i);
+          }
+        }
+
+        if (slotsWithItem.length != 0) {
+          for (let i = 0; i <= slotsWithItem.length; i++) {
+            console.log(slotsWithItem)
+            const canBeAddedInThis =
+              thingMetaData[item].maxStack -
+              player.getSlot(slotsWithItem[i]).amount;
+
+            player.setSlot(item, canBeAddedInThis, slotsWithItem[i]);
+            amountNeededToBeAddedIn -= canBeAddedInThis;
           }
         }
       }
@@ -2185,7 +2210,8 @@ const mouseThings = () => {
           Math.abs(Math.round(player.getCoordsAt("bl").x) - blockMousePos.x) !=
             0) ||
           (Math.round(player.coords.y) - blockMousePos.y != 0 &&
-            Math.round(player.coords.y) - blockMousePos.y != 1))
+            Math.round(player.coords.y) - blockMousePos.y != 1)) &&
+        thingMetaData[player.getSlot(player.hotbarSlotHovered).item].block
       ) {
         console.log("placing block", player.attackAnim);
         player.attackAnim = true;
@@ -2240,12 +2266,8 @@ const renderDrops = () => {
             (Math.abs(player.getFeetCoords().y - 0.1 - dropCoordsY) < 0.6 ||
               Math.abs(player.coords.y + 0.3 - dropCoordsY) < 1)
           ) {
-            if (player.playerCanPickUpItem(i[e].item, i[e].amount)) {
-              player.addItem(i[e].item, i[e].amount);
-              i[e].destroy();
-            } else {
-              i[e].draw();
-            }
+            player.addItem(i[e].item, i[e].amount);
+            i[e].destroy();
           } else {
             i[e].draw();
           }
@@ -2342,8 +2364,9 @@ async function gameRender() {
   endY = Math.ceil(cameraPos.y + halfHeight) + 1;
 
   renderSky();
-  renderDrops();
+
   renderBlocks();
+  renderDrops();
   mouseThings();
   player.calculatePlayerPhysics();
 
@@ -2373,13 +2396,13 @@ async function gameRender() {
 }
 
 function destroyBlock(x, y) {
-  if (isCollidableBlockAt(x, y)) {
+  if (blocks[`${x},${y}`]) {
     delete blocks[`${x},${y}`];
   }
 }
 function createBlock(x, y, blockType) {
   // check if block already exist
-  if (isCollidableBlockAt(x, y)) {
+  if (blocks[`${x},${y}`]) {
     return;
   } else {
     return (blocks[`${x},${y}`] = blockType);
@@ -2401,14 +2424,14 @@ function createBlock(x, y, blockType) {
 ▝▀ ▀▘ ▝▀▘  ▀     ▀▀  ▝▀▝▘       ▀▀  ▝▀▀ ▝▘ ▝▘ ▝▀▀  ▀    ▀▀▝▘  ▀▀ ▝▀▀▀▘ ▝▀▘ ▝▘ ▝▘
                                                                                 
                                                                                 */
-var chunks = {
+let chunks = {
   0: {
     biome: "plains",
     chunkEdited: false,
   },
 };
 // can also be used for idk.. tools
-var thingMetaData = {
+let thingMetaData = {
   air: {
     breakTime: -1,
     tool: "hands",
@@ -2417,13 +2440,14 @@ var thingMetaData = {
     liquid: false,
     color1: "#239d2d00",
     color1Class: new Color(0.137, 0.616, 0.176, 0),
-
     color2: "#1b7f2300",
     color2Class: new Color(0.106, 0.498, 0.141, 0),
     utility: false,
     block: false,
     tool: false,
     item: true,
+    maxStack: 64,
+    dropIfWrongTool: true,
   },
   Air: {
     breakTime: -1,
@@ -2433,166 +2457,31 @@ var thingMetaData = {
     liquid: false,
     color1: "#239d2d00",
     color1Class: new Color(0.137, 0.616, 0.176, 0),
-
     color2: "#1b7f2300",
     color2Class: new Color(0.106, 0.498, 0.141, 0),
     utility: false,
     block: false,
     tool: false,
     item: true,
+    maxStack: 64,
+    dropIfWrongTool: true,
   },
-
-  grass: {
-    breakTime: 1,
-    tool: "Shovel",
-    collision: true,
-    translucent: false,
-    liquid: false,
-
-    color1: "#239d2d",
-    color1Class: new Color(0.137, 0.616, 0.176, 1),
-
-    color2: "#1b7f24",
-    color2Class: new Color(0.106, 0.498, 0.141, 1),
-    utility: false,
-    block: true,
-    tool: false,
-    item: false,
-  },
-
-  dirt: {
-    breakTime: 1,
-    tool: "Shovel",
-    collision: true,
-    translucent: false,
-    liquid: false,
-
-    color1: "#593F2D",
-    color1Class: new Color(0.349, 0.247, 0.176, 1),
-
-    color2: "#493323",
-    color2Class: new Color(0.286, 0.2, 0.137, 1),
-    utility: false,
-    block: true,
-    tool: false,
-    item: false,
-  },
-
-  stone: {
-    breakTime: 3,
-    tool: "Pickaxe",
-    collision: true,
-    translucent: false,
-    liquid: false,
-
-    color1: "#545454",
-    color1Class: new Color(0.329, 0.329, 0.329, 1),
-
-    color2: "#464646",
-    color2Class: new Color(0.275, 0.275, 0.275, 1),
-    utility: false,
-    block: true,
-    tool: false,
-    item: false,
-  },
-
-  mapleLog: {
+  cedarLog: {
     breakTime: 1.5,
     tool: "Axe",
-    collision: false,
-    translucent: false,
-    liquid: false,
-
-    color1: "#634A2E",
-    color1Class: new Color(0.388, 0.29, 0.18, 1),
-
-    color2: "#503C25",
-    color2Class: new Color(0.314, 0.235, 0.145, 1),
-    utility: false,
-    block: true,
-    tool: false,
-    item: false,
-  },
-
-  mapleLeaf: {
-    breakTime: 0.25,
-    tool: "Hoe",
-    collision: false,
-    translucent: false,
-    liquid: false,
-
-    color1: "#48834C",
-    color1Class: new Color(0.282, 0.514, 0.298, 1),
-
-    color2: "#396A3D",
-    color2Class: new Color(0.224, 0.416, 0.239, 1),
-    utility: false,
-    block: true,
-    tool: false,
-    item: false,
-  },
-
-  bedrock: {
-    breakTime: Infinity,
-    tool: "hands",
     collision: true,
     translucent: false,
     liquid: false,
-
-    color1: "#5e5b5e",
-    color1Class: new Color(0.369, 0.357, 0.369, 1),
-
-    color2: "#4d4a4d",
-    color2Class: new Color(0.302, 0.29, 0.302, 1),
+    color1: "#8B5E3C",
+    color1Class: new Color(139 / 255, 94 / 255, 60 / 255),
+    color2: "#4F2F1F",
+    color2Class: new Color(79 / 255, 47 / 255, 31 / 255),
     utility: false,
     block: true,
     tool: false,
     item: false,
-  },
-  acaciaLog: {
-    breakTime: 1.5,
-    tool: "Axe",
-    collision: false,
-    translucent: false,
-    liquid: false,
-    color2: "#4A3A12",
-    color2Class: new Color(76 / 255, 60 / 255, 25 / 255),
-    color1: "#5D4F1A",
-    color1Class: new Color(93 / 255, 79 / 255, 26 / 255),
-    utility: false,
-    block: true,
-    tool: false,
-    item: false,
-  },
-  acatiaLeaf: {
-    breakTime: 0.25,
-    tool: "Hoe",
-    collision: false,
-    translucent: false,
-    liquid: false,
-    color1: "#3B9813",
-    color1Class: new Color(59 / 255, 152 / 255, 19 / 255),
-    color2: "#357219",
-    color2Class: new Color(53 / 255, 114 / 255, 25 / 255),
-    utility: false,
-    block: true,
-    tool: false,
-    item: false,
-  },
-  chest: {
-    breakTime: 1.5,
-    tool: "Axe",
-    collision: false,
-    translucent: false,
-    liquid: false,
-    color1: "#A07948",
-    color1Class: new Color(160 / 255, 121 / 255, 72 / 255),
-    color2: "#28201A",
-    color2Class: new Color(40 / 255, 32 / 255, 26 / 255),
-    utility: true,
-    block: true,
-    tool: false,
-    item: false,
+    maxStack: 64,
+    dropIfWrongTool: false,
   },
   coalBlock: {
     breakTime: 3.1,
@@ -2608,8 +2497,1030 @@ var thingMetaData = {
     block: true,
     tool: false,
     item: false,
+    maxStack: 64,
+    dropIfWrongTool: false,
   },
-   coalItem: {
+  coalOre: {
+    breakTime: 3.1,
+    tool: "Pickaxe",
+    collision: true,
+    translucent: false,
+    liquid: false,
+    color1: "#545454",
+    color1Class: new Color(0.329, 0.329, 0.329, 1),
+    color2: "#0E0E0E",
+    color2Class: new Color(14 / 255, 14 / 255, 14 / 255),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: false,
+  },
+  copperBlock: {
+    breakTime: 2.8,
+    tool: "Pickaxe",
+    collision: true,
+    translucent: false,
+    liquid: false,
+    color1: "#D2875B",
+    color1Class: new Color(210 / 255, 135 / 255, 91 / 255),
+    color2: "#7E3F1F",
+    color2Class: new Color(126 / 255, 63 / 255, 31 / 255),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: false,
+  },
+  copperOre: {
+    breakTime: 2.8,
+    tool: "Pickaxe",
+    collision: true,
+    translucent: false,
+    liquid: false,
+    color1: "#B77E5E",
+    color1Class: new Color(183 / 255, 126 / 255, 94 / 255),
+    color2: "#6E421D",
+    color2Class: new Color(110 / 255, 66 / 255, 29 / 255),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: false,
+  },
+  diamondBlock: {
+    breakTime: 4,
+    tool: "Pickaxe",
+    collision: true,
+    translucent: false,
+    liquid: false,
+    color1: "#75E9FF",
+    color1Class: new Color(117 / 255, 233 / 255, 255 / 255),
+    color2: "#1B6B9C",
+    color2Class: new Color(27 / 255, 107 / 255, 156 / 255),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: false,
+  },
+  diamondOre: {
+    breakTime: 4,
+    tool: "Pickaxe",
+    collision: true,
+    translucent: false,
+    liquid: false,
+    color1: "#73D9FF",
+    color1Class: new Color(115 / 255, 217 / 255, 255 / 255),
+    color2: "#1F5C7A",
+    color2Class: new Color(31 / 255, 92 / 255, 122 / 255),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: true,
+  },
+  dirt: {
+    breakTime: 1,
+    tool: "Shovel",
+    collision: true,
+    translucent: false,
+    liquid: false,
+    color1: "#593F2D",
+    color1Class: new Color(0.349, 0.247, 0.176, 1),
+    color2: "#493323",
+    color2Class: new Color(0.286, 0.2, 0.137, 1),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: false,
+  },
+  emeraldBlock: {
+    breakTime: 4,
+    tool: "Pickaxe",
+    collision: true,
+    translucent: false,
+    liquid: false,
+    color1: "#8BFFB1",
+    color1Class: new Color(139 / 255, 255 / 255, 177 / 255),
+    color2: "#1B7C40",
+    color2Class: new Color(27 / 255, 124 / 255, 64 / 255),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: false,
+  },
+  emeraldOre: {
+    breakTime: 4,
+    tool: "Pickaxe",
+    collision: true,
+    translucent: false,
+    liquid: false,
+    color1: "#82E9B2",
+    color1Class: new Color(130 / 255, 233 / 255, 178 / 255),
+    color2: "#1A6D39",
+    color2Class: new Color(26 / 255, 109 / 255, 57 / 255),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: false,
+  },
+  goldBlock: {
+    breakTime: 3.2,
+    tool: "Pickaxe",
+    collision: true,
+    translucent: false,
+    liquid: false,
+    color1: "#FFD66E",
+    color1Class: new Color(255 / 255, 214 / 255, 110 / 255),
+    color2: "#8B6A00",
+    color2Class: new Color(139 / 255, 106 / 255, 0),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: false,
+  },
+  goldOre: {
+    breakTime: 3.2,
+    tool: "Pickaxe",
+    collision: true,
+    translucent: false,
+    liquid: false,
+    color1: "#E7C96A",
+    color1Class: new Color(231 / 255, 201 / 255, 106 / 255),
+    color2: "#7B5E00",
+    color2Class: new Color(123 / 255, 94 / 255, 0),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: true,
+  },
+  grass: {
+    breakTime: 1,
+    tool: "Shovel",
+    collision: true,
+    translucent: false,
+    liquid: false,
+    color1: "#239d2d",
+    color1Class: new Color(0.137, 0.616, 0.176, 1),
+    color2: "#1b7f24",
+    color2Class: new Color(0.106, 0.498, 0.141, 1),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: false,
+  },
+  ironBlock: {
+    breakTime: 3,
+    tool: "Pickaxe",
+    collision: true,
+    translucent: false,
+    liquid: false,
+    color1: "#D6D6D6",
+    color1Class: new Color(214 / 255, 214 / 255, 214 / 255),
+    color2: "#7A7A7A",
+    color2Class: new Color(122 / 255, 122 / 255, 122 / 255),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: false,
+  },
+  ironOre: {
+    breakTime: 3,
+    tool: "Pickaxe",
+    collision: true,
+    translucent: false,
+    liquid: false,
+    color1: "#B4B4B4",
+    color1Class: new Color(180 / 255, 180 / 255, 180 / 255),
+    color2: "#656565",
+    color2Class: new Color(101 / 255, 101 / 255, 101 / 255),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: true,
+  },
+  jungleLog: {
+    breakTime: 1.5,
+    tool: "Axe",
+    collision: true,
+    translucent: false,
+    liquid: false,
+    color1: "#7D4D2A",
+    color1Class: new Color(125 / 255, 77 / 255, 42 / 255),
+    color2: "#472B1A",
+    color2Class: new Color(71 / 255, 43 / 255, 26 / 255),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: true,
+  },
+  mapleLog: {
+    breakTime: 1.5,
+    tool: "Axe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#634A2E",
+    color1Class: new Color(0.388, 0.29, 0.18, 1),
+    color2: "#503C25",
+    color2Class: new Color(0.314, 0.235, 0.145, 1),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: true,
+  },
+  mapleLeaf: {
+    breakTime: 0.25,
+    tool: "Hoe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#48834C",
+    color1Class: new Color(0.282, 0.514, 0.298, 1),
+    color2: "#396A3D",
+    color2Class: new Color(0.224, 0.416, 0.239, 1),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: true,
+  },
+  poplarLog: {
+    breakTime: 1.5,
+    tool: "Axe",
+    collision: true,
+    translucent: false,
+    liquid: false,
+    color1: "#9C6B3B",
+    color1Class: new Color(156 / 255, 107 / 255, 59 / 255),
+    color2: "#56351E",
+    color2Class: new Color(86 / 255, 53 / 255, 30 / 255),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: false,
+  },
+  stone: {
+    breakTime: 3,
+    tool: "Pickaxe",
+    collision: true,
+    translucent: false,
+    liquid: false,
+    color1: "#545454",
+    color1Class: new Color(0.329, 0.329, 0.329, 1),
+    color2: "#464646",
+    color2Class: new Color(0.275, 0.275, 0.275, 1),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: false,
+  },
+  sugiliteBlock: {
+    breakTime: 4.5,
+    tool: "Pickaxe",
+    collision: true,
+    translucent: false,
+    liquid: false,
+    color1: "#D3A7FF",
+    color1Class: new Color(211 / 255, 167 / 255, 255 / 255),
+    color2: "#5D2E8E",
+    color2Class: new Color(93 / 255, 46 / 255, 142 / 255),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: false,
+  },
+  sugiliteOre: {
+    breakTime: 4.5,
+    tool: "Pickaxe",
+    collision: true,
+    translucent: false,
+    liquid: false,
+    color1: "#C18FFF",
+    color1Class: new Color(193 / 255, 143 / 255, 255 / 255),
+    color2: "#4D2E77",
+    color2Class: new Color(77 / 255, 46 / 255, 119 / 255),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: true,
+  },
+  bedrock: {
+    breakTime: Infinity,
+    tool: "hands",
+    collision: true,
+    translucent: false,
+    liquid: false,
+    color1: "#5e5b5e",
+    color1Class: new Color(0.369, 0.357, 0.369, 1),
+    color2: "#4d4a4d",
+    color2Class: new Color(0.302, 0.29, 0.302, 1),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: true,
+  },
+  rickRoll: {
+    breakTime: undefined,
+    tool: "hands",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#FFFFFF",
+    color1Class: new Color(1, 1, 1),
+    color2: "#D0D0D0",
+    color2Class: new Color(0.82, 0.82, 0.82),
+    utility: false,
+    block: false,
+    tool: false,
+    item: false,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  hoverFar: {
+    breakTime: undefined,
+    tool: "hands",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#FFFFFF",
+    color1Class: new Color(1, 1, 1),
+    color2: "#D0D0D0",
+    color2Class: new Color(0.82, 0.82, 0.82),
+    utility: false,
+    block: false,
+    tool: false,
+    item: false,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  hoverClose: {
+    breakTime: undefined,
+    tool: "hands",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#FFFFFF",
+    color1Class: new Color(1, 1, 1),
+    color2: "#D0D0D0",
+    color2Class: new Color(0.82, 0.82, 0.82),
+    utility: false,
+    block: false,
+    tool: false,
+    item: false,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  chest: {
+    breakTime: 1.5,
+    tool: "Axe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#A07948",
+    color1Class: new Color(160 / 255, 121 / 255, 72 / 255),
+    color2: "#28201A",
+    color2Class: new Color(40 / 255, 32 / 255, 26 / 255),
+    utility: true,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: false,
+  },
+  furnaceOff: {
+    breakTime: 3,
+    tool: "Pickaxe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#8A8A8A",
+    color1Class: new Color(138 / 255, 138 / 255, 138 / 255),
+    color2: "#3B3B3B",
+    color2Class: new Color(59 / 255, 59 / 255, 59 / 255),
+    utility: true,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: false,
+  },
+  furnaceOn: {
+    breakTime: 3,
+    tool: "Pickaxe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#D98E3A",
+    color1Class: new Color(217 / 255, 142 / 255, 58 / 255),
+    color2: "#59310A",
+    color2Class: new Color(89 / 255, 49 / 255, 10 / 255),
+    utility: true,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: true,
+  },
+  woodAxe: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Axe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#D0A56D",
+    color1Class: new Color(208 / 255, 165 / 255, 109 / 255),
+    color2: "#734D2A",
+    color2Class: new Color(115 / 255, 77 / 255, 42 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  woodShovel: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Shovel",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#D0A56D",
+    color1Class: new Color(208 / 255, 165 / 255, 109 / 255),
+    color2: "#734D2A",
+    color2Class: new Color(115 / 255, 77 / 255, 42 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  woodPickaxe: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Pickaxe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#D0A56D",
+    color1Class: new Color(208 / 255, 165 / 255, 109 / 255),
+    color2: "#734D2A",
+    color2Class: new Color(115 / 255, 77 / 255, 42 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  woodSword: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Sword",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#D0A56D",
+    color1Class: new Color(208 / 255, 165 / 255, 109 / 255),
+    color2: "#734D2A",
+    color2Class: new Color(115 / 255, 77 / 255, 42 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  stoneAxe: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Axe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#B7B7B7",
+    color1Class: new Color(183 / 255, 183 / 255, 183 / 255),
+    color2: "#5B5B5B",
+    color2Class: new Color(91 / 255, 91 / 255, 91 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: false,
+  },
+  stonePickaxe: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Pickaxe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#B7B7B7",
+    color1Class: new Color(183 / 255, 183 / 255, 183 / 255),
+    color2: "#5B5B5B",
+    color2Class: new Color(91 / 255, 91 / 255, 91 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  stoneShovel: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Shovel",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#B7B7B7",
+    color1Class: new Color(183 / 255, 183 / 255, 183 / 255),
+    color2: "#5B5B5B",
+    color2Class: new Color(91 / 255, 91 / 255, 91 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  stoneSword: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Sword",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#B7B7B7",
+    color1Class: new Color(183 / 255, 183 / 255, 183 / 255),
+    color2: "#5B5B5B",
+    color2Class: new Color(91 / 255, 91 / 255, 91 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  ironAxe: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Axe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#D9D9D9",
+    color1Class: new Color(217 / 255, 217 / 255, 217 / 255),
+    color2: "#7A7A7A",
+    color2Class: new Color(122 / 255, 122 / 255, 122 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  ironHoe: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Hoe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#D9D9D9",
+    color1Class: new Color(217 / 255, 217 / 255, 217 / 255),
+    color2: "#7A7A7A",
+    color2Class: new Color(122 / 255, 122 / 255, 122 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: false,
+  },
+  ironPickaxe: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Pickaxe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#D9D9D9",
+    color1Class: new Color(217 / 255, 217 / 255, 217 / 255),
+    color2: "#7A7A7A",
+    color2Class: new Color(122 / 255, 122 / 255, 122 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  ironShovel: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Shovel",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#D9D9D9",
+    color1Class: new Color(217 / 255, 217 / 255, 217 / 255),
+    color2: "#7A7A7A",
+    color2Class: new Color(122 / 255, 122 / 255, 122 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  ironSword: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Sword",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#D9D9D9",
+    color1Class: new Color(217 / 255, 217 / 255, 217 / 255),
+    color2: "#7A7A7A",
+    color2Class: new Color(122 / 255, 122 / 255, 122 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  goldAxe: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Axe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#FFE180",
+    color1Class: new Color(255 / 255, 225 / 255, 128 / 255),
+    color2: "#8A6800",
+    color2Class: new Color(138 / 255, 104 / 255, 0),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  goldHoe: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Hoe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#FFE180",
+    color1Class: new Color(255 / 255, 225 / 255, 128 / 255),
+    color2: "#8A6800",
+    color2Class: new Color(138 / 255, 104 / 255, 0),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: false,
+  },
+  goldPickaxe: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Pickaxe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#FFE180",
+    color1Class: new Color(255 / 255, 225 / 255, 128 / 255),
+    color2: "#8A6800",
+    color2Class: new Color(138 / 255, 104 / 255, 0),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  goldShovel: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Shovel",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#FFE180",
+    color1Class: new Color(255 / 255, 225 / 255, 128 / 255),
+    color2: "#8A6800",
+    color2Class: new Color(138 / 255, 104 / 255, 0),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  goldSword: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Sword",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#FFE180",
+    color1Class: new Color(255 / 255, 225 / 255, 128 / 255),
+    color2: "#8A6800",
+    color2Class: new Color(138 / 255, 104 / 255, 0),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  diamondAxe: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Axe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#A7F5FF",
+    color1Class: new Color(167 / 255, 245 / 255, 255 / 255),
+    color2: "#2B9BBF",
+    color2Class: new Color(43 / 255, 155 / 255, 191 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  diamondHoe: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Hoe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#A7F5FF",
+    color1Class: new Color(167 / 255, 245 / 255, 255 / 255),
+    color2: "#2B9BBF",
+    color2Class: new Color(43 / 255, 155 / 255, 191 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: false,
+  },
+  diamondPickaxe: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Pickaxe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#A7F5FF",
+    color1Class: new Color(167 / 255, 245 / 255, 255 / 255),
+    color2: "#2B9BBF",
+    color2Class: new Color(43 / 255, 155 / 255, 191 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  diamondShovel: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Shovel",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#A7F5FF",
+    color1Class: new Color(167 / 255, 245 / 255, 255 / 255),
+    color2: "#2B9BBF",
+    color2Class: new Color(43 / 255, 155 / 255, 191 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  diamondSword: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Sword",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#A7F5FF",
+    color1Class: new Color(167 / 255, 245 / 255, 255 / 255),
+    color2: "#2B9BBF",
+    color2Class: new Color(43 / 255, 155 / 255, 191 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  copperAxe: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Axe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#E6A271",
+    color1Class: new Color(230 / 255, 162 / 255, 113 / 255),
+    color2: "#9A4C27",
+    color2Class: new Color(154 / 255, 76 / 255, 39 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: false,
+  },
+  copperPickaxe: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Pickaxe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#E6A271",
+    color1Class: new Color(230 / 255, 162 / 255, 113 / 255),
+    color2: "#9A4C27",
+    color2Class: new Color(154 / 255, 76 / 255, 39 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  copperShovel: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Shovel",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#E6A271",
+    color1Class: new Color(230 / 255, 162 / 255, 113 / 255),
+    color2: "#9A4C27",
+    color2Class: new Color(154 / 255, 76 / 255, 39 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  copperSword: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Sword",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#E6A271",
+    color1Class: new Color(230 / 255, 162 / 255, 113 / 255),
+    color2: "#9A4C27",
+    color2Class: new Color(154 / 255, 76 / 255, 39 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  sugiliteAxe: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Axe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#E3B5FF",
+    color1Class: new Color(227 / 255, 181 / 255, 255 / 255),
+    color2: "#5C2D8C",
+    color2Class: new Color(92 / 255, 45 / 255, 140 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: false,
+  },
+  sugilitePickaxe: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Pickaxe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#E3B5FF",
+    color1Class: new Color(227 / 255, 181 / 255, 255 / 255),
+    color2: "#5C2D8C",
+    color2Class: new Color(92 / 255, 45 / 255, 140 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  sugiliteShovel: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Shovel",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#E3B5FF",
+    color1Class: new Color(227 / 255, 181 / 255, 255 / 255),
+    color2: "#5C2D8C",
+    color2Class: new Color(92 / 255, 45 / 255, 140 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  sugiliteSword: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Sword",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#E3B5FF",
+    color1Class: new Color(227 / 255, 181 / 255, 255 / 255),
+    color2: "#5C2D8C",
+    color2Class: new Color(92 / 255, 45 / 255, 140 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: true,
+  },
+  acatiaLog: {
+    breakTime: 1.5,
+    tool: "Axe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color2: "#4A3A12",
+    color2Class: new Color(76 / 255, 60 / 255, 25 / 255),
+    color1: "#5D4F1A",
+    color1Class: new Color(93 / 255, 79 / 255, 26 / 255),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: true,
+  },
+  acatiaLeaf: {
+    breakTime: 0.25,
+    tool: "Hoe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#3B9813",
+    color1Class: new Color(59 / 255, 152 / 255, 19 / 255),
+    color2: "#357219",
+    color2Class: new Color(53 / 255, 114 / 255, 25 / 255),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: true,
+  },
+  coalItem: {
     breakTime: undefined,
     tool: "hands",
     collision: false,
@@ -2623,6 +3534,25 @@ var thingMetaData = {
     block: false,
     tool: false,
     item: true,
+    maxStack: 64,
+    dropIfWrongTool: true,
+  },
+  copperAxe: {
+    breakTime: undefined,
+    tool: true,
+    toolType: "Axe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#E6A271",
+    color1Class: new Color(230 / 255, 162 / 255, 113 / 255),
+    color2: "#9A4C27",
+    color2Class: new Color(154 / 255, 76 / 255, 39 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: true,
   },
 };
 const biomes = ["plains", "mapleForest", "desert"];

@@ -510,7 +510,8 @@ for (let i = 0; i <= 35; i++) {
         player.inventory[i].item != "air" &&
         player.itemHoldingInCursor &&
         player.inventory[i].item == player.itemHoldingInCursor.item &&
-        player.inventory[i].amount + player.itemHoldingInCursor.amount <= 64 &&
+        player.inventory[i].amount + player.itemHoldingInCursor.amount <=
+          thingMetaData[player.inventory[i].item].maxStack &&
         !keyIsDown("ShiftLeft")
       ) {
         const oldOne = { ...player.itemHoldingInCursor };
@@ -527,7 +528,8 @@ for (let i = 0; i <= 35; i++) {
           for (let e = 0; e <= 8; e++) {
             if (
               player.getSlot(e).item == player.inventory[i].item &&
-              player.getSlot(e).amount + player.inventory[i].amount <= 64
+              player.getSlot(e).amount + player.inventory[i].amount <=
+                thingMetaData[player.inventory[i].item].maxStack
             ) {
               player.inventory[i].amount = 0;
               player.inventory[i].item = "air";
@@ -559,7 +561,8 @@ for (let i = 0; i <= 35; i++) {
           for (let e = 35; e > 8; e -= 1) {
             if (
               player.getSlot(e).item == player.inventory[i].item &&
-              player.getSlot(e).amount + player.inventory[i].amount <= 64
+              player.getSlot(e).amount + player.inventory[i].amount <=
+                thingMetaData[player.inventory[i].item].maxStack
             ) {
               player.inventory[i].amount = 0;
               player.inventory[i].item = "air";
@@ -691,99 +694,27 @@ function numkeysHotbarChange() {
     player.switchInventoryItemToHotbarSlot(8);
   }
   if (keyWasPressed("KeyQ")) {
-    if (player.hotbarSlotHoveredMouse != undefined) {
-      if (keyIsDown("ControlLeft")) {
-        if (player.directionPositive) {
-          new droppedItem(
-            player.inventory[player.hotbarSlotHoveredMouse].item,
-            player.coords.x + 1.5,
-            player.coords.y,
-            player.inventory[player.hotbarSlotHoveredMouse].amount,
-          );
-          player.inventory[player.hotbarSlotHoveredMouse].item = "air";
-          player.inventory[player.hotbarSlotHoveredMouse].amount = 0;
-        } else if (!player.directionPositive) {
-          new droppedItem(
-            player.inventory[player.hotbarSlotHoveredMouse].item,
-            player.coords.x - 1.5,
-            player.coords.y,
-            player.inventory[player.hotbarSlotHoveredMouse].amount,
-          );
-          player.inventory[player.hotbarSlotHoveredMouse].item = "air";
-          player.inventory[player.hotbarSlotHoveredMouse].amount = 0;
-        }
-      } else {
-        if (player.directionPositive) {
-          new droppedItem(
-            player.inventory[player.hotbarSlotHoveredMouse].item,
-            player.coords.x + 1.5,
-            player.coords.y,
-          );
+    const slotIndex =
+      player.hotbarSlotHoveredMouse ?? player.hotbarSlotHovered;
+    const inventorySlot = player.inventory[slotIndex];
 
-          player.inventory[player.hotbarSlotHoveredMouse].amount -= 1;
-          if (player.inventory[player.hotbarSlotHoveredMouse].amount <= 0) {
-            player.inventory[player.hotbarSlotHoveredMouse].item = "air";
-            player.inventory[player.hotbarSlotHoveredMouse].amount = 0;
-          }
-        } else if (!player.directionPositive) {
-          new droppedItem(
-            player.inventory[player.hotbarSlotHoveredMouse].item,
-            player.coords.x - 1.5,
-            player.coords.y,
-          );
-          player.inventory[player.hotbarSlotHoveredMouse].amount -= 1;
-          if (player.inventory[player.hotbarSlotHoveredMouse].amount <= 0) {
-            player.inventory[player.hotbarSlotHoveredMouse].item = "air";
-            player.inventory[player.hotbarSlotHoveredMouse].amount = 0;
-          }
-        }
-      }
-    } else {
-      if (keyIsDown("ControlLeft")) {
-        if (player.directionPositive) {
-          new droppedItem(
-            player.inventory[player.hotbarSlotHovered].item,
-            player.coords.x + 1.5,
-            player.coords.y,
-            player.inventory[player.hotbarSlotHovered].amount,
-          );
-          player.inventory[player.hotbarSlotHovered].item = "air";
-          player.inventory[player.hotbarSlotHovered].amount = 0;
-        } else if (!player.directionPositive) {
-          new droppedItem(
-            player.inventory[player.hotbarSlotHovered].item,
-            player.coords.x - 1.5,
-            player.coords.y,
-            player.inventory[player.hotbarSlotHovered].amount,
-          );
-          player.inventory[player.hotbarSlotHovered].item = "air";
-          player.inventory[player.hotbarSlotHovered].amount = 0;
-        }
-      } else {
-        if (player.directionPositive) {
-          new droppedItem(
-            player.inventory[player.hotbarSlotHovered].item,
-            player.coords.x + 1.5,
-            player.coords.y,
-          );
+    if (inventorySlot && inventorySlot.item != "air" && inventorySlot.amount > 0) {
+      const dropAmount = keyIsDown("ControlLeft")
+        ? inventorySlot.amount
+        : 1;
+      const dropX = player.coords.x + (player.directionPositive ? 1.5 : -1.5);
 
-          player.inventory[player.hotbarSlotHovered].amount -= 1;
-          if (player.inventory[player.hotbarSlotHovered].amount <= 0) {
-            player.inventory[player.hotbarSlotHovered].item = "air";
-            player.inventory[player.hotbarSlotHovered].amount = 0;
-          }
-        } else if (!player.directionPositive) {
-          new droppedItem(
-            player.inventory[player.hotbarSlotHovered].item,
-            player.coords.x - 1.5,
-            player.coords.y,
-          );
-          player.inventory[player.hotbarSlotHovered].amount -= 1;
-          if (player.inventory[player.hotbarSlotHovered].amount <= 0) {
-            player.inventory[player.hotbarSlotHovered].item = "air";
-            player.inventory[player.hotbarSlotHovered].amount = 0;
-          }
-        }
+      new droppedItem(
+        inventorySlot.item,
+        dropX,
+        player.coords.y,
+        dropAmount,
+      );
+
+      inventorySlot.amount -= dropAmount;
+      if (inventorySlot.amount <= 0) {
+        inventorySlot.item = "air";
+        inventorySlot.amount = 0;
       }
     }
     document.dispatchEvent(invenEvent);
@@ -1107,7 +1038,12 @@ function blockRayCast(startX, startY, dir) {
 }
 dgeID("getEverything").addEventListener("click", () => {
   for (const i of textureNames) {
-    new droppedItem(i, player.coords.x, player.coords.y, thingMetaData[i].maxStack);
+    new droppedItem(
+      i,
+      player.coords.x,
+      player.coords.y,
+      thingMetaData[i].maxStack,
+    );
   }
 });
 let ctx;
@@ -1165,12 +1101,7 @@ class droppedItem {
               drops[`${oldPos.x},${oldPos.y}`];
             delete drops[`${oldPos.x},${oldPos.y}`];
           }
-        } else {
-          console.table(drops);
-          console.info(
-            "Dropped a lot of things at the same place. Be warned some drops might disappear due to some glitches.",
-          );
-        }
+        } 
       } else if (
         isCollidableBlockAt(
           Math.round(this.pos.x),
@@ -1856,6 +1787,9 @@ async function gameInit() {
     getSlot: (slot) => {
       return player.inventory[slot];
     },
+    isSlotEmpty: (slot) => {
+      return !player.getSlot(slot) || player.getSlot(slot).item === 'air';
+    },
     isInvenFull: () => {
       for (let i = 0; i <= 35; i++) {
         if (!player.getSlot(i) || player.getSlot(i).amount === 0) {
@@ -1865,71 +1799,60 @@ async function gameInit() {
       return true;
     },
     playerCanPickUpItem: (item, amount) => {
-      let found = false;
-
       const itemMaxStack = thingMetaData[item].maxStack;
+      let remainingAmount = amount;
+
       for (let i = 0; i <= 35; i++) {
-        if (player.getSlot(i).item == item) {
-          if (player.getSlot(i).amount + amount <= itemMaxStack) {
-            found = true;
-            return true;
-          } else if (player.getSlot(i).amount + amount >= itemMaxStack) {
-            return 0;
-          }
+        if (
+          player.getSlot(i).item == item &&
+          player.getSlot(i).amount < itemMaxStack
+        ) {
+          remainingAmount -= itemMaxStack - player.getSlot(i).amount;
+        }
+        if (remainingAmount <= 0) {
+          return true;
         }
       }
-      if (!found) {
-        for (let i = 0; i <= 35; i++) {
-          if (player.getSlot(i).item == "air" && amount <= itemMaxStack) {
-            return true;
-          }
+
+      for (let i = 0; i <= 35; i++) {
+        if (player.getSlot(i).item == "air") {
+          remainingAmount -= itemMaxStack;
+        }
+        if (remainingAmount <= 0) {
+          return true;
         }
       }
+
       return false;
     },
     addItem: (item, amount) => {
-      let found = false;
-      if (player.playerCanPickUpItem(item, amount) == true) {
-        for (let i = 0; i <= 35; i++) {
-          if (
-            player.getSlot(i).item == item &&
-            player.getSlot(i).amount + amount <= 64
-          ) {
-            player.setSlot(item, amount + player.getSlot(i).amount, i);
-            found = true;
-            break;
-          }
-        }
-        if (!found) {
-          for (let i = 0; i <= 35; i++) {
-            if (!player.getSlot(i) || player.getSlot(i).amount == 0) {
-              player.setSlot(item, amount, i);
+      const itemMaxStack = thingMetaData[item].maxStack;
+      if (!player.playerCanPickUpItem(item, amount)) {
+        return false;
+      }
 
-              break;
-            }
-          }
-        }
-      } else if (player.playerCanPickUpItem(item, amount) == 0) {
-        const slotsWithItem = [];
-        let amountNeededToBeAddedIn = amount;
-        for (let i = 0; i <= 35; i++) {
-          if (player.getSlot(i).item == item) {
-            slotsWithItem.push(i);
-          }
-        }
-
-        if (slotsWithItem.length != 0) {
-          for (let i = 0; i <= slotsWithItem.length; i++) {
-            console.log(slotsWithItem)
-            const canBeAddedInThis =
-              thingMetaData[item].maxStack -
-              player.getSlot(slotsWithItem[i]).amount;
-
-            player.setSlot(item, canBeAddedInThis, slotsWithItem[i]);
-            amountNeededToBeAddedIn -= canBeAddedInThis;
-          }
+      let remainingAmount = amount;
+      for (let i = 0; i <= 35 && remainingAmount > 0; i++) {
+        const slot = player.getSlot(i);
+        if (slot.item == item && slot.amount < itemMaxStack) {
+          const amountToAdd = Math.min(
+            remainingAmount,
+            itemMaxStack - slot.amount,
+          );
+          player.setSlot(item, slot.amount + amountToAdd, i);
+          remainingAmount -= amountToAdd;
         }
       }
+
+      for (let i = 0; i <= 35 && remainingAmount > 0; i++) {
+        if (player.getSlot(i).item == "air") {
+          const amountToAdd = Math.min(remainingAmount, itemMaxStack);
+          player.setSlot(item, amountToAdd, i);
+          remainingAmount -= amountToAdd;
+        }
+      }
+
+      return true;
     },
     changeHotbarSlot: (newHotbarSlot) => {
       if (hotbarSlot[newHotbarSlot]) {
@@ -1952,6 +1875,12 @@ async function gameInit() {
           document.dispatchEvent(invenEvent);
         }
       }
+    },
+    clearInventory: () => {
+      for (let i = 0; i <= 35; i++) {
+        player.inventory[i] = { item: "air", amount: 0 };
+      }
+      document.dispatchEvent(invenEvent);
     },
   };
 
@@ -2245,7 +2174,6 @@ let dropCoords;
 const renderDrops = () => {
   if (Object.keys(drops).length > 0) {
     for (const i of Object.values(drops)) {
-      // the reason [0] exists is because js objects are weird
 
       dropCoords = Object.keys(drops)
         .find((key) => drops[key] === i)
@@ -2266,8 +2194,12 @@ const renderDrops = () => {
             (Math.abs(player.getFeetCoords().y - 0.1 - dropCoordsY) < 0.6 ||
               Math.abs(player.coords.y + 0.3 - dropCoordsY) < 1)
           ) {
-            player.addItem(i[e].item, i[e].amount);
+            if(player.playerCanPickUpItem(i[e].item, i[e].amount)){
+              player.addItem(i[e].item, i[e].amount);
             i[e].destroy();
+            } else {
+              i[e].draw();
+            }
           } else {
             i[e].draw();
           }

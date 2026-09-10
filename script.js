@@ -694,22 +694,18 @@ function numkeysHotbarChange() {
     player.switchInventoryItemToHotbarSlot(8);
   }
   if (keyWasPressed("KeyQ")) {
-    const slotIndex =
-      player.hotbarSlotHoveredMouse ?? player.hotbarSlotHovered;
+    const slotIndex = player.hotbarSlotHoveredMouse ?? player.hotbarSlotHovered;
     const inventorySlot = player.inventory[slotIndex];
 
-    if (inventorySlot && inventorySlot.item != "air" && inventorySlot.amount > 0) {
-      const dropAmount = keyIsDown("ControlLeft")
-        ? inventorySlot.amount
-        : 1;
+    if (
+      inventorySlot &&
+      inventorySlot.item != "air" &&
+      inventorySlot.amount > 0
+    ) {
+      const dropAmount = keyIsDown("ControlLeft") ? inventorySlot.amount : 1;
       const dropX = player.coords.x + (player.directionPositive ? 1.5 : -1.5);
 
-      new droppedItem(
-        inventorySlot.item,
-        dropX,
-        player.coords.y,
-        dropAmount,
-      );
+      new droppedItem(inventorySlot.item, dropX, player.coords.y, dropAmount);
 
       inventorySlot.amount -= dropAmount;
       if (inventorySlot.amount <= 0) {
@@ -1054,7 +1050,7 @@ let player;
 let blockBreakTexture = new Image();
 let blockBreakingTexture;
 let drops = {};
-
+let dropsShadowList = [];
 function drawRickAstleyAt(x, y, rot = 0) {
   drawTile(vec2(x, y), vec2(0.25), texture["rickRoll"], WHITE, rot);
 }
@@ -1101,7 +1097,7 @@ class droppedItem {
               drops[`${oldPos.x},${oldPos.y}`];
             delete drops[`${oldPos.x},${oldPos.y}`];
           }
-        } 
+        }
       } else if (
         isCollidableBlockAt(
           Math.round(this.pos.x),
@@ -1127,27 +1123,38 @@ class droppedItem {
 
       elipsePosY = -90100011001000011;
       // find a block under
-      for (
-        let i = Math.floor(this.pos.y + 0.24);
-        i > Math.floor(this.pos.y) - 12;
-        i -= 1
-      ) {
-        if (isCollidableBlockAt(Math.round(this.pos.x), i)) {
-          elipsePosY = i + 0.55;
-          break;
-        }
-      }
+      
       if (
-        !isCollidableBlockAt(
-          Math.round(this.pos.x),
-          Math.floor(this.pos.y + 0.42),
-        )
+        dropsShadowList.indexOf(
+          `${Math.round(this.pos.x)},${Math.floor(this.pos.y)}`,
+        ) == -1
       ) {
-        drawEllipse(
-          vec2(Math.round(this.pos.x * 100) / 100, elipsePosY),
-          vec2(0.34, 0.08),
-          new Color(0.2, 0.2, 0.2, 0.5),
+        dropsShadowList.push(
+          `${Math.round(this.pos.x)},${Math.floor(this.pos.y)}`,
         );
+        for (
+          let i = Math.floor(this.pos.y + 0.24);
+          i > Math.floor(this.pos.y) - 12;
+          i -= 1
+        ) {
+          if (isCollidableBlockAt(Math.round(this.pos.x), i)) {
+            elipsePosY = i + 0.55;
+            break;
+          }
+        }
+
+        if (
+          !isCollidableBlockAt(
+            Math.round(this.pos.x),
+            Math.floor(this.pos.y + 0.42),
+          )
+        ) {
+          drawEllipse(
+            vec2(Math.round(this.pos.x * 100) / 100, elipsePosY),
+            vec2(0.34, 0.08),
+            new Color(0.2, 0.2, 0.2, 0.5),
+          );
+        }
       }
     } else {
       this.destroy();
@@ -1788,7 +1795,7 @@ async function gameInit() {
       return player.inventory[slot];
     },
     isSlotEmpty: (slot) => {
-      return !player.getSlot(slot) || player.getSlot(slot).item === 'air';
+      return !player.getSlot(slot) || player.getSlot(slot).item === "air";
     },
     isInvenFull: () => {
       for (let i = 0; i <= 35; i++) {
@@ -2172,9 +2179,9 @@ const mouseThings = () => {
 };
 let dropCoords;
 const renderDrops = () => {
+  dropsShadowList = [];
   if (Object.keys(drops).length > 0) {
     for (const i of Object.values(drops)) {
-
       dropCoords = Object.keys(drops)
         .find((key) => drops[key] === i)
         .split(",");
@@ -2194,9 +2201,9 @@ const renderDrops = () => {
             (Math.abs(player.getFeetCoords().y - 0.1 - dropCoordsY) < 0.6 ||
               Math.abs(player.coords.y + 0.3 - dropCoordsY) < 1)
           ) {
-            if(player.playerCanPickUpItem(i[e].item, i[e].amount)){
+            if (player.playerCanPickUpItem(i[e].item, i[e].amount)) {
               player.addItem(i[e].item, i[e].amount);
-            i[e].destroy();
+              i[e].destroy();
             } else {
               i[e].draw();
             }

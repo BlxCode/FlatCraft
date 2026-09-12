@@ -881,6 +881,9 @@ const textureNames = [
   "sugilitePickaxe",
   "sugiliteShovel",
   "sugiliteSword",
+  "woodHoe",
+  "stoneHoe",
+  "copperHoe",
 ];
 async function loadAllImages() {
   for (const name of textureNames) {
@@ -1123,7 +1126,7 @@ class droppedItem {
 
       elipsePosY = -90100011001000011;
       // find a block under
-      
+
       if (
         dropsShadowList.indexOf(
           `${Math.round(this.pos.x)},${Math.floor(this.pos.y)}`,
@@ -1265,9 +1268,9 @@ async function gameInit() {
     attackAnim: false,
     hotbarSlotHoveredMouse: undefined,
     handItemAnimIndex: {
-      idle: vec2(0.4, 0.05),
-      walk: vec2(0.4, 0.1),
-      fall: vec2(0.45, 1.55),
+      idle: vec2(0.45, 0.05),
+      walk: vec2(0.45, 0.1),
+      fall: vec2(0.45, 1.65),
       raise2: vec2(0.85, 0.25),
       raise1: vec2(0.6, 0.05),
       break2: vec2(0.75, 1.4),
@@ -1285,6 +1288,17 @@ async function gameInit() {
       break1: 0.85,
       crouch: 0,
     },
+    handItemAnimRotateToolsIndex: {
+      idle: 3.7,
+      walk: 3.7,
+      fall: 0.85,
+      raise1: 2.7,
+      raise2: 2.8,
+      break2: 0.3,
+      break1: 0.85,
+      crouch: 3.7,
+    },
+
     inventory: {
       0: { item: "air", amount: 0 },
       1: { item: "air", amount: 0 },
@@ -1615,6 +1629,7 @@ async function gameInit() {
       // show hotbar hand item
       let handPos = vec2(0, 0);
       let handRot = 0;
+      let handRotTools = 0;
       if (player.inventory[player.hotbarSlotHovered].item != "air") {
         let handAnim = "idle";
         switch (player.animation) {
@@ -1654,8 +1669,10 @@ async function gameInit() {
         }
 
         handPos = player.handItemAnimIndex[handAnim];
-        handRot = player.handItemAnimRotateIndex[handAnim];
+        handRotTools = player.handItemAnimRotateToolsIndex[handAnim];
 
+        handRot = player.handItemAnimRotateIndex[handAnim];
+        // hand item show
         if (player.directionPositive) {
           drawTile(
             vec2(
@@ -1665,7 +1682,10 @@ async function gameInit() {
             vec2(0.3),
             texture[player.inventory[player.hotbarSlotHovered].item],
             WHITE,
-            handRot,
+            thingMetaData[player.inventory[player.hotbarSlotHovered].item].tool
+              ? handRotTools
+              : handRot,
+            !player.directionPositive,
           );
         } else {
           drawTile(
@@ -1676,7 +1696,10 @@ async function gameInit() {
             vec2(0.3),
             texture[player.inventory[player.hotbarSlotHovered].item],
             WHITE,
-            -handRot,
+            thingMetaData[player.inventory[player.hotbarSlotHovered].item].tool
+              ? -handRotTools
+              : -handRot,
+            !player.directionPositive,
           );
         }
       }
@@ -2019,6 +2042,9 @@ const renderSky = () => {
   );
 };
 const mouseThings = () => {
+  const blockMousePos = vec2(Math.round(mousePos.x), Math.round(mousePos.y));
+  let blockType = blocks[`${blockMousePos.x},${blockMousePos.y}`];
+
   if (mouseIsDown(0)) {
     mouseWasDown = true;
   }
@@ -2027,7 +2053,6 @@ const mouseThings = () => {
     document.elementFromPoint(mousePosScreen.x, mousePosScreen.y) ===
       document.getElementById("ui")
   ) {
-    const blockMousePos = vec2(Math.round(mousePos.x), Math.round(mousePos.y));
     const diff = blockMousePos.subtract(player.coords);
 
     const diffAbs = diff.abs();
@@ -2058,63 +2083,83 @@ const mouseThings = () => {
     } else {
       drawTile(blockMousePos, vec2(1), texture["hoverClose"]);
 
-      let blockType = blocks[`${blockMousePos.x},${blockMousePos.y}`];
       if (blockType == undefined) {
         blockType = "Air";
       }
+    }
 
-      if (mouseIsDown(0) && blockType != "Air") {
+    if (mouseIsDown(0) && blockType != "Air") {
+      let toolBoost = 1;
+      const heldItem = player.getSlot(player.hotbarSlotHovered).item;
+      let heldToolType = thingMetaData[heldItem].toolType;
+      if (thingMetaData[heldItem].tool) {
+        // tool boost metadata
+        const toolBoostData = {
+          wood: 1.5,
+          stone: 1.9,
+          iron: 2.3,
+          diamond: 3.5,
+          gold: 3.4,
+          copper: 2.1,
+          sugilite: 3.6,
+        };
+
+        toolBoost = toolBoostData[thingMetaData[heldItem].toolMaterial];
+      }
+
+      mouseWasDown = false;
+      if (
+        blockBreakNoSpam >
+        (12 * thingMetaData[blockType]["breakTime"]) / toolBoost
+      ) {
+        blockBreak += 1;
+        blockBreakNoSpam = 0;
+      } else {
+        blockBreakNoSpam += 1;
+      }
+
+      player.isBreakingBlock = true;
+
+      if (blockBreak > 6) {
+        let breakParticle = new ParticleEmitter(
+          blockMousePos,
+          0,
+          vec2(0.5, 0.5),
+          0.05,
+          1902,
+          180,
+          undefined,
+          thingMetaData[blockType || "Air"].color1Class,
+          thingMetaData[blockType || "Air"].color2Class,
+          CLEAR_WHITE,
+          CLEAR_WHITE,
+          0.1,
+          0.1,
+          0.1,
+        );
+        const drop = new droppedItem(
+          blockType,
+          blockMousePos.x,
+          blockMousePos.y,
+        );
+
+        setTimeout(() => {
+          breakParticle.destroy(true);
+        }, 200);
         mouseWasDown = false;
-        if (blockBreakNoSpam > 12 * thingMetaData[blockType]["breakTime"]) {
-          blockBreak += 1;
-          blockBreakNoSpam = 0;
-        } else {
-          blockBreakNoSpam += 1;
-        }
-
-        player.isBreakingBlock = true;
-
-        if (blockBreak > 6) {
-          let breakParticle = new ParticleEmitter(
-            blockMousePos,
-            0,
-            vec2(0.5, 0.5),
-            0.05,
-            1902,
-            180,
-            undefined,
-            thingMetaData[blockType || "Air"].color1Class,
-            thingMetaData[blockType || "Air"].color2Class,
-            CLEAR_WHITE,
-            CLEAR_WHITE,
-            0.1,
-            0.1,
-            0.1,
-          );
-          const drop = new droppedItem(
-            blockType,
-            blockMousePos.x,
-            blockMousePos.y,
-          );
-
-          setTimeout(() => {
-            breakParticle.destroy(true);
-          }, 200);
-          mouseWasDown = false;
-          destroyBlock(blockMousePos.x, blockMousePos.y);
-          blockBreak = 0;
-          blockBreakNoSpam = 0;
-          player.isBreakingBlock = false;
-          player.raisedArms = false;
-          player.lowerArms = true;
-          player.animationChangeTimer = 0;
-        } else {
-          drawTile(
-            vec2(blockMousePos.x, blockMousePos.y),
-            vec2(0.75),
-            blockBreakingTexture["frame" + blockBreak],
-          );
-        }
+        destroyBlock(blockMousePos.x, blockMousePos.y);
+        blockBreak = 0;
+        blockBreakNoSpam = 0;
+        player.isBreakingBlock = false;
+        player.raisedArms = false;
+        player.lowerArms = true;
+        player.animationChangeTimer = 0;
+      } else {
+        drawTile(
+          vec2(blockMousePos.x, blockMousePos.y),
+          vec2(0.75),
+          blockBreakingTexture["frame" + blockBreak],
+        );
       }
       if (mouseIsDown(0) && blockType != "Air" && player.isWalking) {
       }
@@ -2131,24 +2176,40 @@ const mouseThings = () => {
         mouseWasDown = false;
         player.attackAnim = true;
       }
-      // place blocks
+    }
 
+    // place blocks
+    let allowed = false;
+    if (
+      mouseIsDown(2) &&
+      !blocks[`${blockMousePos.x},${blockMousePos.y}`] &&
+      player.getSlot(player.hotbarSlotHovered).item != "air" &&
+      thingMetaData[player.getSlot(player.hotbarSlotHovered).item].block
+    ) {
       if (
-        mouseIsDown(2) &&
-        !blocks[`${blockMousePos.x},${blockMousePos.y}`] &&
-        player.getSlot(player.hotbarSlotHovered).item != "air" &&
-        (blocks[`${blockMousePos.x},${blockMousePos.y + 1}`] ||
-          blocks[`${blockMousePos.x},${blockMousePos.y - 1}`] ||
-          blocks[`${blockMousePos.x + 1},${blockMousePos.y}`] ||
-          blocks[`${blockMousePos.x - 1},${blockMousePos.y}`]) &&
-        ((Math.abs(Math.round(player.getCoordsAt("br").x) - blockMousePos.x) !=
-          0 &&
-          Math.abs(Math.round(player.getCoordsAt("bl").x) - blockMousePos.x) !=
-            0) ||
-          (Math.round(player.coords.y) - blockMousePos.y != 0 &&
-            Math.round(player.coords.y) - blockMousePos.y != 1)) &&
-        thingMetaData[player.getSlot(player.hotbarSlotHovered).item].block
+        !thingMetaData[player.getSlot(player.hotbarSlotHovered).item].collision
       ) {
+        allowed = true;
+      } else {
+        if (
+          (blocks[`${blockMousePos.x},${blockMousePos.y + 1}`] ||
+            blocks[`${blockMousePos.x},${blockMousePos.y - 1}`] ||
+            blocks[`${blockMousePos.x + 1},${blockMousePos.y}`] ||
+            blocks[`${blockMousePos.x - 1},${blockMousePos.y}`]) &&
+          ((Math.abs(
+            Math.round(player.getCoordsAt("br").x) - blockMousePos.x,
+          ) != 0 &&
+            Math.abs(
+              Math.round(player.getCoordsAt("bl").x) - blockMousePos.x,
+            ) != 0) ||
+            (Math.round(player.coords.y) - blockMousePos.y != 0 &&
+              Math.round(player.coords.y) - blockMousePos.y != 1))
+        ) {
+          allowed = true;
+        }
+      }
+
+      if (allowed) {
         console.log("placing block", player.attackAnim);
         player.attackAnim = true;
         createBlock(
@@ -2407,7 +2468,7 @@ let thingMetaData = {
   },
   cedarLog: {
     breakTime: 1.5,
-    tool: "Axe",
+    tool: "axe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2424,7 +2485,7 @@ let thingMetaData = {
   },
   coalBlock: {
     breakTime: 3.1,
-    tool: "Pickaxe",
+    tool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2441,7 +2502,7 @@ let thingMetaData = {
   },
   coalOre: {
     breakTime: 3.1,
-    tool: "Pickaxe",
+    tool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2458,7 +2519,7 @@ let thingMetaData = {
   },
   copperBlock: {
     breakTime: 2.8,
-    tool: "Pickaxe",
+    tool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2475,7 +2536,7 @@ let thingMetaData = {
   },
   copperOre: {
     breakTime: 2.8,
-    tool: "Pickaxe",
+    tool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2492,7 +2553,7 @@ let thingMetaData = {
   },
   diamondBlock: {
     breakTime: 4,
-    tool: "Pickaxe",
+    tool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2509,7 +2570,7 @@ let thingMetaData = {
   },
   diamondOre: {
     breakTime: 4,
-    tool: "Pickaxe",
+    tool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2526,7 +2587,7 @@ let thingMetaData = {
   },
   dirt: {
     breakTime: 1,
-    tool: "Shovel",
+    tool: "shovel",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2543,7 +2604,7 @@ let thingMetaData = {
   },
   emeraldBlock: {
     breakTime: 4,
-    tool: "Pickaxe",
+    tool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2560,7 +2621,7 @@ let thingMetaData = {
   },
   emeraldOre: {
     breakTime: 4,
-    tool: "Pickaxe",
+    tool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2577,7 +2638,7 @@ let thingMetaData = {
   },
   goldBlock: {
     breakTime: 3.2,
-    tool: "Pickaxe",
+    tool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2594,7 +2655,7 @@ let thingMetaData = {
   },
   goldOre: {
     breakTime: 3.2,
-    tool: "Pickaxe",
+    tool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2611,7 +2672,7 @@ let thingMetaData = {
   },
   grass: {
     breakTime: 1,
-    tool: "Shovel",
+    tool: "shovel",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2628,7 +2689,7 @@ let thingMetaData = {
   },
   ironBlock: {
     breakTime: 3,
-    tool: "Pickaxe",
+    tool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2645,7 +2706,7 @@ let thingMetaData = {
   },
   ironOre: {
     breakTime: 3,
-    tool: "Pickaxe",
+    tool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2662,7 +2723,7 @@ let thingMetaData = {
   },
   jungleLog: {
     breakTime: 1.5,
-    tool: "Axe",
+    tool: "axe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2679,7 +2740,7 @@ let thingMetaData = {
   },
   mapleLog: {
     breakTime: 1.5,
-    tool: "Axe",
+    tool: "axe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -2696,7 +2757,7 @@ let thingMetaData = {
   },
   mapleLeaf: {
     breakTime: 0.25,
-    tool: "Hoe",
+    tool: "hoe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -2713,7 +2774,7 @@ let thingMetaData = {
   },
   poplarLog: {
     breakTime: 1.5,
-    tool: "Axe",
+    tool: "axe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2730,7 +2791,7 @@ let thingMetaData = {
   },
   stone: {
     breakTime: 3,
-    tool: "Pickaxe",
+    tool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2747,7 +2808,7 @@ let thingMetaData = {
   },
   sugiliteBlock: {
     breakTime: 4.5,
-    tool: "Pickaxe",
+    tool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2764,7 +2825,7 @@ let thingMetaData = {
   },
   sugiliteOre: {
     breakTime: 4.5,
-    tool: "Pickaxe",
+    tool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2849,7 +2910,7 @@ let thingMetaData = {
   },
   chest: {
     breakTime: 1.5,
-    tool: "Axe",
+    tool: "axe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -2866,7 +2927,7 @@ let thingMetaData = {
   },
   furnaceOff: {
     breakTime: 3,
-    tool: "Pickaxe",
+    tool: "pickaxe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -2883,7 +2944,7 @@ let thingMetaData = {
   },
   furnaceOn: {
     breakTime: 3,
-    tool: "Pickaxe",
+    tool: "pickaxe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -2901,7 +2962,8 @@ let thingMetaData = {
   woodAxe: {
     breakTime: undefined,
     tool: true,
-    toolType: "Axe",
+    toolMaterial: "wood",
+    toolType: "axe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -2918,7 +2980,8 @@ let thingMetaData = {
   woodShovel: {
     breakTime: undefined,
     tool: true,
-    toolType: "Shovel",
+    toolMaterial: "wood",
+    toolType: "shovel",
     collision: false,
     translucent: false,
     liquid: false,
@@ -2935,7 +2998,8 @@ let thingMetaData = {
   woodPickaxe: {
     breakTime: undefined,
     tool: true,
-    toolType: "Pickaxe",
+    toolMaterial: "wood",
+    toolType: "pickaxe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -2949,10 +3013,29 @@ let thingMetaData = {
     maxStack: 1,
     dropIfWrongTool: true,
   },
+  woodHoe: {
+    breakTime: undefined,
+    tool: true,
+    toolMaterial: "wood",
+    toolType: "hoe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#D0A56D",
+    color1Class: new Color(208 / 255, 165 / 255, 109 / 255),
+    color2: "#734D2A",
+    color2Class: new Color(115 / 255, 77 / 255, 42 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: false,
+  },
   woodSword: {
     breakTime: undefined,
     tool: true,
-    toolType: "Sword",
+    toolMaterial: "wood",
+    toolType: "sword",
     collision: false,
     translucent: false,
     liquid: false,
@@ -2969,7 +3052,8 @@ let thingMetaData = {
   stoneAxe: {
     breakTime: undefined,
     tool: true,
-    toolType: "Axe",
+    toolMaterial: "stone",
+    toolType: "axe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -2986,7 +3070,8 @@ let thingMetaData = {
   stonePickaxe: {
     breakTime: undefined,
     tool: true,
-    toolType: "Pickaxe",
+    toolMaterial: "stone",
+    toolType: "pickaxe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3003,7 +3088,8 @@ let thingMetaData = {
   stoneShovel: {
     breakTime: undefined,
     tool: true,
-    toolType: "Shovel",
+    toolMaterial: "stone",
+    toolType: "shovel",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3017,10 +3103,29 @@ let thingMetaData = {
     maxStack: 1,
     dropIfWrongTool: true,
   },
+  stoneHoe: {
+    breakTime: undefined,
+    tool: true,
+    toolMaterial: "stone",
+    toolType: "hoe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#B7B7B7",
+    color1Class: new Color(183 / 255, 183 / 255, 183 / 255),
+    color2: "#5B5B5B",
+    color2Class: new Color(91 / 255, 91 / 255, 91 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: false,
+  },
   stoneSword: {
     breakTime: undefined,
     tool: true,
-    toolType: "Sword",
+    toolMaterial: "stone",
+    toolType: "sword",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3037,7 +3142,8 @@ let thingMetaData = {
   ironAxe: {
     breakTime: undefined,
     tool: true,
-    toolType: "Axe",
+    toolMaterial: "iron",
+    toolType: "axe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3054,7 +3160,8 @@ let thingMetaData = {
   ironHoe: {
     breakTime: undefined,
     tool: true,
-    toolType: "Hoe",
+    toolMaterial: "iron",
+    toolType: "hoe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3071,7 +3178,8 @@ let thingMetaData = {
   ironPickaxe: {
     breakTime: undefined,
     tool: true,
-    toolType: "Pickaxe",
+    toolMaterial: "iron",
+    toolType: "pickaxe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3088,7 +3196,8 @@ let thingMetaData = {
   ironShovel: {
     breakTime: undefined,
     tool: true,
-    toolType: "Shovel",
+    toolMaterial: "iron",
+    toolType: "shovel",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3105,7 +3214,8 @@ let thingMetaData = {
   ironSword: {
     breakTime: undefined,
     tool: true,
-    toolType: "Sword",
+    toolMaterial: "iron",
+    toolType: "sword",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3122,7 +3232,8 @@ let thingMetaData = {
   goldAxe: {
     breakTime: undefined,
     tool: true,
-    toolType: "Axe",
+    toolMaterial: "gold",
+    toolType: "axe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3139,7 +3250,8 @@ let thingMetaData = {
   goldHoe: {
     breakTime: undefined,
     tool: true,
-    toolType: "Hoe",
+    toolMaterial: "gold",
+    toolType: "hoe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3156,7 +3268,8 @@ let thingMetaData = {
   goldPickaxe: {
     breakTime: undefined,
     tool: true,
-    toolType: "Pickaxe",
+    toolMaterial: "gold",
+    toolType: "pickaxe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3173,7 +3286,8 @@ let thingMetaData = {
   goldShovel: {
     breakTime: undefined,
     tool: true,
-    toolType: "Shovel",
+    toolMaterial: "gold",
+    toolType: "shovel",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3190,7 +3304,8 @@ let thingMetaData = {
   goldSword: {
     breakTime: undefined,
     tool: true,
-    toolType: "Sword",
+    toolMaterial: "gold",
+    toolType: "sword",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3207,7 +3322,8 @@ let thingMetaData = {
   diamondAxe: {
     breakTime: undefined,
     tool: true,
-    toolType: "Axe",
+    toolMaterial: "diamond",
+    toolType: "axe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3224,7 +3340,8 @@ let thingMetaData = {
   diamondHoe: {
     breakTime: undefined,
     tool: true,
-    toolType: "Hoe",
+    toolMaterial: "diamond",
+    toolType: "hoe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3241,7 +3358,8 @@ let thingMetaData = {
   diamondPickaxe: {
     breakTime: undefined,
     tool: true,
-    toolType: "Pickaxe",
+    toolMaterial: "diamond",
+    toolType: "pickaxe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3258,7 +3376,8 @@ let thingMetaData = {
   diamondShovel: {
     breakTime: undefined,
     tool: true,
-    toolType: "Shovel",
+    toolMaterial: "diamond",
+    toolType: "shovel",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3275,7 +3394,8 @@ let thingMetaData = {
   diamondSword: {
     breakTime: undefined,
     tool: true,
-    toolType: "Sword",
+    toolMaterial: "diamond",
+    toolType: "sword",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3292,7 +3412,8 @@ let thingMetaData = {
   copperAxe: {
     breakTime: undefined,
     tool: true,
-    toolType: "Axe",
+    toolMaterial: "copper",
+    toolType: "axe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3309,7 +3430,8 @@ let thingMetaData = {
   copperPickaxe: {
     breakTime: undefined,
     tool: true,
-    toolType: "Pickaxe",
+    toolMaterial: "copper",
+    toolType: "pickaxe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3326,7 +3448,8 @@ let thingMetaData = {
   copperShovel: {
     breakTime: undefined,
     tool: true,
-    toolType: "Shovel",
+    toolMaterial: "copper",
+    toolType: "shovel",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3340,10 +3463,29 @@ let thingMetaData = {
     maxStack: 1,
     dropIfWrongTool: true,
   },
+  copperHoe: {
+    breakTime: undefined,
+    tool: true,
+    toolMaterial: "copper",
+    toolType: "hoe",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    color1: "#E6A271",
+    color1Class: new Color(230 / 255, 162 / 255, 113 / 255),
+    color2: "#9A4C27",
+    color2Class: new Color(154 / 255, 76 / 255, 39 / 255),
+    utility: false,
+    block: false,
+    item: true,
+    maxStack: 1,
+    dropIfWrongTool: false,
+  },
   copperSword: {
     breakTime: undefined,
     tool: true,
-    toolType: "Sword",
+    toolMaterial: "copper",
+    toolType: "sword",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3360,7 +3502,8 @@ let thingMetaData = {
   sugiliteAxe: {
     breakTime: undefined,
     tool: true,
-    toolType: "Axe",
+    toolMaterial: "sugilite",
+    toolType: "axe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3377,7 +3520,8 @@ let thingMetaData = {
   sugilitePickaxe: {
     breakTime: undefined,
     tool: true,
-    toolType: "Pickaxe",
+    toolMaterial: "sugilite",
+    toolType: "pickaxe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3394,7 +3538,8 @@ let thingMetaData = {
   sugiliteShovel: {
     breakTime: undefined,
     tool: true,
-    toolType: "Shovel",
+    toolMaterial: "sugilite",
+    toolType: "shovel",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3411,7 +3556,8 @@ let thingMetaData = {
   sugiliteSword: {
     breakTime: undefined,
     tool: true,
-    toolType: "Sword",
+    toolMaterial: "sugilite",
+    toolType: "sword",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3427,7 +3573,7 @@ let thingMetaData = {
   },
   acatiaLog: {
     breakTime: 1.5,
-    tool: "Axe",
+    tool: "axe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3444,7 +3590,7 @@ let thingMetaData = {
   },
   acatiaLeaf: {
     breakTime: 0.25,
-    tool: "Hoe",
+    tool: "hoe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3479,7 +3625,8 @@ let thingMetaData = {
   copperAxe: {
     breakTime: undefined,
     tool: true,
-    toolType: "Axe",
+    toolMaterial: "copper",
+    toolType: "axe",
     collision: false,
     translucent: false,
     liquid: false,

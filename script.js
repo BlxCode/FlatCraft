@@ -2137,12 +2137,11 @@ const mouseThings = () => {
           0.1,
           0.1,
         );
-        const drop = new droppedItem(
-          blockType,
-          blockMousePos.x,
-          blockMousePos.y,
-        );
-
+        if (thingMetaData[blockType].dropIfWrongTool) {
+          new droppedItem(blockType, blockMousePos.x, blockMousePos.y);
+        } else if (thingMetaData[blockType].mineWithTool == heldToolType) {
+          new droppedItem(blockType, blockMousePos.x, blockMousePos.y);
+        }
         setTimeout(() => {
           breakParticle.destroy(true);
         }, 200);
@@ -2468,7 +2467,7 @@ let thingMetaData = {
   },
   cedarLog: {
     breakTime: 1.5,
-    tool: "axe",
+    mineWithTool: "axe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2481,11 +2480,11 @@ let thingMetaData = {
     tool: false,
     item: false,
     maxStack: 64,
-    dropIfWrongTool: false,
+    dropIfWrongTool: true,
   },
   coalBlock: {
     breakTime: 3.1,
-    tool: "pickaxe",
+    mineWithTool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2502,7 +2501,7 @@ let thingMetaData = {
   },
   coalOre: {
     breakTime: 3.1,
-    tool: "pickaxe",
+    mineWithTool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2519,7 +2518,7 @@ let thingMetaData = {
   },
   copperBlock: {
     breakTime: 2.8,
-    tool: "pickaxe",
+    mineWithTool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2536,7 +2535,7 @@ let thingMetaData = {
   },
   copperOre: {
     breakTime: 2.8,
-    tool: "pickaxe",
+    mineWithTool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2553,7 +2552,7 @@ let thingMetaData = {
   },
   diamondBlock: {
     breakTime: 4,
-    tool: "pickaxe",
+    mineWithTool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2570,7 +2569,7 @@ let thingMetaData = {
   },
   diamondOre: {
     breakTime: 4,
-    tool: "pickaxe",
+    mineWithTool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2583,11 +2582,11 @@ let thingMetaData = {
     tool: false,
     item: false,
     maxStack: 64,
-    dropIfWrongTool: true,
+    dropIfWrongTool: false,
   },
   dirt: {
     breakTime: 1,
-    tool: "shovel",
+    mineWithTool: "shovel",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2600,11 +2599,11 @@ let thingMetaData = {
     tool: false,
     item: false,
     maxStack: 64,
-    dropIfWrongTool: false,
+    dropIfWrongTool: true,
   },
   emeraldBlock: {
     breakTime: 4,
-    tool: "pickaxe",
+    mineWithTool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2621,7 +2620,7 @@ let thingMetaData = {
   },
   emeraldOre: {
     breakTime: 4,
-    tool: "pickaxe",
+    mineWithTool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2638,7 +2637,7 @@ let thingMetaData = {
   },
   goldBlock: {
     breakTime: 3.2,
-    tool: "pickaxe",
+    mineWithTool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2655,7 +2654,7 @@ let thingMetaData = {
   },
   goldOre: {
     breakTime: 3.2,
-    tool: "pickaxe",
+    mineWithTool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2672,7 +2671,7 @@ let thingMetaData = {
   },
   grass: {
     breakTime: 1,
-    tool: "shovel",
+    mineWithTool: "shovel",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2685,11 +2684,11 @@ let thingMetaData = {
     tool: false,
     item: false,
     maxStack: 64,
-    dropIfWrongTool: false,
+    dropIfWrongTool: true,
   },
   ironBlock: {
     breakTime: 3,
-    tool: "pickaxe",
+    mineWithTool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2706,7 +2705,7 @@ let thingMetaData = {
   },
   ironOre: {
     breakTime: 3,
-    tool: "pickaxe",
+    mineWithTool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2723,7 +2722,7 @@ let thingMetaData = {
   },
   jungleLog: {
     breakTime: 1.5,
-    tool: "axe",
+    mineWithTool: "axe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2740,7 +2739,7 @@ let thingMetaData = {
   },
   mapleLog: {
     breakTime: 1.5,
-    tool: "axe",
+    mineWithTool: "axe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -2757,7 +2756,7 @@ let thingMetaData = {
   },
   mapleLeaf: {
     breakTime: 0.25,
-    tool: "hoe",
+    mineWithTool: "hoe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -2774,7 +2773,7 @@ let thingMetaData = {
   },
   poplarLog: {
     breakTime: 1.5,
-    tool: "axe",
+    mineWithTool: "axe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2787,11 +2786,11 @@ let thingMetaData = {
     tool: false,
     item: false,
     maxStack: 64,
-    dropIfWrongTool: false,
+    dropIfWrongTool: true,
   },
   stone: {
     breakTime: 3,
-    tool: "pickaxe",
+    mineWithTool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2808,7 +2807,7 @@ let thingMetaData = {
   },
   sugiliteBlock: {
     breakTime: 4.5,
-    tool: "pickaxe",
+    mineWithTool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2825,7 +2824,7 @@ let thingMetaData = {
   },
   sugiliteOre: {
     breakTime: 4.5,
-    tool: "pickaxe",
+    mineWithTool: "pickaxe",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2842,7 +2841,7 @@ let thingMetaData = {
   },
   bedrock: {
     breakTime: Infinity,
-    tool: "hands",
+    mineWithTool: "hands",
     collision: true,
     translucent: false,
     liquid: false,
@@ -2859,7 +2858,7 @@ let thingMetaData = {
   },
   rickRoll: {
     breakTime: undefined,
-    tool: "hands",
+    mineWithTool: "hands",
     collision: false,
     translucent: false,
     liquid: false,
@@ -2876,7 +2875,7 @@ let thingMetaData = {
   },
   hoverFar: {
     breakTime: undefined,
-    tool: "hands",
+    mineWithTool: "hands",
     collision: false,
     translucent: false,
     liquid: false,
@@ -2893,7 +2892,7 @@ let thingMetaData = {
   },
   hoverClose: {
     breakTime: undefined,
-    tool: "hands",
+    mineWithTool: "hands",
     collision: false,
     translucent: false,
     liquid: false,
@@ -2910,7 +2909,7 @@ let thingMetaData = {
   },
   chest: {
     breakTime: 1.5,
-    tool: "axe",
+    mineWithTool: "axe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -2927,7 +2926,7 @@ let thingMetaData = {
   },
   furnaceOff: {
     breakTime: 3,
-    tool: "pickaxe",
+    mineWithTool: "pickaxe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -2944,7 +2943,7 @@ let thingMetaData = {
   },
   furnaceOn: {
     breakTime: 3,
-    tool: "pickaxe",
+    mineWithTool: "pickaxe",
     collision: false,
     translucent: false,
     liquid: false,
@@ -3479,7 +3478,7 @@ let thingMetaData = {
     block: false,
     item: true,
     maxStack: 1,
-    dropIfWrongTool: false,
+    dropIfWrongTool: true,
   },
   copperSword: {
     breakTime: undefined,
@@ -3515,7 +3514,7 @@ let thingMetaData = {
     block: false,
     item: true,
     maxStack: 1,
-    dropIfWrongTool: false,
+    dropIfWrongTool: true,
   },
   sugilitePickaxe: {
     breakTime: undefined,

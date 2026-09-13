@@ -902,8 +902,8 @@ const torchColor = rgb(0.95, 0.6, 0.2);
 const surfaceColor = rgb(0.95, 0.95, 0.9);
 const lightColor = rgb(0.85, 0.85, 0.82);
 const midColor = rgb(0.7, 0.7, 0.65);
-const midDarkColor = rgb(0.4, 0.4, 0.37);
-const darkColor = rgb(0.1, 0.15, 0.15);
+const midDarkColor = rgb(0.35, 0.35, 0.32);
+const darkColor = rgb(0.05, 0.05, 0.05);
 function calculateLightLevel() {
   let averageLightLevel = 0;
 
@@ -1340,6 +1340,7 @@ async function gameInit() {
     itemHoldingInCursor: undefined,
     playerHaloGlow: undefined,
     screenLight: undefined,
+    justLanded: false,
 
     getFeetCoords: () => {
       return vec2(player.coords.x, player.coords.y - 0.6);
@@ -1386,11 +1387,11 @@ async function gameInit() {
     isBelowABlock: () => {
       const leftHeadCoords = vec2(
         player.getFeetCoords().x - 0.2,
-        player.coords.y + 1.7,
+        player.coords.y + 1.4,
       );
       const rightHeadCoords = vec2(
         player.getFeetCoords().x + 0.2,
-        Math.floor(player.coords.y + 1.7),
+        Math.floor(player.coords.y + 1.4),
       );
 
       return (
@@ -1415,7 +1416,7 @@ async function gameInit() {
       ) {
         return isCollidableBlockAt(
           Math.ceil(player.coords.x),
-          Math.floor(bottomRightCoords.y + 0.1),
+          Math.floor(bottomRightCoords.y),
         );
       }
       return false;
@@ -1430,7 +1431,7 @@ async function gameInit() {
       ) {
         return isCollidableBlockAt(
           Math.floor(player.coords.x),
-          Math.floor(bottomRightCoords.y + 0.1),
+          Math.floor(bottomRightCoords.y),
         );
       }
       return false;
@@ -1461,6 +1462,36 @@ async function gameInit() {
         return isCollidableBlockAt(
           Math.floor(player.coords.x),
           Math.floor(player.coords.y + 0.5),
+        );
+      }
+      return false;
+    },
+    isThereABlockAtMiddleRight: () => {
+      const bottomRightCoords = player.getCoordsAt("br");
+
+      if (
+        Math.abs(player.coords.x) -
+          Math.abs(Math.floor(Math.abs(player.coords.x))) <
+        0.9
+      ) {
+        return isCollidableBlockAt(
+          Math.ceil(player.coords.x),
+          Math.floor(bottomRightCoords.y + 0.25),
+        );
+      }
+      return false;
+    },
+    isThereABlockAtMiddleLeft: () => {
+      const bottomRightCoords = player.getCoordsAt("bl");
+
+      if (
+        Math.abs(player.coords.x) -
+          Math.abs(Math.floor(Math.abs(player.coords.x))) >
+        0.1
+      ) {
+        return isCollidableBlockAt(
+          Math.floor(player.coords.x),
+          Math.floor(bottomRightCoords.y + 0.25),
         );
       }
       return false;
@@ -1736,10 +1767,15 @@ async function gameInit() {
           setTimeout(() => {
             fallParticle.destroy(true);
           }, 200);
+          setTimeout(() => {
+            player.justLanded = false;
+          }, 32);
           player.isFalling = false;
-        }
+          player.coords.y = Math.floor(player.getFeetCoords().y) + 1.5;
+          player.justLanded = true;
 
-        player.fallMultiplier = 1;
+          player.fallMultiplier = 1;
+        }
       } else if (!player.isStandingOnBlock()) {
         // Fall physics
 
@@ -1794,6 +1830,9 @@ async function gameInit() {
         }
       } else if (player.jumping && player.isBelowABlock()) {
         player.jumping = false;
+        player.isFalling = true;
+        player.jumpFrame = 1;
+        player.jumpMultiplier = 1;
       }
 
       if (player.isFalling && !player.canFly) {
@@ -2086,144 +2125,152 @@ const mouseThings = () => {
       if (blockType == undefined) {
         blockType = "Air";
       }
-    }
 
-    if (mouseIsDown(0) && blockType != "Air") {
-      let toolBoost = 1;
-      const heldItem = player.getSlot(player.hotbarSlotHovered).item;
-      let heldToolType = thingMetaData[heldItem].toolType;
-      if (thingMetaData[heldItem].tool) {
-        // tool boost metadata
-        const toolBoostData = {
-          wood: 1.5,
-          stone: 1.9,
-          iron: 2.3,
-          diamond: 3.5,
-          gold: 3.4,
-          copper: 2.1,
-          sugilite: 3.6,
-        };
+      if (mouseIsDown(0) && blockType != "Air") {
+        let toolBoost = 1;
+        const heldItem = player.getSlot(player.hotbarSlotHovered).item;
+        let heldToolType = thingMetaData[heldItem].toolType;
 
-        toolBoost = toolBoostData[thingMetaData[heldItem].toolMaterial];
-      }
+        if (
+          thingMetaData[heldItem].tool &&
+          thingMetaData[blockType].mineWithTool == heldToolType
+        ) {
+          // tool boost metadata
+          const toolBoostData = {
+            wood: 1.5,
+            stone: 1.9,
+            iron: 2.7,
+            diamond: 3.5,
+            gold: 3.4,
+            copper: 2.3,
+            sugilite: 3.6,
+          };
 
-      mouseWasDown = false;
-      if (
-        blockBreakNoSpam >
-        (12 * thingMetaData[blockType]["breakTime"]) / toolBoost
-      ) {
-        blockBreak += 1;
-        blockBreakNoSpam = 0;
-      } else {
-        blockBreakNoSpam += 1;
-      }
-
-      player.isBreakingBlock = true;
-
-      if (blockBreak > 6) {
-        let breakParticle = new ParticleEmitter(
-          blockMousePos,
-          0,
-          vec2(0.5, 0.5),
-          0.05,
-          1902,
-          180,
-          undefined,
-          thingMetaData[blockType || "Air"].color1Class,
-          thingMetaData[blockType || "Air"].color2Class,
-          CLEAR_WHITE,
-          CLEAR_WHITE,
-          0.1,
-          0.1,
-          0.1,
-        );
-        if (thingMetaData[blockType].dropIfWrongTool) {
-          new droppedItem(blockType, blockMousePos.x, blockMousePos.y);
-        } else if (thingMetaData[blockType].mineWithTool == heldToolType) {
-          new droppedItem(blockType, blockMousePos.x, blockMousePos.y);
+          toolBoost = toolBoostData[thingMetaData[heldItem].toolMaterial];
+          console.log(toolBoost);
         }
-        setTimeout(() => {
-          breakParticle.destroy(true);
-        }, 200);
-        mouseWasDown = false;
-        destroyBlock(blockMousePos.x, blockMousePos.y);
-        blockBreak = 0;
-        blockBreakNoSpam = 0;
-        player.isBreakingBlock = false;
-        player.raisedArms = false;
-        player.lowerArms = true;
-        player.animationChangeTimer = 0;
-      } else {
-        drawTile(
-          vec2(blockMousePos.x, blockMousePos.y),
-          vec2(0.75),
-          blockBreakingTexture["frame" + blockBreak],
-        );
-      }
-      if (mouseIsDown(0) && blockType != "Air" && player.isWalking) {
-      }
-      if (mouseIsDown(0) && blockType == "Air" && player.isBreakingBlock) {
-        blockBreakNoSpam = 0;
-        blockBreak = 0;
-        player.isBreakingBlock = false;
-        player.raisedArms = false;
-        player.lowerArms = true;
-        mouseWasDown = false;
-      }
 
+        mouseWasDown = false;
+        if (
+          blockBreakNoSpam >
+          (12 * thingMetaData[blockType]["breakTime"] || -1) / toolBoost
+        ) {
+          blockBreak += 1;
+          blockBreakNoSpam = 0;
+        } else {
+          blockBreakNoSpam += 1;
+        }
+
+        player.isBreakingBlock = true;
+
+        if (blockBreak > 6) {
+          let breakParticle = new ParticleEmitter(
+            blockMousePos,
+            0,
+            vec2(0.5, 0.5),
+            0.05,
+            1902,
+            180,
+            undefined,
+            thingMetaData[blockType || "Air"].color1Class,
+            thingMetaData[blockType || "Air"].color2Class,
+            CLEAR_WHITE,
+            CLEAR_WHITE,
+            0.1,
+            0.1,
+            0.1,
+          );
+          if (thingMetaData[blockType].dropIfWrongTool) {
+            new droppedItem(blockType, blockMousePos.x, blockMousePos.y);
+          } else if (thingMetaData[blockType].mineWithTool == heldToolType) {
+            new droppedItem(blockType, blockMousePos.x, blockMousePos.y);
+          }
+          setTimeout(() => {
+            breakParticle.destroy(true);
+          }, 200);
+          mouseWasDown = false;
+          destroyBlock(blockMousePos.x, blockMousePos.y);
+          blockBreak = 0;
+          blockBreakNoSpam = 0;
+          player.isBreakingBlock = false;
+          player.raisedArms = false;
+          player.lowerArms = true;
+          player.animationChangeTimer = 0;
+        } else {
+          drawTile(
+            vec2(blockMousePos.x, blockMousePos.y),
+            vec2(0.75),
+            blockBreakingTexture["frame" + blockBreak],
+          );
+        }
+        if (mouseIsDown(0) && blockType != "Air" && player.isWalking) {
+        }
+        if (mouseIsDown(0) && blockType == "Air" && player.isBreakingBlock) {
+          blockBreakNoSpam = 0;
+          blockBreak = 0;
+          player.isBreakingBlock = false;
+          player.raisedArms = false;
+          player.lowerArms = true;
+          mouseWasDown = false;
+        }
+      }
       if (mouseWasDown && !mouseIsDown(0) && !player.isBreakingBlock) {
         mouseWasDown = false;
         player.attackAnim = true;
       }
-    }
-
-    // place blocks
-    let allowed = false;
-    if (
-      mouseIsDown(2) &&
-      !blocks[`${blockMousePos.x},${blockMousePos.y}`] &&
-      player.getSlot(player.hotbarSlotHovered).item != "air" &&
-      thingMetaData[player.getSlot(player.hotbarSlotHovered).item].block
-    ) {
+      // place blocks
+      let allowed = false;
       if (
-        !thingMetaData[player.getSlot(player.hotbarSlotHovered).item].collision
+        mouseIsDown(2) &&
+        !blocks[`${blockMousePos.x},${blockMousePos.y}`] &&
+        player.getSlot(player.hotbarSlotHovered).item != "air" &&
+        thingMetaData[player.getSlot(player.hotbarSlotHovered).item].block
       ) {
-        allowed = true;
-      } else {
         if (
+          !thingMetaData[player.getSlot(player.hotbarSlotHovered).item]
+            .collision &&
           (blocks[`${blockMousePos.x},${blockMousePos.y + 1}`] ||
             blocks[`${blockMousePos.x},${blockMousePos.y - 1}`] ||
             blocks[`${blockMousePos.x + 1},${blockMousePos.y}`] ||
-            blocks[`${blockMousePos.x - 1},${blockMousePos.y}`]) &&
-          ((Math.abs(
-            Math.round(player.getCoordsAt("br").x) - blockMousePos.x,
-          ) != 0 &&
-            Math.abs(
-              Math.round(player.getCoordsAt("bl").x) - blockMousePos.x,
-            ) != 0) ||
-            (Math.round(player.coords.y) - blockMousePos.y != 0 &&
-              Math.round(player.coords.y) - blockMousePos.y != 1))
+            blocks[`${blockMousePos.x - 1},${blockMousePos.y}`])
         ) {
           allowed = true;
-        }
-      }
-
-      if (allowed) {
-        console.log("placing block", player.attackAnim);
-        player.attackAnim = true;
-        createBlock(
-          blockMousePos.x,
-          blockMousePos.y,
-          player.getSlot(player.hotbarSlotHovered).item,
-        );
-        if (player.getSlot(player.hotbarSlotHovered).amount - 1 != 0) {
-          player.setSlot(
-            player.getSlot(player.hotbarSlotHovered).item,
-            player.getSlot(player.hotbarSlotHovered).amount - 1,
-            player.hotbarSlotHovered,
-          );
         } else {
-          player.setSlot("air", 0, player.hotbarSlotHovered);
+          if (
+            (blocks[`${blockMousePos.x},${blockMousePos.y + 1}`] ||
+              blocks[`${blockMousePos.x},${blockMousePos.y - 1}`] ||
+              blocks[`${blockMousePos.x + 1},${blockMousePos.y}`] ||
+              blocks[`${blockMousePos.x - 1},${blockMousePos.y}`]) &&
+            ((Math.abs(
+              Math.round(player.getCoordsAt("br").x) - blockMousePos.x,
+            ) != 0 &&
+              Math.abs(
+                Math.round(player.getCoordsAt("bl").x) - blockMousePos.x,
+              ) != 0) ||
+              (Math.round(player.coords.y) - blockMousePos.y != 0 &&
+                Math.round(player.coords.y) - blockMousePos.y != 1))
+          ) {
+            allowed = true;
+          }
+        }
+
+        if (allowed) {
+          console.log("placing block", player.attackAnim);
+          player.attackAnim = true;
+          createBlock(
+            blockMousePos.x,
+            blockMousePos.y,
+            player.getSlot(player.hotbarSlotHovered).item,
+          );
+          if (player.getSlot(player.hotbarSlotHovered).amount - 1 != 0) {
+            player.setSlot(
+              player.getSlot(player.hotbarSlotHovered).item,
+              player.getSlot(player.hotbarSlotHovered).amount - 1,
+              player.hotbarSlotHovered,
+            );
+          } else {
+            player.setSlot("air", 0, player.hotbarSlotHovered);
+          }
         }
       }
     }
@@ -2281,14 +2328,19 @@ function moveSideways(direction) {
   if (direction == "r") {
     if (
       player.isThereABlockAtBottomRight() ||
-      player.isThereABlockAtTopRight()
+      player.isThereABlockAtTopRight() ||
+      player.isThereABlockAtMiddleRight()
     ) {
       player.isWalking = false;
     } else {
       player.isWalking = true;
     }
   } else if (direction == "l") {
-    if (player.isThereABlockAtBottomLeft() || player.isThereABlockAtTopLeft()) {
+    if (
+      player.isThereABlockAtBottomLeft() ||
+      player.isThereABlockAtTopLeft() ||
+      player.isThereABlockAtMiddleLeft()
+    ) {
       player.isWalking = false;
     } else {
       player.isWalking = true;
@@ -2377,7 +2429,7 @@ async function gameRender() {
   player.crouching = false;
 
   if (!getPaused()) {
-    if (keyIsDown("ArrowUp") && !player.isFalling) {
+    if ((keyIsDown("ArrowUp")|| keyIsDown("Space")) && !player.isFalling && !player.justLanded) {
       player.jumping = true;
     }
     if (keyIsDown("ArrowDown")) {
@@ -2431,6 +2483,23 @@ let chunks = {
 };
 // can also be used for idk.. tools
 let thingMetaData = {
+  undefined: {
+    breakTime: -1,
+    tool: "hands",
+    collision: false,
+    translucent: true,
+    liquid: false,
+    color1: "#239d2d00",
+    color1Class: new Color(0.137, 0.616, 0.176, 0),
+    color2: "#1b7f2300",
+    color2Class: new Color(0.106, 0.498, 0.141, 0),
+    utility: false,
+    block: false,
+    tool: false,
+    item: true,
+    maxStack: 64,
+    dropIfWrongTool: false,
+  },
   air: {
     breakTime: -1,
     tool: "hands",
@@ -2723,7 +2792,7 @@ let thingMetaData = {
   jungleLog: {
     breakTime: 1.5,
     mineWithTool: "axe",
-    collision: true,
+    collision: false,
     translucent: false,
     liquid: false,
     color1: "#7D4D2A",
@@ -2774,7 +2843,7 @@ let thingMetaData = {
   poplarLog: {
     breakTime: 1.5,
     mineWithTool: "axe",
-    collision: true,
+    collision: false,
     translucent: false,
     liquid: false,
     color1: "#9C6B3B",
@@ -3644,8 +3713,7 @@ const biomes = ["plains", "mapleForest", "desert"];
 
 function getBiome(number) {
   // Simplex noise returns values in [-1, 1]. Convert that to a humidity range [0, 1].
-  const humidity = (number + 1) / 2;
-
+  const humidity = number;
   if (humidity >= 0.6) {
     return "mapleForest";
   }
@@ -3667,8 +3735,6 @@ function procedurallyGenerateWorld(seed) {
   if (seed === undefined) {
     seed = Math.random() * 10000;
   }
-
-  // Create chunks and populate the world here in the future.
 }
 
 function createFlatWorld(seed) {

@@ -134,11 +134,13 @@ ul {
   transform: translate(-50%, -50%);
   transform-origin: center center;
   z-index: 6;
-  width: 75%;
-  height: 75%;
+  min-width: 40%;
+  min-height: 40%;
+  width: fit-content;
+  height: fit-content;
   background-color: var(--primary-bg-color);
   color: var(--primary-color);
-  padding: 1dvh;
+  padding: 2dvh;
   overflow: hidden;
 }
 .inventoryBody {
@@ -146,7 +148,8 @@ ul {
   margin: 0.1dvh;
 }
 #inventoryCenter {
-  margin-right: 0.7dvh;
+ 
+  padding:3dvh;
 
   transform-origin: center center;
 }

@@ -180,7 +180,8 @@ window.addEventListener("load", () => {
   startInit();
 });
 // MAIN MENU
-enterGameButtonLoadingScreenWrapper.addEventListener("click", () => {
+enterGameButtonLoadingScreenWrapper.addEventListener("click", (e) => {
+  e.currentTarget.blur();
   mainMenuAudio.play();
   loadingScreen.className = "popCloseHide";
 });
@@ -188,7 +189,8 @@ enterGameButtonLoadingScreenWrapper.addEventListener("click", () => {
 const backdropUI = document.getElementById("backdrop");
 const buttonOpenCredits = document.getElementById("mainMenuButtonCredits");
 document.getElementById("credits").getBoundingClientRect();
-buttonOpenCredits.addEventListener("click", () => {
+buttonOpenCredits.addEventListener("click", (e) => {
+  e.currentTarget.blur();
   document.getElementById("credits").className = "popAnim";
   paused = true;
   backdropUI.hidden = false;
@@ -196,7 +198,8 @@ buttonOpenCredits.addEventListener("click", () => {
 });
 
 const buttonCloseCredits = document.getElementById("buttonCloseCredits");
-buttonCloseCredits.addEventListener("click", () => {
+buttonCloseCredits.addEventListener("click", (e) => {
+  e.currentTarget.blur();
   document.getElementById("credits").className = "popCloseHide";
   paused = false;
   backdropUI.hidden = true;
@@ -204,7 +207,8 @@ buttonCloseCredits.addEventListener("click", () => {
 });
 
 const buttonOpenSettings = document.getElementById("mainMenuButtonSettings");
-buttonOpenSettings.addEventListener("click", () => {
+buttonOpenSettings.addEventListener("click", (e) => {
+  e.currentTarget.blur();
   document.getElementById("settings").className = "popAnim";
   setPaused(true);
   backdropUI.hidden = false;
@@ -212,7 +216,8 @@ buttonOpenSettings.addEventListener("click", () => {
 });
 
 const buttonCloseSettings = document.getElementById("buttonCloseSettings");
-buttonCloseSettings.addEventListener("click", () => {
+buttonCloseSettings.addEventListener("click", (e) => {
+  e.currentTarget.blur();
   document.getElementById("settings").className = "popCloseHide";
 
   setPaused(false);
@@ -221,14 +226,16 @@ buttonCloseSettings.addEventListener("click", () => {
 });
 
 const buttonPlayGame = document.getElementById("mainMenuButtonPlay");
-buttonPlayGame.addEventListener("click", () => {
+buttonPlayGame.addEventListener("click", (e) => {
+  e.currentTarget.blur();
   worldMenu.className = "popAnim";
   backdropUI.hidden = false;
   currentPopup = worldMenu;
 });
 
 const buttonCloseWorlds = document.getElementById("buttonCloseWorlds");
-buttonCloseWorlds.addEventListener("click", () => {
+buttonCloseWorlds.addEventListener("click", (e) => {
+  e.currentTarget.blur();
   worldMenu.className = "popCloseHide";
   backdropUI.hidden = true;
   currentPopup = null;
@@ -243,20 +250,23 @@ const buttonCloseCreateWorldMenu = document.getElementById(
   "buttonCloseCreateWorldMenu",
 );
 const submitNewWorldForm = document.getElementById("submitCreateWorldForm");
-buttonCloseCreateWorldMenu.addEventListener("click", () => {
+buttonCloseCreateWorldMenu.addEventListener("click", (e) => {
+  e.currentTarget.blur();
   worldCreateMenu.className = "popCloseHide";
   worldMenu.className = "popAnim text-center";
   currentPopup = worldMenu;
 });
 
-createNewWorld.addEventListener("click", () => {
+createNewWorld.addEventListener("click", (e) => {
+  e.currentTarget.blur();
   worldMenu.className = "popCloseHide text-center";
   worldCreateMenu.className = "popAnim";
   currentPopup = worldCreateMenu;
 });
 let createWorldInfo = {};
 
-submitNewWorldForm.addEventListener("click", () => {
+submitNewWorldForm.addEventListener("click", (e) => {
+  e.currentTarget.blur();
   const allInputs = document.getElementsByClassName("worldCreateForm");
   const worldNameInput = document.getElementById("createWorld-WorldName");
   const worldDescInput = document.getElementById("createWorld-WorldDesc");
@@ -292,7 +302,8 @@ submitNewWorldForm.addEventListener("click", () => {
   }
 });
 
-backdropUI.addEventListener("click", () => {
+backdropUI.addEventListener("click", (e) => {
+  e.currentTarget.blur();
   if (!currentPopup) {
     return;
   }
@@ -350,17 +361,21 @@ function switchSettingsTab(newTab, newTabValue) {
   }
 }
 
-settingsNavItemGeneral.addEventListener("click", () => {
+settingsNavItemGeneral.addEventListener("click", (e) => {
+  e.currentTarget.blur();
   switchSettingsTab(settingsNavItemGeneral, "General");
 });
-settingsNavItemGraphics.addEventListener("click", () => {
+settingsNavItemGraphics.addEventListener("click", (e) => {
+  e.currentTarget.blur();
   switchSettingsTab(settingsNavItemGraphics, "Graphics");
 });
-settingsNavItemSkin.addEventListener("click", () => {
+settingsNavItemSkin.addEventListener("click", (e) => {
+  e.currentTarget.blur();
   switchSettingsTab(settingsNavItemSkin, "Skin");
 });
 // Close button hides the popup and its backdrop.
-document.getElementById("popupClose").addEventListener("click", () => {
+document.getElementById("popupClose").addEventListener("click", (e) => {
+  e.currentTarget.blur();
   errorDiv.className = "popCloseHide";
   errorBackdrop.hidden = true;
 });
@@ -470,7 +485,8 @@ document.addEventListener("invenEvent", renderInven);
 
 // inventory moving stuff
 for (let i = 0; i <= 35; i++) {
-  getInvenElement(i).div.addEventListener("click", () => {
+  getInvenElement(i).div.addEventListener("click", (e) => {
+    e.currentTarget.blur();
     if (player.inventory[i]) {
       if (
         player.inventory[i].item != "air" &&
@@ -818,6 +834,9 @@ function loadImage(name, type = "block") {
 }
 const textureNames = [
   "acatiaLog",
+  "cedarPlanks",
+  "maplePlanks",
+  "snow",
   "cedarLog",
   "coalBlock",
   "coalOre",
@@ -848,6 +867,7 @@ const textureNames = [
   "chest",
   "furnaceOff",
   "furnaceOn",
+  "sand",
 
   //tools
   "woodAxe",
@@ -903,6 +923,7 @@ const surfaceColor = rgb(0.95, 0.95, 0.9);
 const lightColor = rgb(0.85, 0.85, 0.82);
 const midColor = rgb(0.7, 0.7, 0.65);
 const midDarkColor = rgb(0.35, 0.35, 0.32);
+const lowDarkColor = rgb(0.15, 0.15, 0.15);
 const darkColor = rgb(0.05, 0.05, 0.05);
 function calculateLightLevel() {
   let averageLightLevel = 0;
@@ -911,7 +932,7 @@ function calculateLightLevel() {
   const playerY = Math.floor(player.coords.y + 0.5);
   const skyYLevel = 30;
 
-  for (let x = playerX - 3; x <= playerX + 3; x++) {
+  for (let x = playerX - 5; x <= playerX + 5; x++) {
     const rayCastResult = blockRayCast(x, skyYLevel, "down");
 
     if (!rayCastResult || rayCastResult.location.y < playerY) {
@@ -925,7 +946,7 @@ function calculateLightLevel() {
     averageLightLevel += 2;
   }
 
-  lightMap = averageLightLevel / 4;
+  lightMap = averageLightLevel / 5.5;
 
   // Reset for next calculation
   averageLightLevel = 0;
@@ -949,8 +970,18 @@ function calculateLightLevel() {
     player.playerHaloGlow.render();
   }
 
-  if (lightMap < 0.5 && lightMap > 0) {
+  if (lightMap < 0.5 && lightMap > 0.3) {
     player.screenLight.ambientColor = midDarkColor;
+    player.playerHaloGlow = new Light(
+      vec2(player.coords.x, player.coords.y + 0.2),
+      2,
+      new Color(0.85, 0.85, 0.75, 0.5),
+      3,
+    );
+    player.playerHaloGlow.render();
+  }
+  if (lightMap <= 0.3 && lightMap > 0) {
+    player.screenLight.ambientColor = lowDarkColor;
     player.playerHaloGlow = new Light(
       vec2(player.coords.x, player.coords.y + 0.2),
       2,
@@ -1035,7 +1066,8 @@ function blockRayCast(startX, startY, dir) {
     return false;
   }
 }
-dgeID("getEverything").addEventListener("click", () => {
+dgeID("getEverything").addEventListener("click", (e) => {
+  e.currentTarget.blur();
   for (const i of textureNames) {
     new droppedItem(
       i,
@@ -1533,6 +1565,7 @@ async function gameInit() {
         !player.attackAnim &&
         player.animationChangeTimer > 16
       ) {
+        player.attackAnim = false;
         if (player.animation == "crouchWalk") {
           player.animation = "crouch";
         } else {
@@ -1968,6 +2001,7 @@ async function gameInit() {
     isInGame = true;
     if (event.detail.worldType == "sandbox") {
       procedurallyGenerateWorld(Number(event.detail.worldSeed));
+      player.coords = vec2(0, 10);
     } else if (event.detail.worldType == "flat") {
       createFlatWorld(Number(event.detail.worldSeed));
 
@@ -1980,7 +2014,8 @@ async function gameInit() {
 }
 window.drops = drops;
 for (let i = 0; i <= 8; i++) {
-  hotbarSlot[i].addEventListener("click", () => {
+  hotbarSlot[i].addEventListener("click", (e) => {
+    e.currentTarget.blur();
     player.changeHotbarSlot(i);
   });
 }
@@ -2255,7 +2290,6 @@ const mouseThings = () => {
         }
 
         if (allowed) {
-          console.log("placing block", player.attackAnim);
           player.attackAnim = true;
           createBlock(
             blockMousePos.x,
@@ -2429,7 +2463,11 @@ async function gameRender() {
   player.crouching = false;
 
   if (!getPaused()) {
-    if ((keyIsDown("ArrowUp")|| keyIsDown("Space")) && !player.isFalling && !player.justLanded) {
+    if (
+      (keyIsDown("ArrowUp") || keyIsDown("Space")) &&
+      !player.isFalling &&
+      !player.justLanded
+    ) {
       player.jumping = true;
     }
     if (keyIsDown("ArrowDown")) {
@@ -2537,7 +2575,7 @@ let thingMetaData = {
   cedarLog: {
     breakTime: 1.5,
     mineWithTool: "axe",
-    collision: true,
+    collision: false,
     translucent: false,
     liquid: false,
     color1: "#8B5E3C",
@@ -2663,6 +2701,23 @@ let thingMetaData = {
     color1Class: new Color(0.349, 0.247, 0.176, 1),
     color2: "#493323",
     color2Class: new Color(0.286, 0.2, 0.137, 1),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: true,
+  },
+  sand: {
+    breakTime: 1,
+    mineWithTool: "shovel",
+    collision: true,
+    translucent: false,
+    liquid: false,
+    color1: "#bdc13c",
+    color1Class: new Color(1, 1, 0.176, 1),
+    color2: "#ebfe37",
+    color2Class: new Color(1, 1, 0.137, 1),
     utility: false,
     block: true,
     tool: false,
@@ -2833,6 +2888,57 @@ let thingMetaData = {
     color1Class: new Color(0.282, 0.514, 0.298, 1),
     color2: "#396A3D",
     color2Class: new Color(0.224, 0.416, 0.239, 1),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: true,
+  },
+  snow: {
+    breakTime: 0.8,
+    mineWithTool: "shovel",
+    collision: true,
+    translucent: false,
+    liquid: false,
+    color1: "#FFFFFF",
+    color1Class: new Color(1, 1, 1, 1),
+    color2: "#e0e0e0",
+    color2Class: new Color(0.878, 0.878, 0.878, 1),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: true,
+  },
+  cedarPlanks: {
+    breakTime: 1.5,
+    mineWithTool: "axe",
+    collision: true,
+    translucent: false,
+    liquid: false,
+    color1: "#A67C52",
+    color1Class: new Color(0.651, 0.486, 0.322, 1),
+    color2: "#7B5A3C",
+    color2Class: new Color(0.482, 0.353, 0.235, 1),
+    utility: false,
+    block: true,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: true,
+  },
+  maplePlanks: {
+    breakTime: 1.5,
+    mineWithTool: "axe",
+    collision: true,
+    translucent: false,
+    liquid: false,
+    color1: "#8B5E3C",
+    color1Class: new Color(0.545, 0.369, 0.235, 1),
+    color2: "#5C3A21",
+    color2Class: new Color(0.361, 0.227, 0.129, 1),
     utility: false,
     block: true,
     tool: false,
@@ -3709,18 +3815,23 @@ let thingMetaData = {
     dropIfWrongTool: true,
   },
 };
-const biomes = ["plains", "mapleForest", "desert"];
+
+let biomes = []
 
 function getBiome(number) {
-  // Simplex noise returns values in [-1, 1]. Convert that to a humidity range [0, 1].
   const humidity = number;
-  if (humidity >= 0.6) {
-    return "mapleForest";
+  switch (humidity) {
+    case 0:
+      return "desert";
+    case 1:
+      return "plains";
+    case 2:
+      return "mapleForest";
+    case 3:
+      return "hills";
+    case 4:
+      return "mountains";
   }
-  if (humidity >= 0.25) {
-    return "plains";
-  }
-  return "desert";
 }
 const worldWidth = 1500;
 const chunkSize = 16;
@@ -3728,15 +3839,235 @@ const seaLevel = 0;
 const maxHeight = 90;
 const minHeight = -50;
 // Generate the world using a seeded random generator.
-function procedurallyGenerateWorld(seed) {
-  // Config values for world generation.
+const flatTerrainVariations = [
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2,
+  2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2,
+  2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2,
+  2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2,
+  2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+];
+const hillyTerrainVariations = [
+  0, 0, 0, 1, 1, 2, 2, 3, 4, 4, 5, 6, 6, 8, 8, 9, 10, 10, 10, 10, 10, 10, 11,
+  11, 11, 11, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 10, 10,
+  10, 10, 11, 13, 14, 15, 16, 17, 19, 20, 21, 21, 21, 21, 21, 21, 21, 21, 19,
+  18, 18, 17, 16, 15, 14, 12, 10, 9, 9, 8, 8, 7, 7, 6, 6, 5, 5, 4, 4, 3, 3, 2,
+  2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  2, 2, 2, 2, 3, 3, 4, 5, 6, 7, 7, 7, 7, 7, 7, 6, 6, 6, 6, 6, 7, 7, 7, 7, 6, 5,
+  5, 5, 4, 3, 2, 2, 2, 1, 1, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4, 4, 5, 6, 6, 8, 8, 9,
+  10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+  10, 11, 11, 11, 11, 10, 10, 10, 10, 11, 13, 14, 15, 16, 17, 19, 20, 21, 21,
+  21, 21, 21, 21, 21, 21, 19, 18, 18, 17, 16, 15, 14, 12, 10, 9, 9, 8, 8, 7, 7,
+  6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 4, 5, 6, 7, 7, 7, 7, 7, 7, 6, 6,
+  6, 6, 6, 7, 7, 7, 7, 6, 5, 5, 5, 4, 3, 2, 2, 2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+  0,
+];
 
-  // Validate the seed and fall back to a random one if needed.
-  if (seed === undefined) {
-    seed = Math.random() * 10000;
+const mountainousTerrainVariations = [
+  1, 4, 6, 9, 11, 14, 18, 21, 25, 28, 32, 36, 40, 44, 48, 52, 54, 55, 57, 58,
+  60, 58, 55, 53, 50, 48, 45, 43, 40, 38, 35, 33, 32, 30, 29, 27, 28, 29, 29,
+  30, 31, 34, 36, 39, 41, 44, 46, 49, 51, 54, 56, 55, 53, 52, 50, 49, 46, 44,
+  41, 39, 36, 33, 30, 28, 25, 22, 20, 18, 16, 14, 12, 13, 14, 16, 17, 18, 21,
+  24, 28, 31, 34, 37, 40, 44, 47, 50, 51, 53, 54, 56, 57, 54, 51, 49, 46, 43,
+  40, 37, 34, 31, 28, 26, 23, 21, 18, 16, 14, 13, 11, 10, 8, 9, 10, 11, 12, 13,
+  16, 19, 23, 26, 29, 32, 36, 39, 43, 46, 49, 52, 54, 57, 60, 58, 56, 55, 53,
+  51, 48, 45, 43, 40, 37, 34, 32, 29, 27, 24, 23, 22, 20, 19, 18, 20, 21, 23,
+  24, 26, 29, 32, 35, 38, 41, 44, 47, 49, 52, 55, 53, 52, 50, 49, 47, 44, 40,
+  37, 33, 30, 27, 24, 21, 18, 15, 13, 11, 9, 7, 5, 6, 7, 9, 10, 11, 14, 17, 19,
+  22, 25, 28, 31, 34, 37, 40, 43, 45, 48, 50, 53, 51, 50, 48, 47, 45, 42, 38,
+  35, 31, 28, 25, 22, 19, 16, 13, 11, 9, 7, 5, 3, 4, 5, 7, 8, 9, 12, 14, 17, 19,
+  22, 25, 28, 32, 35, 38, 41, 44, 48, 51, 54, 55, 56, 58, 59, 60, 58, 56, 53,
+  51, 49, 46, 43, 39, 36, 33, 30, 27, 25, 22, 19, 17, 15, 14, 12, 10, 11, 13,
+  14, 16, 17, 20, 23, 26, 29, 32, 35, 38, 42, 45, 48, 46, 41, 43, 40, 36, 34,
+  30, 23, 15, 13, 12, 9, 5, 1,
+];
+function createMountain(pos) {
+  let relativeX = 0;
+  for (let i = pos; i <= pos + 300; i++) {
+    // top block
+    if (mountainousTerrainVariations[relativeX] > 30) {
+      createBlock(i, mountainousTerrainVariations[relativeX], "snow");
+    } else if (
+      mountainousTerrainVariations[relativeX] > 20 &&
+      mountainousTerrainVariations[relativeX] <= 30
+    ) {
+      createBlock(i, mountainousTerrainVariations[relativeX], "stone");
+    } else if (
+      mountainousTerrainVariations[relativeX] > 15 &&
+      mountainousTerrainVariations[relativeX] <= 20
+    ) {
+      createBlock(i, mountainousTerrainVariations[relativeX], "dirt");
+    } else if (
+    
+      mountainousTerrainVariations[relativeX] <= 15
+    ) {
+      createBlock(i, mountainousTerrainVariations[relativeX], "grass");
+    }
+
+    // underground blocks
+    for (let j = mountainousTerrainVariations[relativeX] - 1; j > -5; j--) {
+      if (j <= 20) {
+        if (j >= mountainousTerrainVariations[relativeX] - 4) {
+          createBlock(i, j, "dirt");
+        } else {
+          createBlock(i, j, "stone");
+        }
+      } else if (j > 20) {
+        createBlock(i, j, "stone");
+      }
+
+      // todo omake mountains
+    
+    }
+    relativeX++;
   }
 }
+function createHills(pos) {
+  let relativeX = 0;
+  for (let i = pos; i <= pos + 300; i++) {
+    createBlock(i, hillyTerrainVariations[relativeX], "grass");
 
+    // underground blocks
+    for (let j = hillyTerrainVariations[relativeX] - 1; j > -5; j--) {
+      if (j >= hillyTerrainVariations[relativeX] - 4) {
+        createBlock(i, j, "dirt");
+      } else {
+        createBlock(i, j, "stone");
+      }
+    }
+    relativeX++;
+  }
+}
+function createFlatTerrain(pos, blockTop, blockMid) {
+  let relativeX = 0;
+  for (let i = pos; i <= pos + 300; i++) {
+    createBlock(i , flatTerrainVariations[relativeX], blockTop);
+
+    // underground blocks
+    for (let j = flatTerrainVariations[relativeX] - 1; j > -5; j--) {
+      if (j >= flatTerrainVariations[relativeX] - 4) {
+        createBlock(i, j, blockMid);
+      } else {
+        createBlock(i, j, "stone");
+      }
+    }
+    relativeX++;
+  }
+}function procedurallyGenerateWorld(seed) {
+
+  // Validate seed
+  if (seed === undefined || typeof seed !== "number" || isNaN(seed)) {
+    seed = Math.floor(Math.random() * 10000);
+    displayError("Invalid seed provided. Using a random seed instead.");
+  }
+
+  const biomeTypes = [
+    "plains",
+    "mapleForest",
+    "desert",
+    "hills",
+    "mountains"
+  ];
+
+  const biomeWeights = {
+    plains: 30,
+    mapleForest: 25,
+    desert: 15,
+    hills: 20,
+    mountains: 10
+  };
+
+  function randomBiome(rng, previousBiome) {
+    // Build a list with weighted probabilities.
+    let choices = [];
+
+    for (const biome of biomeTypes) {
+      let weight = biomeWeights[biome];
+
+      // Make immediate repetition much less likely.
+      if (biome === previousBiome) {
+        weight *= 0.15;
+      }
+
+      for (let i = 0; i < weight; i++) {
+        choices.push(biome);
+      }
+    }
+
+    return choices[rng.int(choices.length)];
+  }
+
+  let previousBiome = null;
+
+  for (let i = 0; i <= 10; i++) {
+
+    const biomeStart = i * 300 - 1500;
+
+    // Unique deterministic RNG for this region.
+    const rng = new RandomGenerator(seed + i * 7919);
+
+    let biome = randomBiome(rng, previousBiome);
+
+    // Extra protection against boring repetition.
+    if (biome === previousBiome) {
+      const alternatives = biomeTypes.filter(b => b !== previousBiome);
+      biome = alternatives[rng.int(alternatives.length)];
+    }
+
+    biomes.push(biome);
+    previousBiome = biome;
+
+    switch (biome) {
+
+      case "plains":
+        createFlatTerrain(
+          biomeStart,
+          "grass",
+          "dirt"
+        );
+        break;
+
+      case "mapleForest":
+        createFlatTerrain(
+          biomeStart,
+          "grass",
+          "dirt",
+        );
+        break;
+
+      case "desert":
+        createFlatTerrain(
+          biomeStart,
+          "sand",
+          "sand"
+        );
+        break;
+
+      case "hills":
+        createHills(biomeStart);
+        break;
+
+      case "mountains":
+        createMountain(biomeStart);
+        break;
+
+      default:
+        createFlatTerrain(
+          biomeStart,
+          "grass",
+          "dirt"
+        );
+        break;
+    }
+  }
+}
 function createFlatWorld(seed) {
   for (let i = -1500; i < worldWidth; i++) {
     createBlock(i, 0, "grass");

@@ -189,6 +189,7 @@
           const name = document.getElementById("name");
           let submitButton = document.getElementById("submit");
           submitButton.addEventListener("click", (e) => {
+            e.currentTarget.blur();
             e.preventDefault();
 
             if (name.value && preview.src) {

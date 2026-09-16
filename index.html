@@ -209,6 +209,7 @@
             <div class="row worldSelectRow text-center">
               <h2 class="worldTitle">My World</h2>
               <p class="worldDesc">Lorem ipsum ipsum lorem lol lorem ipsum</p>
+             
               <button
                 style="
                   text-align: center !important;
@@ -218,20 +219,7 @@
                   padding-left: 0.3dvh !important;
                   padding-right: 0.3dvh !important;
                 "
-                class="woldSelectButton worldEditButton btn btn-secondary w-25 align-middle"
-              >
-                Edit
-              </button>
-              <button
-                style="
-                  text-align: center !important;
-                  margin-left: auto;
-                  font-size: 1.5dvh;
-                  margin-right: auto;
-                  padding-left: 0.3dvh !important;
-                  padding-right: 0.3dvh !important;
-                "
-                class="woldSelectButton worldPlayButton btn btn-success w-25 align-middle"
+                class="woldSelectButton worldPlayButton btn btn-success w-50 align-middle"
               >
                 Play
               </button>
@@ -392,7 +380,8 @@
       <div id="backdrop" hidden></div>
       <div id="errorBackdrop" class="hidden" hidden></div>
       <i
-        id="settingButton"
+        id="saveButton"
+        onclick = "saveGame()"
         style="
           position: fixed;
           top: 10px;
@@ -403,7 +392,7 @@
           -webkit-text-stroke-color: black;
           font-size: 5dvh;
         "
-        class="fa-solid fa-gear clickable"
+        class="fa-solid fa-floppy-disk clickable"
       ></i>
       <div id="hotbar">
         <div class="slot slotHover" id="slot0">

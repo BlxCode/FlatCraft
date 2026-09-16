@@ -3,6 +3,7 @@
 // this is also the first time i've ever used littleJS
 "use strict";
 let isInGame = false;
+let gameId;
 const loadingScreen = document.getElementById("loadingScreen");
 const loadingTitle = document.getElementById("loadingTitle");
 const loadingProgressBar = document.getElementById("loadingProgress");
@@ -834,6 +835,8 @@ function loadImage(name, type = "block") {
 }
 const textureNames = [
   "acatiaLog",
+  "daisy",
+  "redTulip",
   "cedarPlanks",
   "maplePlanks",
   "snow",
@@ -1206,7 +1209,8 @@ class droppedItem {
     }
   }
 }
-
+let worldName;
+let worldDesc;
 async function gameInit() {
   combineCanvases();
   gamepadsEnable = false;
@@ -1837,6 +1841,7 @@ async function gameInit() {
         player.crouching &&
         !player.isBreakingBlock
       ) {
+        player.attackAnim = false;
         player.animation = "crouch";
       }
 
@@ -1989,9 +1994,11 @@ async function gameInit() {
   player.screenLight = new LightSystemPlugin(mainCanvasSize, surfaceColor);
   player.cameraToPlayer();
   document.addEventListener("createWorld", (event) => {
+    gameId = localStorage.getItem("gameTopId");
     console.log("Event received:", event.detail);
     const data = event.detail;
-
+    worldName = data.worldName;
+    worldDesc = data.worldDescription;
     backdropUI.click();
     mainMenuAudio.pause();
     document.getElementById("mainMenu").className = "popCloseHide";
@@ -2521,6 +2528,40 @@ let chunks = {
 };
 // can also be used for idk.. tools
 let thingMetaData = {
+  daisy: {
+    breakTime: 0.1,
+    tool: "hands",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    block: true,
+    color1: "#FFFFFF",
+    color1Class: new Color(1, 1, 1),
+    color2: "#F0F0F0",
+    color2Class: new Color(0.941, 0.941, 0.941),
+    utility: false,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: true,
+  },
+  redTulip: {
+    breakTime: 0.1,
+    tool: "hands",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    block: true,
+    color1: "#da1717",
+    color1Class: new Color(1, 0, 0),
+    color2: "#00ff51",
+    color2Class: new Color(0, 0.941),
+    utility: false,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: true,
+  },
   undefined: {
     breakTime: -1,
     tool: "hands",
@@ -3816,7 +3857,7 @@ let thingMetaData = {
   },
 };
 
-let biomes = []
+let biomes = [];
 
 function getBiome(number) {
   const humidity = number;
@@ -3851,7 +3892,7 @@ const flatTerrainVariations = [
   2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
   1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1,
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+  1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
 ];
 const hillyTerrainVariations = [
   0, 0, 0, 1, 1, 2, 2, 3, 4, 4, 5, 6, 6, 8, 8, 9, 10, 10, 10, 10, 10, 10, 11,
@@ -3888,6 +3929,27 @@ const mountainousTerrainVariations = [
   14, 16, 17, 20, 23, 26, 29, 32, 35, 38, 42, 45, 48, 46, 41, 43, 40, 36, 34,
   30, 23, 15, 13, 12, 9, 5, 1,
 ];
+
+function createTree(x, y, type = "maple") {
+  createBlock(x, y, type + "Log");
+  createBlock(x, y + 1, type + "Log");
+  createBlock(x, y + 2, type + "Log");
+
+  const randomHeight = Math.floor(Math.random() * 2);
+  createBlock(x, y + 3, type + "Log");
+
+  createBlock(x, y + 3 + randomHeight, type + "Log");
+
+  createBlock(x - 1, y + 3 + randomHeight, type + "Leaf");
+  createBlock(x, y + 3 + randomHeight, type + "Leaf");
+  createBlock(x + 1, y + 3 + randomHeight, type + "Leaf");
+
+  createBlock(x - 1, y + 4 + randomHeight, type + "Leaf");
+  createBlock(x, y + 4 + randomHeight, type + "Leaf");
+  createBlock(x + 1, y + 4 + randomHeight, type + "Leaf");
+
+  createBlock(x, y + 5 + randomHeight, type + "Leaf");
+}
 function createMountain(pos) {
   let relativeX = 0;
   for (let i = pos; i <= pos + 300; i++) {
@@ -3904,10 +3966,7 @@ function createMountain(pos) {
       mountainousTerrainVariations[relativeX] <= 20
     ) {
       createBlock(i, mountainousTerrainVariations[relativeX], "dirt");
-    } else if (
-    
-      mountainousTerrainVariations[relativeX] <= 15
-    ) {
+    } else if (mountainousTerrainVariations[relativeX] <= 15) {
       createBlock(i, mountainousTerrainVariations[relativeX], "grass");
     }
 
@@ -3924,14 +3983,24 @@ function createMountain(pos) {
       }
 
       // todo omake mountains
-    
     }
     relativeX++;
   }
 }
 function createHills(pos) {
   let relativeX = 0;
+  let treeChance = 0;
+  let flowerChance = 0;
   for (let i = pos; i <= pos + 300; i++) {
+    treeChance += Math.random() + 1;
+    if (treeChance > 15.5) {
+      createTree(i, hillyTerrainVariations[relativeX] + 1, "maple");
+      treeChance = 0;
+    }
+    if (flowerChance > 3.0) {
+      createBlock(i, hillyTerrainVariations[relativeX] + 1, "daisy");
+      flowerChance = 0;
+    }
     createBlock(i, hillyTerrainVariations[relativeX], "grass");
 
     // underground blocks
@@ -3945,10 +4014,25 @@ function createHills(pos) {
     relativeX++;
   }
 }
-function createFlatTerrain(pos, blockTop, blockMid) {
+function createFlatTerrain(pos, blockTop, blockMid, forest = false) {
   let relativeX = 0;
+  let treeChance = 0;
+  let flowerChance = 0;
   for (let i = pos; i <= pos + 300; i++) {
-    createBlock(i , flatTerrainVariations[relativeX], blockTop);
+    if (blockTop == "grass") {
+      treeChance += Math.random() + 0.1;
+      if (treeChance > (forest ? 4.2 : 7.4)) {
+        createTree(i, flatTerrainVariations[relativeX] + 1, "maple");
+        treeChance = 0;
+      }
+
+      flowerChance += Math.random() + 0.1;
+      if (flowerChance > 3.0) {
+        createBlock(i, flatTerrainVariations[relativeX] + 1, "redTulip");
+        flowerChance = 0;
+      }
+    }
+    createBlock(i, flatTerrainVariations[relativeX], blockTop);
 
     // underground blocks
     for (let j = flatTerrainVariations[relativeX] - 1; j > -5; j--) {
@@ -3960,28 +4044,30 @@ function createFlatTerrain(pos, blockTop, blockMid) {
     }
     relativeX++;
   }
-}function procedurallyGenerateWorld(seed) {
-
+}
+function theDeepDark(seed) {
+  for (let x = -1500; x >= 1500; x++) {
+    for (let y = 0; y > -50; y--) {
+      createBlock(x, y, "stone");
+    }
+  }
+}
+function procedurallyGenerateWorld(seed) {
+  createTree(0, 1, "maple");
   // Validate seed
   if (seed === undefined || typeof seed !== "number" || isNaN(seed)) {
     seed = Math.floor(Math.random() * 10000);
     displayError("Invalid seed provided. Using a random seed instead.");
   }
 
-  const biomeTypes = [
-    "plains",
-    "mapleForest",
-    "desert",
-    "hills",
-    "mountains"
-  ];
+  const biomeTypes = ["plains", "mapleForest", "desert", "hills", "mountains"];
 
   const biomeWeights = {
     plains: 30,
     mapleForest: 25,
     desert: 15,
     hills: 20,
-    mountains: 10
+    mountains: 10,
   };
 
   function randomBiome(rng, previousBiome) {
@@ -4007,7 +4093,6 @@ function createFlatTerrain(pos, blockTop, blockMid) {
   let previousBiome = null;
 
   for (let i = 0; i <= 10; i++) {
-
     const biomeStart = i * 300 - 1500;
 
     // Unique deterministic RNG for this region.
@@ -4017,7 +4102,7 @@ function createFlatTerrain(pos, blockTop, blockMid) {
 
     // Extra protection against boring repetition.
     if (biome === previousBiome) {
-      const alternatives = biomeTypes.filter(b => b !== previousBiome);
+      const alternatives = biomeTypes.filter((b) => b !== previousBiome);
       biome = alternatives[rng.int(alternatives.length)];
     }
 
@@ -4025,29 +4110,16 @@ function createFlatTerrain(pos, blockTop, blockMid) {
     previousBiome = biome;
 
     switch (biome) {
-
       case "plains":
-        createFlatTerrain(
-          biomeStart,
-          "grass",
-          "dirt"
-        );
+        createFlatTerrain(biomeStart, "grass", "dirt");
         break;
 
       case "mapleForest":
-        createFlatTerrain(
-          biomeStart,
-          "grass",
-          "dirt",
-        );
+        createFlatTerrain(biomeStart, "grass", "dirt", true);
         break;
 
       case "desert":
-        createFlatTerrain(
-          biomeStart,
-          "sand",
-          "sand"
-        );
+        createFlatTerrain(biomeStart, "sand", "sand");
         break;
 
       case "hills":
@@ -4059,11 +4131,7 @@ function createFlatTerrain(pos, blockTop, blockMid) {
         break;
 
       default:
-        createFlatTerrain(
-          biomeStart,
-          "grass",
-          "dirt"
-        );
+        createFlatTerrain(biomeStart, "grass", "dirt");
         break;
     }
   }
@@ -4079,8 +4147,38 @@ function createFlatWorld(seed) {
   console.log(blocks);
 }
 
-// Initialize textures and start the draw loop.
+function saveGame() {
+  if (!localStorage.getItem("gameSaveTopId")) {
+    localStorage.setItem("gameSaveTopId", 1);
+  }
 
+  let saveFile = {
+    worldName: worldName,
+    gameId: gameId,
+    description: worldDesc,
+    playerInfo: player,
+    blocks: blocks,
+    biomes: biomes,
+    drops: drops,
+  };
+
+  localStorage.setItem("gameSave" + gameId, JSON.stringify(saveFile));
+  localStorage.setItem(
+    "gameSaveTopId",
+    Number(localStorage.getItem("gameSaveTopId")) + 1,
+  );
+
+  if (localStorage.getItem("gameSave" + gameId)) {
+    displayError("Game saved successfully!");
+  } else {
+    displayError("Failed to save game.");
+  }
+}
+window.saveGame = saveGame;
+// Initialize textures and start the draw loop.
+if (!localStorage.getItem("gameSaveTopId")) {
+  localStorage.setItem("gameSaveTopId", 1);
+}
 engineInit(gameInit, gameUpdate, gameUpdatePost, gameRender);
 setInputPreventDefault(false);
 debugKey = "Escape";

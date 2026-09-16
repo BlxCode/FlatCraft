@@ -303,6 +303,71 @@ submitNewWorldForm.addEventListener("click", (e) => {
   }
 });
 
+// show all saved worlds in the world select menu
+
+
+
+const worldListContainer = document.getElementById("worldSelectWrapper");
+
+
+function loadWorld(world){
+ const saveInfo = JSON.parse(localStorage.getItem("gameSave" + world));
+  
+worldName = saveInfo.worldName;
+worldDesc = saveInfo.worldDesc;
+ blocks = saveInfo.blocks;
+biomes = saveInfo.biomes;
+gameId = saveInfo.gameId;
+  backdropUI.click();
+    mainMenuAudio.pause();
+    document.getElementById("mainMenu").className = "popCloseHide";
+player.coords = vec2(saveInfo.playerCoords.x, saveInfo.playerCoords.y);
+player.inventory = saveInfo.playerInventory;
+ invenDiv.className = "visually-hidden";
+    setPaused(false);
+    isInGame = true;
+    renderInven();
+}
+window.loadWorld = loadWorld;
+
+for (let i = 1; i <= localStorage.getItem("gameSaveTopId") - 1; i++) {
+ 
+  const saveInfo = JSON.parse(localStorage.getItem("gameSave" + i));
+
+  const worldName = saveInfo.worldName;
+  const worldDesc = saveInfo.worldDesc;
+
+
+  worldListContainer.innerHTML += `
+    <div class="row worldSelectRow text-center">
+              <h2 class="worldTitle">${worldName}</h2>
+              <p class="worldDesc">${worldDesc}</p>
+             
+              <button
+                style="
+                  text-align: center !important;
+                  margin-left: auto;
+                  font-size: 1.5dvh;
+                  margin-right: auto;
+                  padding-left: 0.3dvh !important;
+                  padding-right: 0.3dvh !important;
+                "
+                onclick="loadWorld(${i})"
+                class="woldSelectButton worldPlayButton btn btn-success w-50 align-middle"
+              >
+                Play
+              </button>
+
+         
+            </div>`
+
+
+
+}
+
+
+
+
 backdropUI.addEventListener("click", (e) => {
   e.currentTarget.blur();
   if (!currentPopup) {
@@ -1994,11 +2059,11 @@ async function gameInit() {
   player.screenLight = new LightSystemPlugin(mainCanvasSize, surfaceColor);
   player.cameraToPlayer();
   document.addEventListener("createWorld", (event) => {
-    gameId = localStorage.getItem("gameTopId");
+    gameId = localStorage.getItem("gameSaveTopId");
     console.log("Event received:", event.detail);
     const data = event.detail;
     worldName = data.worldName;
-    worldDesc = data.worldDescription;
+    worldDesc = data.worldDesc;
     backdropUI.click();
     mainMenuAudio.pause();
     document.getElementById("mainMenu").className = "popCloseHide";
@@ -4053,7 +4118,6 @@ function theDeepDark(seed) {
   }
 }
 function procedurallyGenerateWorld(seed) {
-  createTree(0, 1, "maple");
   // Validate seed
   if (seed === undefined || typeof seed !== "number" || isNaN(seed)) {
     seed = Math.floor(Math.random() * 10000);
@@ -4155,18 +4219,18 @@ function saveGame() {
   let saveFile = {
     worldName: worldName,
     gameId: gameId,
-    description: worldDesc,
-    playerInfo: player,
+    worldDesc: worldDesc,
+    playerCoords: player.coords,
+    playerInventory: player.inventory,
     blocks: blocks,
     biomes: biomes,
-    drops: drops,
-  }; 
+  };
 
   localStorage.setItem("gameSave" + gameId, JSON.stringify(saveFile));
-  localStorage.setItem(
-    "gameSaveTopId",
-    Number(localStorage.getItem("gameSaveTopId")) + 1,
-  );
+  
+  if(localStorage.getItem("gameSaveTopId") == gameId) {
+    localStorage.setItem("gameSaveTopId", Number(localStorage.getItem("gameSaveTopId")) + 1);
+  }
 
   if (localStorage.getItem("gameSave" + gameId)) {
     displayError("Game saved successfully!");

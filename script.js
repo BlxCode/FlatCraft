@@ -4160,7 +4160,7 @@ function saveGame() {
     blocks: blocks,
     biomes: biomes,
     drops: drops,
-  };
+  }; 
 
   localStorage.setItem("gameSave" + gameId, JSON.stringify(saveFile));
   localStorage.setItem(

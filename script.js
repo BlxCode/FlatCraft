@@ -305,38 +305,47 @@ submitNewWorldForm.addEventListener("click", (e) => {
 
 // show all saved worlds in the world select menu
 
-
-
 const worldListContainer = document.getElementById("worldSelectWrapper");
 
+function loadWorld(world,element) {
 
-function loadWorld(world){
- const saveInfo = JSON.parse(localStorage.getItem("gameSave" + world));
-  
-worldName = saveInfo.worldName;
-worldDesc = saveInfo.worldDesc;
- blocks = saveInfo.blocks;
-biomes = saveInfo.biomes;
-gameId = saveInfo.gameId;
+element.blur();
+  const saveInfo = JSON.parse(localStorage.getItem("gameSave" + world));
+
+  worldName = saveInfo.worldName;
+  worldDesc = saveInfo.worldDesc;
+  blocks = saveInfo.blocks;
+  biomes = saveInfo.biomes;
+  gameId = saveInfo.gameId;
   backdropUI.click();
-    mainMenuAudio.pause();
-    document.getElementById("mainMenu").className = "popCloseHide";
-player.coords = vec2(saveInfo.playerCoords.x, saveInfo.playerCoords.y);
-player.inventory = saveInfo.playerInventory;
- invenDiv.className = "visually-hidden";
-    setPaused(false);
-    isInGame = true;
-    renderInven();
+  mainMenuAudio.pause();
+  document.getElementById("mainMenu").className = "popCloseHide";
+  player.coords = vec2(saveInfo.playerCoords.x, saveInfo.playerCoords.y);
+  player.inventory = saveInfo.playerInventory;
+  invenDiv.className = "visually-hidden";
+  setPaused(false);
+  isInGame = true;
+  renderInven();
+  const recentGameIdsArray =
+    JSON.parse(localStorage.getItem("recentGameIds")) || [];
+  if (recentGameIdsArray.includes(gameId)) {
+    recentGameIdsArray.splice(recentGameIdsArray.indexOf(gameId), 1);
+  }
+  recentGameIdsArray.unshift(gameId);
+  localStorage.setItem("recentGameIds", JSON.stringify(recentGameIdsArray));
 }
 window.loadWorld = loadWorld;
-
-for (let i = 1; i <= localStorage.getItem("gameSaveTopId") - 1; i++) {
- 
-  const saveInfo = JSON.parse(localStorage.getItem("gameSave" + i));
-
+const recentGameIdsArray = JSON.parse(
+  localStorage.getItem("recentGameIds") || "[]",
+);
+for (let i = 0; i < recentGameIdsArray.length; i++) {
+  const saveInfo = JSON.parse(
+    localStorage.getItem("gameSave" + recentGameIdsArray[i]),
+  );
+  console.log(recentGameIdsArray);
+  console.log("gameSave" + recentGameIdsArray[i]);
   const worldName = saveInfo.worldName;
   const worldDesc = saveInfo.worldDesc;
-
 
   worldListContainer.innerHTML += `
     <div class="row worldSelectRow text-center">
@@ -352,21 +361,15 @@ for (let i = 1; i <= localStorage.getItem("gameSaveTopId") - 1; i++) {
                   padding-left: 0.3dvh !important;
                   padding-right: 0.3dvh !important;
                 "
-                onclick="loadWorld(${i})"
+                onclick="loadWorld(${recentGameIdsArray[i]}, this)"
                 class="woldSelectButton worldPlayButton btn btn-success w-50 align-middle"
               >
                 Play
               </button>
 
          
-            </div>`
-
-
-
+            </div>`;
 }
-
-
-
 
 backdropUI.addEventListener("click", (e) => {
   e.currentTarget.blur();
@@ -748,82 +751,87 @@ function fps() {
   }
 }
 function numkeysHotbarChange() {
-  if (keyWasPressed("Digit1")) {
-    player.switchInventoryItemToHotbarSlot(0);
-  }
-  if (keyWasPressed("Digit2")) {
-    player.switchInventoryItemToHotbarSlot(1);
-  }
-  if (keyWasPressed("Digit3")) {
-    player.switchInventoryItemToHotbarSlot(2);
-  }
-  if (keyWasPressed("Digit4")) {
-    player.switchInventoryItemToHotbarSlot(3);
-  }
-  if (keyWasPressed("Digit5")) {
-    player.switchInventoryItemToHotbarSlot(4);
-  }
-  if (keyWasPressed("Digit6")) {
-    player.switchInventoryItemToHotbarSlot(5);
-  }
-  if (keyWasPressed("Digit7")) {
-    player.switchInventoryItemToHotbarSlot(6);
-  }
-  if (keyWasPressed("Digit8")) {
-    player.switchInventoryItemToHotbarSlot(7);
-  }
-  if (keyWasPressed("Digit9")) {
-    player.switchInventoryItemToHotbarSlot(8);
-  }
-  if (keyWasPressed("KeyQ")) {
-    const slotIndex = player.hotbarSlotHoveredMouse ?? player.hotbarSlotHovered;
-    const inventorySlot = player.inventory[slotIndex];
-
-    if (
-      inventorySlot &&
-      inventorySlot.item != "air" &&
-      inventorySlot.amount > 0
-    ) {
-      const dropAmount = keyIsDown("ControlLeft") ? inventorySlot.amount : 1;
-      const dropX = player.coords.x + (player.directionPositive ? 1.5 : -1.5);
-
-      new droppedItem(inventorySlot.item, dropX, player.coords.y, dropAmount);
-
-      inventorySlot.amount -= dropAmount;
-      if (inventorySlot.amount <= 0) {
-        inventorySlot.item = "air";
-        inventorySlot.amount = 0;
-      }
+ 
+    if (keyWasPressed("Digit1")) {
+      player.switchInventoryItemToHotbarSlot(0);
     }
-    document.dispatchEvent(invenEvent);
-  }
-  if (keyIsDown("Digit1")) {
-    player.changeHotbarSlot(0);
-  } else if (keyIsDown("Digit2")) {
-    player.changeHotbarSlot(1);
-  } else if (keyIsDown("Digit3")) {
-    player.changeHotbarSlot(2);
-  } else if (keyIsDown("Digit4")) {
-    player.changeHotbarSlot(3);
-  } else if (keyIsDown("Digit5")) {
-    player.changeHotbarSlot(4);
-  } else if (keyIsDown("Digit6")) {
-    player.changeHotbarSlot(5);
-  } else if (keyIsDown("Digit7")) {
-    player.changeHotbarSlot(6);
-  } else if (keyIsDown("Digit8")) {
-    player.changeHotbarSlot(7);
-  } else if (keyIsDown("Digit9")) {
-    player.changeHotbarSlot(8);
-  }
-}
-function mouseWheelHotbarScroll() {
-  const currentHotbarSlot = player.hotbarSlotHovered;
-  let newHotbarSlot = mouseWheel + currentHotbarSlot;
+    if (keyWasPressed("Digit2")) {
+      player.switchInventoryItemToHotbarSlot(1);
+    }
+    if (keyWasPressed("Digit3")) {
+      player.switchInventoryItemToHotbarSlot(2);
+    }
+    if (keyWasPressed("Digit4")) {
+      player.switchInventoryItemToHotbarSlot(3);
+    }
+    if (keyWasPressed("Digit5")) {
+      player.switchInventoryItemToHotbarSlot(4);
+    }
+    if (keyWasPressed("Digit6")) {
+      player.switchInventoryItemToHotbarSlot(5);
+    }
+    if (keyWasPressed("Digit7")) {
+      player.switchInventoryItemToHotbarSlot(6);
+    }
+    if (keyWasPressed("Digit8")) {
+      player.switchInventoryItemToHotbarSlot(7);
+    }
+    if (keyWasPressed("Digit9")) {
+      player.switchInventoryItemToHotbarSlot(8);
+    }
+    if (keyWasPressed("KeyQ")) {
+      const slotIndex =
+        player.hotbarSlotHoveredMouse ?? player.hotbarSlotHovered;
+      const inventorySlot = player.inventory[slotIndex];
 
-  newHotbarSlot > 8 ? (newHotbarSlot = 0) : "why more";
-  newHotbarSlot < 0 ? (newHotbarSlot = 8) : "why less";
-  player.changeHotbarSlot(newHotbarSlot);
+      if (
+        inventorySlot &&
+        inventorySlot.item != "air" &&
+        inventorySlot.amount > 0
+      ) {
+        const dropAmount = keyIsDown("ControlLeft") ? inventorySlot.amount : 1;
+        const dropX = player.coords.x + (player.directionPositive ? 1.5 : -1.5);
+
+        new droppedItem(inventorySlot.item, dropX, player.coords.y, dropAmount);
+
+        inventorySlot.amount -= dropAmount;
+        if (inventorySlot.amount <= 0) {
+          inventorySlot.item = "air";
+          inventorySlot.amount = 0;
+        }
+      }
+      document.dispatchEvent(invenEvent);
+    }
+    if (keyIsDown("Digit1")) {
+      player.changeHotbarSlot(0);
+    } else if (keyIsDown("Digit2")) {
+      player.changeHotbarSlot(1);
+    } else if (keyIsDown("Digit3")) {
+      player.changeHotbarSlot(2);
+    } else if (keyIsDown("Digit4")) {
+      player.changeHotbarSlot(3);
+    } else if (keyIsDown("Digit5")) {
+      player.changeHotbarSlot(4);
+    } else if (keyIsDown("Digit6")) {
+      player.changeHotbarSlot(5);
+    } else if (keyIsDown("Digit7")) {
+      player.changeHotbarSlot(6);
+    } else if (keyIsDown("Digit8")) {
+      player.changeHotbarSlot(7);
+    } else if (keyIsDown("Digit9")) {
+      player.changeHotbarSlot(8);
+    }
+  }
+
+function mouseWheelHotbarScroll() {
+  if (!getPaused()) {
+    const currentHotbarSlot = player.hotbarSlotHovered;
+    let newHotbarSlot = mouseWheel + currentHotbarSlot;
+
+    newHotbarSlot > 8 ? (newHotbarSlot = 0) : "why more";
+    newHotbarSlot < 0 ? (newHotbarSlot = 8) : "why less";
+    player.changeHotbarSlot(newHotbarSlot);
+  }
 }
 function inventoryToggle() {
   if (keyWasPressed("KeyE") && isInGame) {
@@ -899,80 +907,81 @@ function loadImage(name, type = "block") {
   });
 }
 const textureNames = [
-  "acatiaLog",
-  "daisy",
-  "redTulip",
-  "cedarPlanks",
-  "maplePlanks",
-  "snow",
-  "cedarLog",
-  "coalBlock",
-  "coalOre",
-  "copperBlock",
-  "copperOre",
-  "diamondBlock",
-  "diamondOre",
+  "air",
   "dirt",
-  "emeraldBlock",
-  "emeraldOre",
-  "goldBlock",
-  "goldOre",
   "grass",
-  "ironBlock",
+  "sand",
+  "snow",
+  "stone",
+  "bedrock",
+  "coalOre",
+  "copperOre",
   "ironOre",
+  "goldOre",
+  "diamondOre",
+  "emeraldOre",
+  "sugiliteOre",
+  "coalBlock",
+  "copperBlock",
+  "ironBlock",
+  "goldBlock",
+  "diamondBlock",
+  "emeraldBlock",
+  "sugiliteBlock",
+  "acatiaLog",
+  "cedarLog",
   "jungleLog",
-  "mapleLeaf",
   "mapleLog",
   "poplarLog",
-  "stone",
-  "sugiliteBlock",
-  "sugiliteOre",
-  "bedrock",
-  "rickRoll",
-  "hoverFar",
-  "hoverClose",
-  "air",
+  "cedarPlanks",
+  "maplePlanks",
+  "mapleLeaf",
+  "daisy",
+  "redTulip",
   "chest",
   "furnaceOff",
   "furnaceOn",
-  "sand",
+  "rickRoll",
+  "hoverFar",
+  "hoverClose",
 
-  //tools
+  // tools grouped by material, then by tool type
   "woodAxe",
   "woodShovel",
   "woodPickaxe",
+  "woodHoe",
   "woodSword",
   "stoneAxe",
-  "stonePickaxe",
   "stoneShovel",
+  "stonePickaxe",
+  "stoneHoe",
   "stoneSword",
+  "copperAxe",
+  "copperShovel",
+  "copperPickaxe",
+  "copperHoe",
+  "copperSword",
   "ironAxe",
-  "ironHoe",
-  "ironPickaxe",
   "ironShovel",
+  "ironPickaxe",
+  "ironHoe",
   "ironSword",
   "goldAxe",
-  "goldHoe",
-  "goldPickaxe",
   "goldShovel",
+  "goldPickaxe",
+  "goldHoe",
   "goldSword",
   "diamondAxe",
-  "diamondHoe",
-  "diamondPickaxe",
   "diamondShovel",
+  "diamondPickaxe",
+  "diamondHoe",
   "diamondSword",
-  "copperAxe",
-  "copperPickaxe",
-  "copperShovel",
-  "copperSword",
   "sugiliteAxe",
-  "sugilitePickaxe",
   "sugiliteShovel",
+  "sugilitePickaxe",
   "sugiliteSword",
-  "woodHoe",
-  "stoneHoe",
-  "copperHoe",
 ];
+
 async function loadAllImages() {
   for (const name of textureNames) {
     await loadImage(name, "block");
@@ -984,6 +993,7 @@ async function loadAllImages() {
       "(it should return imageObject or something like that)",
   );
 }
+
 let lightMap = {};
 let averageLightLevel = 0;
 const torchColor = rgb(0.95, 0.6, 0.2);
@@ -1330,20 +1340,6 @@ async function gameInit() {
     frame6: new TileInfo(vec2(0, 48), vec2(8, 8), blockBreakTexture, 0, 0.05),
   };
 
-  /*
- ███████████  ████                                                ███████    █████          ███                     █████   
-▒▒███▒▒▒▒▒███▒▒███                                              ███▒▒▒▒▒███ ▒▒███          ▒▒▒                     ▒▒███    
- ▒███    ▒███ ▒███   ██████   █████ ████  ██████  ████████     ███     ▒▒███ ▒███████      █████  ██████   ██████  ███████  
- ▒██████████  ▒███  ▒▒▒▒▒███ ▒▒███ ▒███  ███▒▒███▒▒███▒▒███   ▒███      ▒███ ▒███▒▒███    ▒▒███  ███▒▒███ ███▒▒███▒▒▒███▒   
- ▒███▒▒▒▒▒▒   ▒███   ███████  ▒███ ▒███ ▒███████  ▒███ ▒▒▒    ▒███      ▒███ ▒███ ▒███     ▒███ ▒███████ ▒███ ▒▒▒   ▒███    
- ▒███         ▒███  ███▒▒███  ▒███ ▒███ ▒███▒▒▒   ▒███        ▒▒███     ███  ▒███ ▒███     ▒███ ▒███▒▒▒  ▒███  ███  ▒███ ███
- █████        █████▒▒████████ ▒▒███████ ▒▒██████  █████        ▒▒▒███████▒   ████████      ▒███ ▒▒██████ ▒▒██████   ▒▒█████ 
-▒▒▒▒▒        ▒▒▒▒▒  ▒▒▒▒▒▒▒▒   ▒▒▒▒▒███  ▒▒▒▒▒▒  ▒▒▒▒▒           ▒▒▒▒▒▒▒    ▒▒▒▒▒▒▒▒       ▒███  ▒▒▒▒▒▒   ▒▒▒▒▒▒     ▒▒▒▒▒  
-                               ███ ▒███                                                ███ ▒███                             
-                              ▒▒██████                                                ▒▒██████                              
-                               ▒▒▒▒▒▒                                                  ▒▒▒▒▒▒                               
-*/
-
   player = {
     username: "Guest",
     jumping: false,
@@ -1399,7 +1395,7 @@ async function gameInit() {
       break1: 0.85,
       crouch: 3.7,
     },
-
+    creativeInvenOrder: [],
     inventory: {
       0: { item: "air", amount: 0 },
       1: { item: "air", amount: 0 },
@@ -2055,7 +2051,19 @@ async function gameInit() {
       document.dispatchEvent(invenEvent);
     },
   };
+  // creative inven
+  for (let i = 0; i < textureNames.length; i++) {
+    dgeID("creativeInven").innerHTML += ` <div class="creativeSlot" >
+                  <img
+                    draggable="false"
+                    class="creativeSlotImg"
+                    src="/assets/textures/${textureNames[i]}.png"
+                    alt="inven slots"
+                  />
+                </div>`;
 
+    player.creativeInvenOrder.push(textureNames[i]);
+  }
   player.screenLight = new LightSystemPlugin(mainCanvasSize, surfaceColor);
   player.cameraToPlayer();
   document.addEventListener("createWorld", (event) => {
@@ -2244,13 +2252,13 @@ const mouseThings = () => {
         ) {
           // tool boost metadata
           const toolBoostData = {
-            wood: 1.5,
-            stone: 1.9,
-            iron: 2.7,
-            diamond: 3.5,
-            gold: 3.4,
-            copper: 2.3,
-            sugilite: 3.6,
+            wood: 1.8,
+            stone: 2.5,
+            iron: 3.7,
+            diamond: 4.5,
+            gold: 4,
+            copper: 3.3,
+            sugilite: 4.6,
           };
 
           toolBoost = toolBoostData[thingMetaData[heldItem].toolMaterial];
@@ -4110,11 +4118,15 @@ function createFlatTerrain(pos, blockTop, blockMid, forest = false) {
     relativeX++;
   }
 }
+// the undergroud
 function theDeepDark(seed) {
-  for (let x = -1500; x >= 1500; x++) {
-    for (let y = 0; y > -50; y--) {
+  for (let x = -1500; x <= 1500; x++) {
+    for (let y = -5; y > -50; y--) {
       createBlock(x, y, "stone");
     }
+  }
+  for (let x = -1500; x <= 1500; x++) {
+    createBlock(x, -50, "bedrock");
   }
 }
 function procedurallyGenerateWorld(seed) {
@@ -4155,7 +4167,7 @@ function procedurallyGenerateWorld(seed) {
   }
 
   let previousBiome = null;
-
+  theDeepDark(seed);
   for (let i = 0; i <= 10; i++) {
     const biomeStart = i * 300 - 1500;
 
@@ -4225,15 +4237,29 @@ function saveGame() {
     blocks: blocks,
     biomes: biomes,
   };
+  try {
+    localStorage.setItem("gameSave" + gameId, JSON.stringify(saveFile));
+  } catch (error) {
+    displayError("Error saving game:", error);
+    console.error("Error saving game:", error);
+  }
 
-  localStorage.setItem("gameSave" + gameId, JSON.stringify(saveFile));
-  
-  if(localStorage.getItem("gameSaveTopId") == gameId) {
-    localStorage.setItem("gameSaveTopId", Number(localStorage.getItem("gameSaveTopId")) + 1);
+  if (localStorage.getItem("gameSaveTopId") == gameId) {
+    localStorage.setItem(
+      "gameSaveTopId",
+      Number(localStorage.getItem("gameSaveTopId")) + 1,
+    );
   }
 
   if (localStorage.getItem("gameSave" + gameId)) {
     displayError("Game saved successfully!");
+    const recentGameIdsArray =
+      JSON.parse(localStorage.getItem("recentGameIds")) || [];
+    if (recentGameIdsArray.includes(gameId)) {
+      recentGameIdsArray.splice(recentGameIdsArray.indexOf(gameId), 1);
+    }
+    recentGameIdsArray.unshift(gameId);
+    localStorage.setItem("recentGameIds", JSON.stringify(recentGameIdsArray));
   } else {
     displayError("Failed to save game.");
   }
@@ -4242,6 +4268,7 @@ window.saveGame = saveGame;
 // Initialize textures and start the draw loop.
 if (!localStorage.getItem("gameSaveTopId")) {
   localStorage.setItem("gameSaveTopId", 1);
+  localStorage.setItem("recentGameIds", JSON.stringify([]));
 }
 engineInit(gameInit, gameUpdate, gameUpdatePost, gameRender);
 setInputPreventDefault(false);

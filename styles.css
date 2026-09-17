@@ -103,12 +103,7 @@ ul {
   width: 100.1%;
   height: 100.1%;
   z-index: 4;
-  background: RGB(171, 171, 255);
-  background: radial-gradient(
-    circle,
-    rgba(171, 171, 255, 1) 0%,
-    rgba(103, 103, 145, 1) 100%
-  );
+ 
 }
 #credits {
   text-align: center;
@@ -136,7 +131,7 @@ ul {
   z-index: 6;
   min-width: 40%;
   min-height: 40%;
-  width: fit-content;
+  width: 80%;
   height: fit-content;
   background-color: var(--primary-bg-color);
   color: var(--primary-color);
@@ -384,6 +379,37 @@ label.larger-font {
   z-index: 5;
   -webkit-text-stroke: black 0.07dvh;
   color: var(--primary-color);
+}
+
+
+.creativeSlot {
+  width: 7dvh;
+  height: 7dvh;
+  margin: 0.2dvh;
+  color: white;
+  text-align: center;
+  vertical-align: middle;
+  background: var(--slot);
+  border: 0.5vh solid var(--slot-border);
+  box-sizing: border-box;
+  transform: scale(1);
+  transition:
+    transform 0.075s,
+    background-color 0.05s;
+}
+.creativeSlot:hover {
+  background-color: #717878;
+}
+.creativeSlotImg {
+  aspect-ratio: 1;
+  position: relative;
+  width: 4.5dvh;
+  height: 4.5dvh;
+  image-rendering: pixelated;
+  z-index: 4;
+  top: 50%;
+  left: 38%; 
+  transform: translate(-50%, -50%);
 }
 #inventoryHeldInCursorItem {
   width: 7dvh;

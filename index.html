@@ -7,7 +7,7 @@
       crossorigin="anonymous"
     ></script>
     <script
-      src="https://cdn.jsdelivr.net/npm/littlejsengine@1.18.29/dist/littlejs.js"
+      src="https://cdn.jsdelivr.net/npm/littlejsengine@1.18.29/dist/littlejs.release.js"
       crossorigin="anonymous"
     ></script>
     <link
@@ -165,8 +165,8 @@
           <div class="settingsNavItem" id="settingsNavItemSkin">Skin</div>
         </div>
         <div id="settingsBody">
-          <div class="settingsBodyContent" id="settingsGeneral" hidden></div>
-          <div class="settingsBodyContent" id="settingsGraphics" hidden></div>
+          <div class="settingsBodyContent" id="settingsGeneral" hidden>Nothing here :p</div>
+          <div class="settingsBodyContent" id="settingsGraphics" hidden>Nothing here :p</div>
           <div class="settingsBodyContent" id="settingsSkin" hidden>
             <label for="skinId" class="form-label larger-font">Skin ID</label>
             <input
@@ -327,8 +327,9 @@
       </div>
 
       <div id="mainMenu">
+        <img src="./assets/misc/BACKGROUD.png" alt="Background" draggable="false" style="filter:blur(50px) brightness(200%); transform: scale(1.5);">
         <div id="mainMenuWrapper" class="popAnim">
-          <h1 style="margin: 10px; font-size: 8.5dvh">FlatCraft</h1>
+          <h1  style="margin: 10px; font-size: 8.5dvh">FlatCraft</h1>
           <button
             class="btn btn-dark mainMenuButton"
             id="mainMenuButtonSettings"
@@ -1189,11 +1190,10 @@
           </div>
         </div>
 
-        <div id="inventoryRight" hidden class="inventoryBody col-5 col-md-4">
-<div id="inventoryChest">
-
-</div>
-
+        <div id="inventoryRight" class="inventoryBody col-6 col-md-5 ">
+          <div class=" d-flex flex-wrap" style="overflow-y: auto;" id="creativeInven">
+ 
+        </div>
         </div>
       </div>
 
@@ -1223,7 +1223,7 @@
         "
         id="fpsCounter"
       ></span>
-      <p id="fpsShower">FPS:</p>
+      <p id="fpsShower" hidden>FPS:</p>
     </div>
 
     <script type="module" src="./script.js"></script>

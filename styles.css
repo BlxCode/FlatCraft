@@ -98,7 +98,12 @@ ul {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-
+ background: RGB(171, 171, 255);
+  background: radial-gradient(
+    circle,
+    rgba(171, 171, 255, 1) 0%,
+    rgba(103, 103, 145, 1) 100%
+  );
   text-align: center;
   width: 100.1%;
   height: 100.1%;

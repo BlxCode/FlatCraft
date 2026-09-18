@@ -307,9 +307,8 @@ submitNewWorldForm.addEventListener("click", (e) => {
 
 const worldListContainer = document.getElementById("worldSelectWrapper");
 
-function loadWorld(world,element) {
-
-element.blur();
+function loadWorld(world, element) {
+  element.blur();
   const saveInfo = JSON.parse(localStorage.getItem("gameSave" + world));
 
   worldName = saveInfo.worldName;
@@ -490,6 +489,7 @@ dgeID("skinId").addEventListener("keyup", (e) => {
                                          ██                                                         
                                          ██                                                         
                                                                                                     */
+let creativeSlotHovered = undefined;
 
 const invenDiv = dgeID("inventory");
 let invenEvent = new Event("invenEvent");
@@ -743,6 +743,7 @@ for (let i = 0; i <= 35; i++) {
     player.hotbarSlotHoveredMouse = undefined;
   });
 }
+
 function fps() {
   fpsWaitForUpdate++;
   if (fpsWaitForUpdate >= 60) {
@@ -750,36 +751,46 @@ function fps() {
     fpsWaitForUpdate = 0;
   }
 }
+let moveKeyAWerePressed = 0;
+let moveKeyDWerePressed = 0;
 function numkeysHotbarChange() {
- 
-    if (keyWasPressed("Digit1")) {
-      player.switchInventoryItemToHotbarSlot(0);
-    }
-    if (keyWasPressed("Digit2")) {
-      player.switchInventoryItemToHotbarSlot(1);
-    }
-    if (keyWasPressed("Digit3")) {
-      player.switchInventoryItemToHotbarSlot(2);
-    }
-    if (keyWasPressed("Digit4")) {
-      player.switchInventoryItemToHotbarSlot(3);
-    }
-    if (keyWasPressed("Digit5")) {
-      player.switchInventoryItemToHotbarSlot(4);
-    }
-    if (keyWasPressed("Digit6")) {
-      player.switchInventoryItemToHotbarSlot(5);
-    }
-    if (keyWasPressed("Digit7")) {
-      player.switchInventoryItemToHotbarSlot(6);
-    }
-    if (keyWasPressed("Digit8")) {
-      player.switchInventoryItemToHotbarSlot(7);
-    }
-    if (keyWasPressed("Digit9")) {
-      player.switchInventoryItemToHotbarSlot(8);
-    }
-    if (keyWasPressed("KeyQ")) {
+  if (keyWasPressed("Digit1")) {
+    player.switchInventoryItemToHotbarSlot(0);
+  }
+  if (keyWasPressed("Digit2")) {
+    player.switchInventoryItemToHotbarSlot(1);
+  }
+  if (keyWasPressed("Digit3")) {
+    player.switchInventoryItemToHotbarSlot(2);
+  }
+  if (keyWasPressed("Digit4")) {
+    player.switchInventoryItemToHotbarSlot(3);
+  }
+  if (keyWasPressed("Digit5")) {
+    player.switchInventoryItemToHotbarSlot(4);
+  }
+  if (keyWasPressed("Digit6")) {
+    player.switchInventoryItemToHotbarSlot(5);
+  }
+  if (keyWasPressed("Digit7")) {
+    player.switchInventoryItemToHotbarSlot(6);
+  }
+  if (keyWasPressed("Digit8")) {
+    player.switchInventoryItemToHotbarSlot(7);
+  }
+  if (keyWasPressed("Digit9")) {
+    player.switchInventoryItemToHotbarSlot(8);
+  }
+  if (keyWasPressed("KeyQ")) {
+    if (creativeSlotHovered !== undefined) {
+      const item = player.creativeInvenOrder[creativeSlotHovered];
+      new droppedItem(
+        item,
+        player.coords.x,
+        player.coords.y,
+        thingMetaData[item].maxStack,
+      );
+    } else {
       const slotIndex =
         player.hotbarSlotHoveredMouse ?? player.hotbarSlotHovered;
       const inventorySlot = player.inventory[slotIndex];
@@ -800,28 +811,42 @@ function numkeysHotbarChange() {
           inventorySlot.amount = 0;
         }
       }
-      document.dispatchEvent(invenEvent);
     }
-    if (keyIsDown("Digit1")) {
-      player.changeHotbarSlot(0);
-    } else if (keyIsDown("Digit2")) {
-      player.changeHotbarSlot(1);
-    } else if (keyIsDown("Digit3")) {
-      player.changeHotbarSlot(2);
-    } else if (keyIsDown("Digit4")) {
-      player.changeHotbarSlot(3);
-    } else if (keyIsDown("Digit5")) {
-      player.changeHotbarSlot(4);
-    } else if (keyIsDown("Digit6")) {
-      player.changeHotbarSlot(5);
-    } else if (keyIsDown("Digit7")) {
-      player.changeHotbarSlot(6);
-    } else if (keyIsDown("Digit8")) {
-      player.changeHotbarSlot(7);
-    } else if (keyIsDown("Digit9")) {
-      player.changeHotbarSlot(8);
-    }
+
+    document.dispatchEvent(invenEvent);
   }
+  // sprinting detection
+  moveKeyAWerePressed++;
+  moveKeyDWerePressed++;
+
+  if (keyWasReleased("KeyD")) {
+    moveKeyDWerePressed = 0;
+    player.running = false;
+  }
+  if (keyWasReleased("KeyA")) {
+    moveKeyAWerePressed = 0;
+    player.running = false;
+  }
+  if (keyIsDown("Digit1")) {
+    player.changeHotbarSlot(0);
+  } else if (keyIsDown("Digit2")) {
+    player.changeHotbarSlot(1);
+  } else if (keyIsDown("Digit3")) {
+    player.changeHotbarSlot(2);
+  } else if (keyIsDown("Digit4")) {
+    player.changeHotbarSlot(3);
+  } else if (keyIsDown("Digit5")) {
+    player.changeHotbarSlot(4);
+  } else if (keyIsDown("Digit6")) {
+    player.changeHotbarSlot(5);
+  } else if (keyIsDown("Digit7")) {
+    player.changeHotbarSlot(6);
+  } else if (keyIsDown("Digit8")) {
+    player.changeHotbarSlot(7);
+  } else if (keyIsDown("Digit9")) {
+    player.changeHotbarSlot(8);
+  }
+}
 
 function mouseWheelHotbarScroll() {
   if (!getPaused()) {
@@ -1341,6 +1366,7 @@ async function gameInit() {
   };
 
   player = {
+    running: false,
     username: "Guest",
     jumping: false,
     jumpFrame: 1,
@@ -1483,21 +1509,21 @@ async function gameInit() {
     },
     isBelowABlock: () => {
       const leftHeadCoords = vec2(
-        player.getFeetCoords().x - 0.2,
+        player.getFeetCoords().x - 0.1,
         player.coords.y + 1.4,
       );
       const rightHeadCoords = vec2(
-        player.getFeetCoords().x + 0.2,
+        player.getFeetCoords().x + 0.1,
         Math.floor(player.coords.y + 1.4),
       );
 
       return (
         getCollidableBlockTypeAt(
-          Math.ceil(leftHeadCoords.x),
+          Math.round(leftHeadCoords.x),
           Math.floor(leftHeadCoords.y),
         ) ||
         getCollidableBlockTypeAt(
-          Math.floor(rightHeadCoords.x),
+          Math.round(rightHeadCoords.x),
           Math.floor(rightHeadCoords.y),
         ) ||
         false
@@ -1509,7 +1535,7 @@ async function gameInit() {
       if (
         Math.abs(player.coords.x) -
           Math.abs(Math.floor(Math.abs(player.coords.x))) <
-        0.9
+        0.85
       ) {
         return isCollidableBlockAt(
           Math.ceil(player.coords.x),
@@ -1524,7 +1550,7 @@ async function gameInit() {
       if (
         Math.abs(player.coords.x) -
           Math.abs(Math.floor(Math.abs(player.coords.x))) >
-        0.1
+        0.05
       ) {
         return isCollidableBlockAt(
           Math.floor(player.coords.x),
@@ -1539,7 +1565,7 @@ async function gameInit() {
       if (
         Math.abs(player.coords.x) -
           Math.abs(Math.floor(Math.abs(player.coords.x))) <
-        0.9
+        0.85
       ) {
         return isCollidableBlockAt(
           Math.ceil(player.coords.x),
@@ -1554,7 +1580,7 @@ async function gameInit() {
       if (
         Math.abs(player.coords.x) -
           Math.abs(Math.floor(Math.abs(player.coords.x))) >
-        0.1
+        0.05
       ) {
         return isCollidableBlockAt(
           Math.floor(player.coords.x),
@@ -1569,7 +1595,7 @@ async function gameInit() {
       if (
         Math.abs(player.coords.x) -
           Math.abs(Math.floor(Math.abs(player.coords.x))) <
-        0.9
+        0.85
       ) {
         return isCollidableBlockAt(
           Math.ceil(player.coords.x),
@@ -1584,7 +1610,7 @@ async function gameInit() {
       if (
         Math.abs(player.coords.x) -
           Math.abs(Math.floor(Math.abs(player.coords.x))) >
-        0.1
+        0.05
       ) {
         return isCollidableBlockAt(
           Math.floor(player.coords.x),
@@ -1612,11 +1638,15 @@ async function gameInit() {
 
     drawPlayer: () => {
       player.animationChangeTimer += 1;
+      let playerWalkAnimChangeThreshold = 3;
+      player.running
+        ? (playerWalkAnimChangeThreshold = 1)
+        : (playerWalkAnimChangeThreshold = 3);
       if (
         !player.isFalling &&
         player.isWalking &&
         !player.crouching &&
-        player.animationChangeTimer > 3
+        player.animationChangeTimer > playerWalkAnimChangeThreshold
       ) {
         player.animation = "walk" + player.animationWalkingFrame;
         player.animationWalkingFrame = (player.animationWalkingFrame % 6) + 1;
@@ -2030,6 +2060,15 @@ async function gameInit() {
         getInvenElement(newHotbarSlot).div.className = "invenSlot slotHover";
         player.hotbarSlotHovered = newHotbarSlot;
       }
+      if (creativeSlotHovered !== undefined) {
+        console.log(creativeSlotHovered);
+        player.setSlot(
+          player.creativeInvenOrder[creativeSlotHovered],
+          thingMetaData[player.creativeInvenOrder[creativeSlotHovered]]
+            .maxStack,
+          newHotbarSlot,
+        );
+      }
     },
     switchInventoryItemToHotbarSlot: (hotbarSlot) => {
       if (currentPopup == invenDiv) {
@@ -2051,18 +2090,68 @@ async function gameInit() {
       document.dispatchEvent(invenEvent);
     },
   };
+
   // creative inven
+
   for (let i = 0; i < textureNames.length; i++) {
-    dgeID("creativeInven").innerHTML += ` <div class="creativeSlot" >
+    dgeID("creativeInven").innerHTML +=
+      ` <div id = "creativeSlot${i}" class="creativeSlot" >
                   <img
                     draggable="false"
                     class="creativeSlotImg"
                     src="/assets/textures/${textureNames[i]}.png"
                     alt="inven slots"
+                    
                   />
                 </div>`;
 
     player.creativeInvenOrder.push(textureNames[i]);
+  }
+
+  for (let i = 0; i < player.creativeInvenOrder.length; i++) {
+    const creativeSlot = document.getElementsByClassName("creativeSlot")[i];
+    creativeSlot.addEventListener("click", (e) => {
+      const item = player.creativeInvenOrder[i];
+      console.log(item);
+
+      if (item && !player.itemHoldingInCursor && !keyIsDown("ShiftLeft")) {
+        player.itemHoldingInCursor = {
+          item: item,
+          amount: thingMetaData[item].maxStack,
+        };
+      } else if (
+        item &&
+        keyIsDown("ShiftLeft") &&
+        !player.itemHoldingInCursor
+      ) {
+        new droppedItem(
+          item,
+          player.coords.x,
+          player.coords.y,
+          thingMetaData[item].maxStack,
+        );
+      } else if (item && player.itemHoldingInCursor) {
+        new droppedItem(
+          player.itemHoldingInCursor.item,
+          player.coords.x + (player.directionPositive ? 1.5 : -1.5),
+          player.coords.y,
+          player.itemHoldingInCursor.amount,
+        );
+        player.itemHoldingInCursor = {
+          item: item,
+          amount: thingMetaData[item].maxStack,
+        };
+      }
+      e.currentTarget.blur();
+      document.dispatchEvent(invenEvent);
+    });
+
+    creativeSlot.addEventListener("mouseover", (e) => {
+      creativeSlotHovered = i;
+    });
+    creativeSlot.addEventListener("mouseleave", (e) => {
+      creativeSlotHovered = undefined;
+    });
   }
   player.screenLight = new LightSystemPlugin(mainCanvasSize, surfaceColor);
   player.cameraToPlayer();
@@ -2512,9 +2601,22 @@ function moveSideways(direction) {
         }
       }
     } else {
-      direction == "r"
-        ? (player.coords = player.coords.add(vec2(0.08, 0)))
-        : (player.coords = player.coords.add(vec2(-0.08, 0)));
+      if (
+        (moveKeyAWerePressed < 7 && direction == "l") ||
+        (moveKeyDWerePressed < 7 && direction == "r")
+      ) {
+        player.running = true;
+      }
+
+      if (player.running) {
+        direction == "r"
+          ? (player.coords = player.coords.add(vec2(0.14, 0)))
+          : (player.coords = player.coords.add(vec2(-0.14, 0)));
+      } else {
+        direction == "r"
+          ? (player.coords = player.coords.add(vec2(0.08, 0)))
+          : (player.coords = player.coords.add(vec2(-0.08, 0)));
+      }
     }
   }
 }

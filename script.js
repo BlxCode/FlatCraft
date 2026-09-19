@@ -4,6 +4,7 @@
 "use strict";
 let isInGame = false;
 let gameId;
+let worldLights = {};
 const loadingScreen = document.getElementById("loadingScreen");
 const loadingTitle = document.getElementById("loadingTitle");
 const loadingProgressBar = document.getElementById("loadingProgress");
@@ -316,6 +317,20 @@ function loadWorld(world, element) {
   blocks = saveInfo.blocks;
   biomes = saveInfo.biomes;
   gameId = saveInfo.gameId;
+  Object.keys(blocks).forEach((block) => {
+    if (blocks[block] == "lantern") {
+      let coords = block.split(",");
+     const light = new Light(
+        vec2(Number(coords[0]), Number(coords[1])),
+        4,
+        new Color(248 / 255, 199 / 255, 100 / 255),
+        10,
+      );
+
+      worldLights[`${Number(coords[0])},${Number(coords[1])}`] = light;
+      console.log(worldLights)
+    }
+  });
   backdropUI.click();
   mainMenuAudio.pause();
   document.getElementById("mainMenu").className = "popCloseHide";
@@ -325,6 +340,7 @@ function loadWorld(world, element) {
   setPaused(false);
   isInGame = true;
   renderInven();
+
   const recentGameIdsArray =
     JSON.parse(localStorage.getItem("recentGameIds")) || [];
   if (recentGameIdsArray.includes(gameId)) {
@@ -754,34 +770,34 @@ function fps() {
 let moveKeyAWerePressed = 0;
 let moveKeyDWerePressed = 0;
 function numkeysHotbarChange() {
-  if (keyWasPressed("Digit1")) {
+  if (keyWasReleased("Digit1")) {
     player.switchInventoryItemToHotbarSlot(0);
   }
-  if (keyWasPressed("Digit2")) {
+  if (keyWasReleased("Digit2")) {
     player.switchInventoryItemToHotbarSlot(1);
   }
-  if (keyWasPressed("Digit3")) {
+  if (keyWasReleased("Digit3")) {
     player.switchInventoryItemToHotbarSlot(2);
   }
-  if (keyWasPressed("Digit4")) {
+  if (keyWasReleased("Digit4")) {
     player.switchInventoryItemToHotbarSlot(3);
   }
-  if (keyWasPressed("Digit5")) {
+  if (keyWasReleased("Digit5")) {
     player.switchInventoryItemToHotbarSlot(4);
   }
-  if (keyWasPressed("Digit6")) {
+  if (keyWasReleased("Digit6")) {
     player.switchInventoryItemToHotbarSlot(5);
   }
-  if (keyWasPressed("Digit7")) {
+  if (keyWasReleased("Digit7")) {
     player.switchInventoryItemToHotbarSlot(6);
   }
-  if (keyWasPressed("Digit8")) {
+  if (keyWasReleased("Digit8")) {
     player.switchInventoryItemToHotbarSlot(7);
   }
-  if (keyWasPressed("Digit9")) {
+  if (keyWasReleased("Digit9")) {
     player.switchInventoryItemToHotbarSlot(8);
   }
-  if (keyWasPressed("KeyQ")) {
+  if (keyWasReleased("KeyQ")) {
     if (creativeSlotHovered !== undefined) {
       const item = player.creativeInvenOrder[creativeSlotHovered];
       new droppedItem(
@@ -969,6 +985,7 @@ const textureNames = [
   "rickRoll",
   "hoverFar",
   "hoverClose",
+  "lantern",
 
   // tools grouped by material, then by tool type
   "woodAxe",
@@ -1040,6 +1057,7 @@ function calculateLightLevel() {
 
     if (!rayCastResult || rayCastResult.location.y < playerY) {
       averageLightLevel += 1;
+      averageLightLevel -= rayCastResult.length / 70;
     }
   }
 
@@ -1047,6 +1065,7 @@ function calculateLightLevel() {
 
   if (!rayCastResult || rayCastResult.location.y < playerY) {
     averageLightLevel += 2;
+    averageLightLevel -= rayCastResult.length / 50;
   }
 
   lightMap = averageLightLevel / 5.5;
@@ -1093,7 +1112,7 @@ function calculateLightLevel() {
     );
     player.playerHaloGlow.render();
   }
-  if (lightMap === 0) {
+  if (lightMap <= 0) {
     player.screenLight.ambientColor = darkColor;
     player.playerHaloGlow = new Light(
       vec2(player.coords.x, player.coords.y + 0.2),
@@ -2060,15 +2079,6 @@ async function gameInit() {
         getInvenElement(newHotbarSlot).div.className = "invenSlot slotHover";
         player.hotbarSlotHovered = newHotbarSlot;
       }
-      if (creativeSlotHovered !== undefined) {
-        console.log(creativeSlotHovered);
-        player.setSlot(
-          player.creativeInvenOrder[creativeSlotHovered],
-          thingMetaData[player.creativeInvenOrder[creativeSlotHovered]]
-            .maxStack,
-          newHotbarSlot,
-        );
-      }
     },
     switchInventoryItemToHotbarSlot: (hotbarSlot) => {
       if (currentPopup == invenDiv) {
@@ -2080,6 +2090,17 @@ async function gameInit() {
             player.inventory[hotbarSlot];
           player.inventory[hotbarSlot] = invenSlotStuff;
           document.dispatchEvent(invenEvent);
+        }
+
+        if (creativeSlotHovered !== undefined) {
+          if (typeof creativeSlotHovered === "number") {
+            player.setSlot(
+              player.creativeInvenOrder[creativeSlotHovered],
+              thingMetaData[player.creativeInvenOrder[creativeSlotHovered]]
+                .maxStack,
+              hotbarSlot,
+            );
+          }
         }
       }
     },
@@ -2341,17 +2362,16 @@ const mouseThings = () => {
         ) {
           // tool boost metadata
           const toolBoostData = {
-            wood: 1.8,
+            wood: 1.9,
             stone: 2.5,
             iron: 3.7,
-            diamond: 4.5,
+            diamond: 6.5,
             gold: 4,
             copper: 3.3,
-            sugilite: 4.6,
+            sugilite: 167.6,
           };
 
           toolBoost = toolBoostData[thingMetaData[heldItem].toolMaterial];
-          console.log(toolBoost);
         }
 
         mouseWasDown = false;
@@ -2667,6 +2687,10 @@ async function gameRender() {
 }
 
 function destroyBlock(x, y) {
+  if (worldLights[`${x},${y}`]) {
+
+     worldLights[`${x},${y}`].destroy();
+  }
   if (blocks[`${x},${y}`]) {
     delete blocks[`${x},${y}`];
   }
@@ -2676,6 +2700,11 @@ function createBlock(x, y, blockType) {
   if (blocks[`${x},${y}`]) {
     return;
   } else {
+    if (blockType == "lantern") {
+     const light =  new Light(vec2(x, y), 4, new Color(248 / 255, 199 / 255, 100 / 255), 10);
+     worldLights[`${x},${y}`] = light;
+    }
+
     return (blocks[`${x},${y}`] = blockType);
   }
 }
@@ -2703,6 +2732,23 @@ let chunks = {
 };
 // can also be used for idk.. tools
 let thingMetaData = {
+  lantern: {
+    breakTime: 0.1,
+    tool: "hands",
+    collision: false,
+    translucent: false,
+    liquid: false,
+    block: true,
+    color1: "#F5E6C4",
+    color1Class: new Color(0.961, 0.902, 0.769),
+    color2: "#D9B382",
+    color2Class: new Color(0.851, 0.702, 0.51),
+    utility: false,
+    tool: false,
+    item: false,
+    maxStack: 64,
+    dropIfWrongTool: true,
+  },
   daisy: {
     breakTime: 0.1,
     tool: "hands",
@@ -2751,7 +2797,7 @@ let thingMetaData = {
     block: false,
     tool: false,
     item: true,
-    maxStack: 64,
+    maxStack: 1,
     dropIfWrongTool: false,
   },
   air: {
@@ -3992,6 +4038,7 @@ let thingMetaData = {
     block: true,
     tool: false,
     item: false,
+
     maxStack: 64,
     dropIfWrongTool: true,
   },
@@ -4221,6 +4268,77 @@ function createFlatTerrain(pos, blockTop, blockMid, forest = false) {
   }
 }
 // the undergroud
+function createVein(x, y, blockType, seed) {
+  const veinType = Math.floor(Math.random() * 5);
+  console.log(veinType);
+  switch (veinType) {
+    case 0:
+      destroyBlock(x, y);
+      destroyBlock(x + 1, y);
+      destroyBlock(x - 1, y);
+      destroyBlock(x, y + 1);
+      destroyBlock(x, y - 1);
+
+      createBlock(x, y, blockType);
+      createBlock(x + 1, y, blockType);
+      createBlock(x - 1, y, blockType);
+      createBlock(x, y + 1, blockType);
+      createBlock(x, y - 1, blockType);
+      break;
+    case 1:
+      destroyBlock(x, y);
+      destroyBlock(x + 1, y);
+      destroyBlock(x, y + 1);
+      destroyBlock(x + 1, y + 1);
+      destroyBlock(x - 1, y);
+      destroyBlock(x + 2, y - 1);
+
+      createBlock(x, y, blockType);
+      createBlock(x + 1, y, blockType);
+      createBlock(x, y + 1, blockType);
+      createBlock(x + 1, y + 1, blockType);
+      createBlock(x - 1, y, blockType);
+      createBlock(x + 2, y - 1, blockType);
+      break;
+    case 2:
+      destroyBlock(x, y);
+      destroyBlock(x + 1, y);
+      destroyBlock(x - 1, y);
+      destroyBlock(x - 2, y);
+
+      createBlock(x, y, blockType);
+      createBlock(x + 1, y, blockType);
+      createBlock(x - 1, y, blockType);
+      createBlock(x - 2, y, blockType);
+      break;
+    case 3:
+      destroyBlock(x, y);
+      destroyBlock(x, y + 1);
+      destroyBlock(x, y - 1);
+
+      createBlock(x, y, blockType);
+      createBlock(x, y + 1, blockType);
+      createBlock(x, y - 1, blockType);
+      break;
+    case 4:
+      destroyBlock(x, y);
+      destroyBlock(x + 1, y);
+      destroyBlock(x - 1, y);
+      destroyBlock(x, y + 1);
+
+      createBlock(x, y, blockType);
+      createBlock(x + 1, y, blockType);
+      createBlock(x - 1, y, blockType);
+      createBlock(x, y + 1, blockType);
+      break;
+    default:
+      destroyBlock(x, y);
+
+      createBlock(x, y, blockType);
+      break;
+  }
+}
+
 function theDeepDark(seed) {
   for (let x = -1500; x <= 1500; x++) {
     for (let y = -5; y > -50; y--) {
@@ -4229,6 +4347,16 @@ function theDeepDark(seed) {
   }
   for (let x = -1500; x <= 1500; x++) {
     createBlock(x, -50, "bedrock");
+  }
+
+  // coal ore
+
+  const coalRange = Math.floor(Math.random() * 15) + 7;
+
+  for (let x = -1500; x <= 1500; x += coalRange) {
+    const coalY = Math.floor(Math.random() * 8) - 14;
+    console.log(coalY, coalRange);
+    createVein(x, coalY, "coalOre", seed + x);
   }
 }
 function procedurallyGenerateWorld(seed) {

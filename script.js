@@ -320,15 +320,15 @@ function loadWorld(world, element) {
   Object.keys(blocks).forEach((block) => {
     if (blocks[block] == "lantern") {
       let coords = block.split(",");
-     const light = new Light(
+      const light = new Light(
         vec2(Number(coords[0]), Number(coords[1])),
-        4,
+        8,
         new Color(248 / 255, 199 / 255, 100 / 255),
-        10,
+        15,
       );
 
       worldLights[`${Number(coords[0])},${Number(coords[1])}`] = light;
-      console.log(worldLights)
+      console.log(worldLights);
     }
   });
   backdropUI.click();
@@ -1044,7 +1044,7 @@ const lightColor = rgb(0.85, 0.85, 0.82);
 const midColor = rgb(0.7, 0.7, 0.65);
 const midDarkColor = rgb(0.35, 0.35, 0.32);
 const lowDarkColor = rgb(0.15, 0.15, 0.15);
-const darkColor = rgb(0.05, 0.05, 0.05);
+const darkColor = rgb(0.01, 0.01, 0.01);
 function calculateLightLevel() {
   let averageLightLevel = 0;
 
@@ -1988,7 +1988,7 @@ async function gameInit() {
         player.attackAnim = false;
       }
       if (player.jumping && player.canFly) {
-        player.coords = player.coords.add(vec2(0, -0.1 * 85));
+        player.coords = player.coords.add(vec2(0, 0.175 * player.jumpMultiplier));
       }
     },
     cameraToPlayer: () => {
@@ -2688,8 +2688,7 @@ async function gameRender() {
 
 function destroyBlock(x, y) {
   if (worldLights[`${x},${y}`]) {
-
-     worldLights[`${x},${y}`].destroy();
+    worldLights[`${x},${y}`].destroy();
   }
   if (blocks[`${x},${y}`]) {
     delete blocks[`${x},${y}`];
@@ -2701,8 +2700,13 @@ function createBlock(x, y, blockType) {
     return;
   } else {
     if (blockType == "lantern") {
-     const light =  new Light(vec2(x, y), 4, new Color(248 / 255, 199 / 255, 100 / 255), 10);
-     worldLights[`${x},${y}`] = light;
+      const light = new Light(
+        vec2(x, y),
+        8,
+        new Color(248 / 255, 199 / 255, 100 / 255),
+        15,
+      );
+      worldLights[`${x},${y}`] = light;
     }
 
     return (blocks[`${x},${y}`] = blockType);
@@ -4174,7 +4178,9 @@ function createTree(x, y, type = "maple") {
 }
 function createMountain(pos) {
   let relativeX = 0;
+  let coalRandom = 0;
   for (let i = pos; i <= pos + 300; i++) {
+    coalRandom += Math.random() + 1;
     // top block
     if (mountainousTerrainVariations[relativeX] > 30) {
       createBlock(i, mountainousTerrainVariations[relativeX], "snow");
@@ -4199,6 +4205,12 @@ function createMountain(pos) {
           createBlock(i, j, "dirt");
         } else {
           createBlock(i, j, "stone");
+          if (j >= mountainousTerrainVariations[relativeX] - 10) {
+            if (coalRandom > 15.5) {
+              createVein(i, j, "coalOre", 4);
+              coalRandom = 0;
+            }
+          }
         }
       } else if (j > 20) {
         createBlock(i, j, "stone");
@@ -4231,6 +4243,11 @@ function createHills(pos) {
         createBlock(i, j, "dirt");
       } else {
         createBlock(i, j, "stone");
+        if (j >= hillyTerrainVariations[relativeX] - 10) {
+          if (Math.random() > 0.95) {
+            createVein(i, j, "coalOre", 4);
+          }
+        }
       }
     }
     relativeX++;
@@ -4270,7 +4287,6 @@ function createFlatTerrain(pos, blockTop, blockMid, forest = false) {
 // the undergroud
 function createVein(x, y, blockType, seed) {
   const veinType = Math.floor(Math.random() * 5);
-  console.log(veinType);
   switch (veinType) {
     case 0:
       destroyBlock(x, y);
@@ -4351,12 +4367,43 @@ function theDeepDark(seed) {
 
   // coal ore
 
-  const coalRange = Math.floor(Math.random() * 15) + 7;
+  const coalRange = Math.floor(Math.random() + 1 * 7) * 3;
 
   for (let x = -1500; x <= 1500; x += coalRange) {
-    const coalY = Math.floor(Math.random() * 8) - 14;
-    console.log(coalY, coalRange);
+    const coalY = Math.floor(Math.random() + 2 * 8) - 13;
     createVein(x, coalY, "coalOre", seed + x);
+  }
+  const copperRange = Math.floor(Math.random() + 1 * 7) * 3;
+
+  for (let x = -1500; x <= 1500; x += copperRange) {
+    const coalY = Math.floor(Math.random() * 8) - 21;
+    createVein(x, coalY, "copperOre", seed + x);
+  }
+
+  const ironRange = Math.floor(Math.random() + 1 * 7) * 4;
+
+  for (let x = -1500; x <= 1500; x += ironRange) {
+    const coalY = Math.floor(Math.random() * 10) - 28;
+    createVein(x, coalY, "ironOre", seed + x);
+  }
+
+  for (let x = -1500; x <= 1500; x += ironRange + 3) {
+    const coalY = Math.floor(Math.random() * 10) - 37;
+    createVein(x, coalY, "ironOre", seed + x);
+  }
+
+  const goldRange = Math.floor(Math.random() + 1 * 7) * 5;
+
+  for (let x = -1500; x <= 1500; x += goldRange) {
+    const coalY = Math.floor(Math.random() * 10) - 40;
+    createVein(x, coalY, "goldOre", seed + x);
+  }
+
+  const diamondRange = Math.floor(Math.random() + 1 * 7) * 6;
+
+  for (let x = -1500; x <= 1500; x += diamondRange) {
+    const coalY = Math.floor(Math.random() * 10) - 45;
+    createVein(x, coalY, "diamondOre", seed + x);
   }
 }
 function procedurallyGenerateWorld(seed) {

@@ -4287,71 +4287,23 @@ function createFlatTerrain(pos, blockTop, blockMid, forest = false) {
 // the undergroud
 function createVein(x, y, blockType, seed) {
   const veinType = Math.floor(Math.random() * 5);
-  switch (veinType) {
-    case 0:
-      destroyBlock(x, y);
-      destroyBlock(x + 1, y);
-      destroyBlock(x - 1, y);
-      destroyBlock(x, y + 1);
-      destroyBlock(x, y - 1);
+  const veinOffsets = [
+    [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]],
+    [[0, 0], [1, 0], [0, 1], [1, 1], [-1, 0], [2, -1]],
+    [[0, 0], [1, 0], [-1, 0], [-2, 0]],
+    [[0, 0], [0, 1], [0, -1]],
+    [[0, 0], [1, 0], [-1, 0], [0, 1]],
+  ];
 
-      createBlock(x, y, blockType);
-      createBlock(x + 1, y, blockType);
-      createBlock(x - 1, y, blockType);
-      createBlock(x, y + 1, blockType);
-      createBlock(x, y - 1, blockType);
-      break;
-    case 1:
-      destroyBlock(x, y);
-      destroyBlock(x + 1, y);
-      destroyBlock(x, y + 1);
-      destroyBlock(x + 1, y + 1);
-      destroyBlock(x - 1, y);
-      destroyBlock(x + 2, y - 1);
+  for (const [offsetX, offsetY] of veinOffsets[veinType]) {
+    const oreX = x + offsetX;
+    const oreY = y + offsetY;
+    const oreKey = `${oreX},${oreY}`;
 
-      createBlock(x, y, blockType);
-      createBlock(x + 1, y, blockType);
-      createBlock(x, y + 1, blockType);
-      createBlock(x + 1, y + 1, blockType);
-      createBlock(x - 1, y, blockType);
-      createBlock(x + 2, y - 1, blockType);
-      break;
-    case 2:
-      destroyBlock(x, y);
-      destroyBlock(x + 1, y);
-      destroyBlock(x - 1, y);
-      destroyBlock(x - 2, y);
-
-      createBlock(x, y, blockType);
-      createBlock(x + 1, y, blockType);
-      createBlock(x - 1, y, blockType);
-      createBlock(x - 2, y, blockType);
-      break;
-    case 3:
-      destroyBlock(x, y);
-      destroyBlock(x, y + 1);
-      destroyBlock(x, y - 1);
-
-      createBlock(x, y, blockType);
-      createBlock(x, y + 1, blockType);
-      createBlock(x, y - 1, blockType);
-      break;
-    case 4:
-      destroyBlock(x, y);
-      destroyBlock(x + 1, y);
-      destroyBlock(x - 1, y);
-      destroyBlock(x, y + 1);
-
-      createBlock(x, y, blockType);
-      createBlock(x + 1, y, blockType);
-      createBlock(x - 1, y, blockType);
-      createBlock(x, y + 1, blockType);
-      break;
-    default:
-      destroyBlock(x, y);
-
-      createBlock(x, y, blockType);
-      break;
+    if (blocks[oreKey] && blocks[`${oreX},${oreY + 1}`]) {
+      destroyBlock(oreX, oreY);
+      createBlock(oreX, oreY, blockType);
+    }
   }
 }
 

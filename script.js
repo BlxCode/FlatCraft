@@ -1557,7 +1557,7 @@ async function gameInit() {
         0.85
       ) {
         return isCollidableBlockAt(
-          Math.ceil(player.coords.x),
+          Math.ceil(player.coords.x+0.05),
           Math.floor(bottomRightCoords.y),
         );
       }
@@ -1587,7 +1587,7 @@ async function gameInit() {
         0.85
       ) {
         return isCollidableBlockAt(
-          Math.ceil(player.coords.x),
+          Math.ceil(player.coords.x+0.05),
           Math.floor(player.coords.y + 0.5),
         );
       }
@@ -1617,8 +1617,8 @@ async function gameInit() {
         0.85
       ) {
         return isCollidableBlockAt(
-          Math.ceil(player.coords.x),
-          Math.floor(bottomRightCoords.y + 0.25),
+          Math.ceil(player.coords.x+0.05),
+          Math.floor(bottomRightCoords.y + 0.5),
         );
       }
       return false;
@@ -1633,7 +1633,7 @@ async function gameInit() {
       ) {
         return isCollidableBlockAt(
           Math.floor(player.coords.x),
-          Math.floor(bottomRightCoords.y + 0.25),
+          Math.floor(bottomRightCoords.y + 0.5),
         );
       }
       return false;
@@ -1716,7 +1716,8 @@ async function gameInit() {
       if (
         player.isBreakingBlock &&
         player.animationChangeTimer > 6 &&
-        !player.isWalking
+        !player.isWalking &&
+        !player.isFalling
       ) {
         player.animationChangeTimer = 0;
 
@@ -1733,12 +1734,18 @@ async function gameInit() {
       } else if (
         !player.isBreakingBlock &&
         player.lowerArms &&
-        !player.isWalking
+        !player.isWalking &&
+        !player.isFalling
       ) {
         player.animation = "raise2";
         setTimeout(() => {
           player.lowerArms = false;
         }, 40);
+      }
+
+      if ( player.isFalling) {  
+        player.animation = "fall";
+        player.attackAnim = false;
       }
 
       drawTile(
@@ -2466,10 +2473,10 @@ const mouseThings = () => {
               blocks[`${blockMousePos.x + 1},${blockMousePos.y}`] ||
               blocks[`${blockMousePos.x - 1},${blockMousePos.y}`]) &&
             ((Math.abs(
-              Math.round(player.getCoordsAt("br").x) - blockMousePos.x,
+              Math.round(player.getCoordsAt("br").x + 0.05) - blockMousePos.x,
             ) != 0 &&
               Math.abs(
-                Math.round(player.getCoordsAt("bl").x) - blockMousePos.x,
+                Math.round(player.getCoordsAt("bl").x - 0.05) - blockMousePos.x,
               ) != 0) ||
               (Math.round(player.coords.y) - blockMousePos.y != 0 &&
                 Math.round(player.coords.y) - blockMousePos.y != 1))

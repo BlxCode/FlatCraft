@@ -2473,10 +2473,10 @@ const mouseThings = () => {
               blocks[`${blockMousePos.x + 1},${blockMousePos.y}`] ||
               blocks[`${blockMousePos.x - 1},${blockMousePos.y}`]) &&
             ((Math.abs(
-              Math.round(player.getCoordsAt("br").x + 0.05) - blockMousePos.x,
+              Math.round(player.getCoordsAt("br").x + 0.005) - blockMousePos.x,
             ) != 0 &&
               Math.abs(
-                Math.round(player.getCoordsAt("bl").x - 0.05) - blockMousePos.x,
+                Math.round(player.getCoordsAt("bl").x - 0.075) - blockMousePos.x,
               ) != 0) ||
               (Math.round(player.coords.y) - blockMousePos.y != 0 &&
                 Math.round(player.coords.y) - blockMousePos.y != 1))

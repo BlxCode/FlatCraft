@@ -116,6 +116,12 @@ skinSrc =
 async function startInit() {
   //displayError("Please do lower your refresh rate to 60hz if it isn't already.")
   //wss thingy server thing
+  countFps = true;
+setTimeout(() => {
+ fpsCount = fpsCount / 5;
+ countFps = false;
+ console.log(fpsCount)
+}, 5000);
   await new Promise((resolve) => {
     let noPingTimeout = setTimeout(() => {
       displayError("Coudn't ping to the Skins server. Skipping...");
@@ -161,7 +167,7 @@ async function startInit() {
       { once: true },
     );
   });
-
+ 
   await new Promise((r) => setTimeout(r, 1000));
   clearInterval(progressBar);
   clearInterval(loadingTextAnim);
@@ -182,12 +188,7 @@ async function startInit() {
       "FlatCraft is not designed for mobile devices! You WILL encounter rendering issues. Please ONLY play on a desktop or laptop computer with a display aspect ratio of 16:9.",
     );
   }
-  countFps = true;
-setTimeout(() => {
- fpsCount = fpsCount / 5;
- countFps = false;
- console.log(fpsCount)
-}, 5000);
+ 
 }
 window.addEventListener("load", () => {
   startInit();

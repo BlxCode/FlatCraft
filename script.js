@@ -2648,7 +2648,7 @@ function moveSideways(direction) {
     }
   }
 }
-let fpsCap = 0;
+let fpsCap = false;
 setInterval(() => {
 // fps cap
 fpsCap = true;
@@ -2659,6 +2659,7 @@ async function gameRender() {
   if(fpsCap == false){
     return;
   }
+  fpsCap = false;
   halfWidth = mainCanvas.width / cameraScale / 2;
   halfHeight = mainCanvas.height / cameraScale / 2;
 

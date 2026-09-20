@@ -445,6 +445,7 @@ function switchSettingsTab(newTab, newTabValue) {
     settingsSkin.hidden = false;
   }
 }
+let fpsCount = 0;
 
 settingsNavItemGeneral.addEventListener("click", (e) => {
   e.currentTarget.blur();
@@ -1331,6 +1332,11 @@ class droppedItem {
 }
 let worldName;
 let worldDesc;
+let fpsCap = false;
+setInterval(() => {
+  // fps cap
+  fpsCap = true;
+}, 16.7);
 async function gameInit() {
   combineCanvases();
   gamepadsEnable = false;
@@ -1558,7 +1564,7 @@ async function gameInit() {
         0.85
       ) {
         return isCollidableBlockAt(
-          Math.ceil(player.coords.x+0.05),
+          Math.ceil(player.coords.x + 0.05),
           Math.floor(bottomRightCoords.y),
         );
       }
@@ -1588,7 +1594,7 @@ async function gameInit() {
         0.85
       ) {
         return isCollidableBlockAt(
-          Math.ceil(player.coords.x+0.05),
+          Math.ceil(player.coords.x + 0.05),
           Math.floor(player.coords.y + 0.5),
         );
       }
@@ -1618,7 +1624,7 @@ async function gameInit() {
         0.85
       ) {
         return isCollidableBlockAt(
-          Math.ceil(player.coords.x+0.05),
+          Math.ceil(player.coords.x + 0.05),
           Math.floor(bottomRightCoords.y + 0.5),
         );
       }
@@ -1657,7 +1663,9 @@ async function gameInit() {
     },
 
     drawPlayer: () => {
-      player.animationChangeTimer += 1;
+      if (fpsCap) {
+        player.animationChangeTimer += 1;
+      }
       let playerWalkAnimChangeThreshold = 3;
       player.running
         ? (playerWalkAnimChangeThreshold = 1)
@@ -1744,7 +1752,7 @@ async function gameInit() {
         }, 40);
       }
 
-      if ( player.isFalling) {  
+      if (player.isFalling) {
         player.animation = "fall";
         player.attackAnim = false;
       }
@@ -1937,9 +1945,9 @@ async function gameInit() {
         if (!player.canFly && !player.jumping) {
           player.isFalling = true;
           if (player.fallMultiplier < 4.3) {
-            player.fallMultiplier += 0.065;
+            player.fallMultiplier += 0.065 * (60/fpsCount);
           }
-          player.coords.y -= 0.05 * player.fallMultiplier;
+          player.coords.y -= 0.05 * player.fallMultiplier * (60/fpsCount);
         }
       }
 
@@ -1971,13 +1979,13 @@ async function gameInit() {
         !player.isBelowABlock()
       ) {
         player.coords = player.coords.add(
-          vec2(0, 0.175 * player.jumpMultiplier),
+          vec2(0, 0.175 * player.jumpMultiplier * (60/fpsCount)),
         );
         player.jumpMultiplier -= 0.05;
         player.jumpFrame += 1;
         player.isFalling = false;
         if (player.jumpFrame > 10 && player.jumpFrame < 14) {
-          player.jumpMultiplier -= 0.05;
+          player.jumpMultiplier -= 0.05 * (60/fpsCount);
         } else if (player.jumpFrame > 14) {
           player.jumpFrame = 1;
           player.jumpMultiplier = 1;
@@ -1996,7 +2004,9 @@ async function gameInit() {
         player.attackAnim = false;
       }
       if (player.jumping && player.canFly) {
-        player.coords = player.coords.add(vec2(0, 0.175 * player.jumpMultiplier));
+        player.coords = player.coords.add(
+          vec2(0, 0.175 * player.jumpMultiplier * (60/fpsCount)),
+        );
       }
     },
     cameraToPlayer: () => {
@@ -2222,8 +2232,10 @@ let randomTickEvent = 0;
 let threshHold = Math.floor(Math.random() * 2000) + 1500;
 let lightUpdateEvent = 0;
 function gameUpdate() {
-  randomTickEvent += 1;
-  lightUpdateEvent += 1;
+  if (fpsCap) {
+    randomTickEvent += 1;
+    lightUpdateEvent += 1;
+  }
   const xRangeLow = Math.floor(player.coords.x - 40);
   const yRangeLow = Math.floor(player.coords.y - 30);
   const xRangeHigh = Math.ceil(player.coords.x + 40);
@@ -2385,7 +2397,8 @@ const mouseThings = () => {
         mouseWasDown = false;
         if (
           blockBreakNoSpam >
-          (12 * thingMetaData[blockType]["breakTime"] || -1) / toolBoost
+            (12 * thingMetaData[blockType]["breakTime"] || -1) / toolBoost &&
+          fpsCap
         ) {
           blockBreak += 1;
           blockBreakNoSpam = 0;
@@ -2477,7 +2490,8 @@ const mouseThings = () => {
               Math.round(player.getCoordsAt("br").x + 0.005) - blockMousePos.x,
             ) != 0 &&
               Math.abs(
-                Math.round(player.getCoordsAt("bl").x - 0.075) - blockMousePos.x,
+                Math.round(player.getCoordsAt("bl").x - 0.075) -
+                  blockMousePos.x,
               ) != 0) ||
               (Math.round(player.coords.y) - blockMousePos.y != 0 &&
                 Math.round(player.coords.y) - blockMousePos.y != 1))
@@ -2579,6 +2593,7 @@ function moveSideways(direction) {
   }
 
   if (player.isWalking) {
+  
     if (player.crouching) {
       //check if on edge of block
 
@@ -2623,9 +2638,9 @@ function moveSideways(direction) {
       }
       if (player.isWalking) {
         if (direction == "r") {
-          player.coords = player.coords.add(vec2(0.01, 0));
+          player.coords = player.coords.add(vec2(0.01* (60/fpsCount), 0));
         } else if (direction == "l") {
-          player.coords = player.coords.add(vec2(-0.01, 0));
+          player.coords = player.coords.add(vec2(-0.01* (60/fpsCount), 0));
         }
       }
     } else {
@@ -2635,31 +2650,29 @@ function moveSideways(direction) {
       ) {
         player.running = true;
       }
-
       if (player.running) {
         direction == "r"
-          ? (player.coords = player.coords.add(vec2(0.14, 0)))
-          : (player.coords = player.coords.add(vec2(-0.14, 0)));
+          ? (player.coords = player.coords.add(vec2(0.14 * (60/fpsCount), 0)))
+          : (player.coords = player.coords.add(vec2(-0.14 * (60/fpsCount), 0)));
       } else {
-        direction == "r"
-          ? (player.coords = player.coords.add(vec2(0.08, 0)))
-          : (player.coords = player.coords.add(vec2(-0.08, 0)));
+        direction == "r" 
+          ? (player.coords = player.coords.add(vec2(0.08* (60/fpsCount), 0)))
+          : (player.coords = player.coords.add(vec2(-0.08* (60/fpsCount), 0)));
       }
     }
   }
 }
-let fpsCap = false;
-setInterval(() => {
-// fps cap
-fpsCap = true;
-
-
-},16)
+let countFps = true;
+setTimeout(() => {
+ fpsCount = fpsCount / 5;
+ countFps = false;
+}, 5000);
 async function gameRender() {
-  if(fpsCap == false){
-    return;
+  
+  if(countFps){
+fpsCount += 1;
+
   }
-  fpsCap = false;
   halfWidth = mainCanvas.width / cameraScale / 2;
   halfHeight = mainCanvas.height / cameraScale / 2;
 
@@ -2674,8 +2687,9 @@ async function gameRender() {
   renderBlocks();
   renderDrops();
   mouseThings();
+  
   player.calculatePlayerPhysics();
-
+  
   player.drawPlayer();
 
   player.cameraToPlayer();
@@ -2703,7 +2717,12 @@ async function gameRender() {
       player.directionPositive = true;
     }
   }
+  if(fpsCap){
+    fpsCap = false;
+  }
 }
+
+
 
 function destroyBlock(x, y) {
   if (worldLights[`${x},${y}`]) {
@@ -4307,11 +4326,38 @@ function createFlatTerrain(pos, blockTop, blockMid, forest = false) {
 function createVein(x, y, blockType, seed) {
   const veinType = Math.floor(Math.random() * 5);
   const veinOffsets = [
-    [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]],
-    [[0, 0], [1, 0], [0, 1], [1, 1], [-1, 0], [2, -1]],
-    [[0, 0], [1, 0], [-1, 0], [-2, 0]],
-    [[0, 0], [0, 1], [0, -1]],
-    [[0, 0], [1, 0], [-1, 0], [0, 1]],
+    [
+      [0, 0],
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1],
+    ],
+    [
+      [0, 0],
+      [1, 0],
+      [0, 1],
+      [1, 1],
+      [-1, 0],
+      [2, -1],
+    ],
+    [
+      [0, 0],
+      [1, 0],
+      [-1, 0],
+      [-2, 0],
+    ],
+    [
+      [0, 0],
+      [0, 1],
+      [0, -1],
+    ],
+    [
+      [0, 0],
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+    ],
   ];
 
   for (const [offsetX, offsetY] of veinOffsets[veinType]) {

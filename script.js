@@ -119,7 +119,6 @@ let uptime = 0;
 async function startInit() {
   //displayError("Please do lower your refresh rate to 60hz if it isn't already.")
   //wss thingy server thing
- 
 
   await new Promise((resolve) => {
     let noPingTimeout = setTimeout(() => {
@@ -127,7 +126,7 @@ async function startInit() {
       resolve();
     }, 12500);
     ws =
-      location.origin != "http://192.168.0.14:5500"
+      location.origin != "http://localhost:5500"
         ? new WebSocket("wss://test-api.blxm.me/")
         : new WebSocket("ws://192.168.0.200:8080/");
 
@@ -1989,12 +1988,12 @@ async function gameInit() {
         player.coords = player.coords.add(
           vec2(0, 0.175 * player.jumpMultiplier * (60 / fpsCount)),
         );
-        player.jumpMultiplier -= 0.05;
+        player.jumpMultiplier -= 0.05 * (60 / fpsCount);
         player.jumpFrame += 1;
         player.isFalling = false;
         if (player.jumpFrame > 10 && player.jumpFrame < 14) {
           player.jumpMultiplier -= 0.05 * (60 / fpsCount);
-        } else if (player.jumpFrame > 14) {
+        } else if (player.jumpFrame > Math.round(14 * (fpsCount / 60))) {
           player.jumpFrame = 1;
           player.jumpMultiplier = 1;
           player.jumping = false;

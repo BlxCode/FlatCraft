@@ -119,8 +119,10 @@ let uptime = 0;
 async function startInit() {
   //displayError("Please do lower your refresh rate to 60hz if it isn't already.")
   //wss thingy server thing
+await window.CrazyGames.SDK.init();
 
   await new Promise((resolve) => {
+    
     let noPingTimeout = setTimeout(() => {
       displayError("Coudn't ping to the Skins server. Skipping...");
       resolve();
@@ -1339,11 +1341,6 @@ class droppedItem {
 }
 let worldName;
 let worldDesc;
-let fpsCap = false;
-setInterval(() => {
-  // fps cap
-  fpsCap = true;
-}, 16.7);
 async function gameInit() {
   combineCanvases();
   gamepadsEnable = false;
@@ -1670,9 +1667,9 @@ async function gameInit() {
     },
 
     drawPlayer: () => {
-      if (fpsCap) {
+     
         player.animationChangeTimer += 1;
-      }
+      
       let playerWalkAnimChangeThreshold = 3;
       player.running
         ? (playerWalkAnimChangeThreshold = 1)
@@ -1952,9 +1949,9 @@ async function gameInit() {
         if (!player.canFly && !player.jumping) {
           player.isFalling = true;
           if (player.fallMultiplier < 4.3) {
-            player.fallMultiplier += 0.065 * (60 / fpsCount);
+            player.fallMultiplier += 0.065 ;
           }
-          player.coords.y -= 0.05 * player.fallMultiplier * (60 / fpsCount);
+          player.coords.y -= 0.05 * player.fallMultiplier ;
         }
       }
 
@@ -1986,14 +1983,14 @@ async function gameInit() {
         !player.isBelowABlock()
       ) {
         player.coords = player.coords.add(
-          vec2(0, 0.175 * player.jumpMultiplier * (60 / fpsCount)),
+          vec2(0, 0.175 * player.jumpMultiplier ),
         );
-        player.jumpMultiplier -= 0.05 * (60 / fpsCount);
+        player.jumpMultiplier -= 0.05 ;
         player.jumpFrame += 1;
         player.isFalling = false;
         if (player.jumpFrame > 10 && player.jumpFrame < 14) {
-          player.jumpMultiplier -= 0.05 * (60 / fpsCount);
-        } else if (player.jumpFrame > Math.round(14 * (fpsCount / 60))) {
+          player.jumpMultiplier -= 0.05 ;
+        } else if (player.jumpFrame > Math.round(14 )) {
           player.jumpFrame = 1;
           player.jumpMultiplier = 1;
           player.jumping = false;
@@ -2012,7 +2009,7 @@ async function gameInit() {
       }
       if (player.jumping && player.canFly) {
         player.coords = player.coords.add(
-          vec2(0, 0.175 * player.jumpMultiplier * (60 / fpsCount)),
+          vec2(0, 0.175 * player.jumpMultiplier ),
         );
       }
     },
@@ -2239,10 +2236,9 @@ let randomTickEvent = 0;
 let threshHold = Math.floor(Math.random() * 2000) + 1500;
 let lightUpdateEvent = 0;
 function gameUpdate() {
-  if (fpsCap) {
     randomTickEvent += 1;
     lightUpdateEvent += 1;
-  }
+  
   const xRangeLow = Math.floor(player.coords.x - 40);
   const yRangeLow = Math.floor(player.coords.y - 30);
   const xRangeHigh = Math.ceil(player.coords.x + 40);
@@ -2404,8 +2400,8 @@ const mouseThings = () => {
         mouseWasDown = false;
         if (
           blockBreakNoSpam >
-            (12 * thingMetaData[blockType]["breakTime"] || -1) / toolBoost &&
-          fpsCap
+            (12 * thingMetaData[blockType]["breakTime"] || -1) / toolBoost 
+          
         ) {
           blockBreak += 1;
           blockBreakNoSpam = 0;
@@ -2644,9 +2640,9 @@ function moveSideways(direction) {
       }
       if (player.isWalking) {
         if (direction == "r") {
-          player.coords = player.coords.add(vec2(0.01 * (60 / fpsCount), 0));
+          player.coords = player.coords.add(vec2(0.01 , 0));
         } else if (direction == "l") {
-          player.coords = player.coords.add(vec2(-0.01 * (60 / fpsCount), 0));
+          player.coords = player.coords.add(vec2(-0.01 , 0));
         }
       }
     } else {
@@ -2658,15 +2654,15 @@ function moveSideways(direction) {
       }
       if (player.running) {
         direction == "r"
-          ? (player.coords = player.coords.add(vec2(0.14 * (60 / fpsCount), 0)))
+          ? (player.coords = player.coords.add(vec2(0.14 , 0)))
           : (player.coords = player.coords.add(
-              vec2(-0.14 * (60 / fpsCount), 0),
+              vec2(-0.14 , 0),
             ));
       } else {
         direction == "r"
-          ? (player.coords = player.coords.add(vec2(0.08 * (60 / fpsCount), 0)))
+          ? (player.coords = player.coords.add(vec2(0.08 , 0)))
           : (player.coords = player.coords.add(
-              vec2(-0.08 * (60 / fpsCount), 0),
+              vec2(-0.08 , 0),
             ));
       }
     }
@@ -2719,9 +2715,7 @@ async function gameRender() {
       player.directionPositive = true;
     }
   }
-  if (fpsCap) {
-    fpsCap = false;
-  }
+ 
 }
 
 function destroyBlock(x, y) {

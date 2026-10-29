@@ -1347,6 +1347,9 @@ async function gameInit() {
   cameraScale = 85;
   cameraPos = vec2(0, 0);
   ctx = mainCanvas.getContext("2d");
+  mainCanvas.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+  });
   canvasPixelated = true;
   console.log("Game engine initializing...");
 
